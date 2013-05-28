@@ -1,0 +1,4 @@
+xserializer
+===========
+
+Functional XML serialization
