@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Xml.Linq;
 using NUnit.Framework;
 
@@ -29,6 +30,7 @@ namespace XmlSerialization
 			var textbox = item.Sub<TextBox>(ns + "TextBox");
 
 			_serializer = new XSerializer()
+				.Type(s => Length.Parse(s), x => x.ToString())
 				.Elem(report)
 				.Elem(body)
 				.Elem(textbox);
@@ -38,8 +40,8 @@ namespace XmlSerialization
 		public void DefaultReport()
 		{
 			var report = new Report();
-			var xml = _serializer.ToXmlString(report);
-			Assert.AreEqual("<Report xmlns=\"http://test.com\"/>", xml);
+			var xml = _serializer.ToXmlString(report, true);
+			Assert.AreEqual("<Report xmlns=\"http://test.com\"><Width>0</Width><Body><Height>0</Height></Body></Report>", xml);
 		}
 
 		public class Report
@@ -79,12 +81,23 @@ namespace XmlSerialization
 
 		public struct Length
 		{
-			public float Value;
-			public string Unit;
+			public readonly float Value;
+			public readonly string Unit;
 
-			public Length Parse(string s)
+			public Length(float value, string unit)
+			{
+				Value = value;
+				Unit = unit;
+			}
+
+			public static Length Parse(string s)
 			{
 				throw new NotImplementedException();
+			}
+
+			public override string ToString()
+			{
+				return string.Format(CultureInfo.InvariantCulture, "{0}{1}", Value, Unit);
 			}
 		}
 	}

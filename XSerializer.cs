@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -165,9 +166,11 @@ namespace XmlSerialization
 			return _elementDefs.TryGetValue(name, out def) ? def : null;
 		}
 
-		private string GetPropertyName(Expression expression)
+		private static string GetPropertyName<TValue>(Expression<Func<T, TValue>> expression)
 		{
-			throw new NotImplementedException();
+			var memberAssignment = (MemberExpression)expression.Body;
+			var memberName = memberAssignment.Member.Name;
+			return memberName;
 		}
 
 		private sealed class PropertyDef<TValue> : IAttributeDef
@@ -179,7 +182,6 @@ namespace XmlSerialization
 			{
 				if (name == null) throw new ArgumentNullException("name");
 				if (getter == null) throw new ArgumentNullException("getter");
-				if (setter == null) throw new ArgumentNullException("setter");
 
 				_getter = getter;
 				_setter = setter;
@@ -248,8 +250,19 @@ namespace XmlSerialization
 
 		public XSerializer()
 		{
-			Type<string>(x => x, x => x);
+			Type(x => x, x => x);
+			Type(x => Convert.ToBoolean(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToSByte(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToByte(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToInt16(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToUInt16(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
 			Type(x => Convert.ToInt32(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToUInt32(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToInt64(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToUInt64(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToSingle(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToDouble(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			Type(x => Convert.ToDateTime(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x, XmlDateTimeSerializationMode.Utc));
 		}
 
 		public XSerializer Type<T>(Func<string, T> read, Func<T, string> write)
@@ -281,13 +294,15 @@ namespace XmlSerialization
 		public void Write<T>(XmlWriter writer, T obj)
 		{
 			var def = ResolveElementDef(obj.GetType());
-			WriteElement(writer, obj, def);
+			WriteElement(writer, obj, def, def.Name);
 		}
 
-		public string ToXmlString<T>(T obj)
+		public string ToXmlString<T>(T obj, bool asFragment)
 		{
 			var output = new StringBuilder();
-			using (var writer = XmlWriter.Create(output))
+			var xws = new XmlWriterSettings();
+			if (asFragment) xws.ConformanceLevel = ConformanceLevel.Fragment;
+			using (var writer = XmlWriter.Create(output, xws))
 				Write(writer, obj);
 			return output.ToString();
 		}
@@ -350,9 +365,11 @@ namespace XmlSerialization
 			reader.ReadEndElement();
 		}
 
-		private void WriteElement(XmlWriter writer, object obj, IElementDef def)
+		private void WriteElement(XmlWriter writer, object obj, IElementDef def, XName name)
 		{
-			writer.WriteStartElement(def.Name.LocalName, def.Name.NamespaceName);
+			if (name == null) name = def.Name;
+
+			writer.WriteStartElement(name.LocalName, name.NamespaceName);
 
 			foreach (var attr in def.Attributes)
 			{
@@ -362,31 +379,65 @@ namespace XmlSerialization
 				writer.WriteAttributeString(attr.Name.LocalName, attr.Name.NamespaceName, s);
 			}
 
-			foreach (var elem in def.Elements)
+			var collection = obj as IEnumerable;
+			if (collection != null)
 			{
-				var value = def.GetValue(elem.Name, obj);
-				if (value == null) continue;
-
-				TypeDef simpleType;
-				var type = value.GetType();
-				if (_types.TryGetValue(type, out simpleType))
+				// TODO: support custom collections with own properties
+				foreach (var item in collection)
 				{
-					var s = simpleType.Write(value);
-					writer.WriteElementString(elem.Name.LocalName, elem.Name.NamespaceName, s);
-					continue;
+					WriteValue(writer, item, null);
 				}
-
-				IElementDef elementDef;
-				if (_elementDefs.TryGetValue(type, out elementDef))
+			}
+			else
+			{
+				foreach (var elem in def.Elements)
 				{
-					WriteElement(writer, value, elementDef);
-					continue;
+					var value = def.GetValue(elem.Name, obj);
+					if (value == null) continue;
+					WriteValue(writer, value, elem);
 				}
+			}
+			
+			writer.WriteEndElement();
+		}
 
-				throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", elem.Name, elem.Type));
+		private void WriteValue(XmlWriter writer, object value, INodeDef def)
+		{
+			var name = def != null ? def.Name : null;
+			var collection = value as IEnumerable;
+			if (collection != null)
+			{
+				bool empty = true;
+				foreach (var item in collection)
+				{
+					if (empty)
+					{
+						writer.WriteStartElement(name.LocalName, name.NamespaceName);
+						empty = false;
+					}
+					WriteValue(writer, item, null);
+				}
+				if (!empty) writer.WriteEndElement();
+				return;
 			}
 
-			writer.WriteEndElement();
+			TypeDef simpleType;
+			var type = value.GetType();
+			if (_types.TryGetValue(type, out simpleType))
+			{
+				var s = simpleType.Write(value);
+				writer.WriteElementString(name.LocalName, name.NamespaceName, s);
+				return;
+			}
+
+			IElementDef elementDef;
+			if (_elementDefs.TryGetValue(type, out elementDef))
+			{
+				WriteElement(writer, value, elementDef, name);
+				return;
+			}
+
+			throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", def.Name, def.Type));
 		}
 
 		private object Parse(Type type, string s)
