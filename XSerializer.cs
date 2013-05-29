@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -281,6 +282,14 @@ namespace XmlSerialization
 		{
 			var def = ResolveElementDef(obj.GetType());
 			WriteElement(writer, obj, def);
+		}
+
+		public string ToXmlString<T>(T obj)
+		{
+			var output = new StringBuilder();
+			using (var writer = XmlWriter.Create(output))
+				Write(writer, obj);
+			return output.ToString();
 		}
 
 		private void ReadElement(XmlReader reader, object obj, IElementDef def)

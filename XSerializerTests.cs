@@ -8,23 +8,38 @@ namespace XmlSerialization
 	[TestFixture]
 	public class XSerializerTests
 	{
-		[Test]
-		public void Test()
+		private XSerializer _serializer;
+
+		[SetUp]
+		public void Init()
 		{
-			var ns = XNamespace.Get("");
+			var ns = XNamespace.Get("http://test.com");
 			var report = ElementDef.New<Report>(ns + "Report")
-			                       .Attr(o => o.Name, (o, v) => o.Name = v)
-			                       .Elem(o => o.Width, (o, v) => o.Width = v)
-			                       .Elem(o => o.Body);
+								   .Attr(o => o.Name, (o, v) => o.Name = v)
+								   .Elem(o => o.Width, (o, v) => o.Width = v)
+								   .Elem(o => o.Body);
 
 			var body = ElementDef.New<Body>(ns + "Body")
-			                     .Elem(o => o.Height, (o, v) => o.Height = v)
+								 .Elem(o => o.Height, (o, v) => o.Height = v)
 								 .Elem(o => o.ReportItems);
 
 			var item = ElementDef.New<ReportItem>(ns + "ReportItemBase")
-			                     .Attr(x => x.Name, (x, v) => x.Name = v);
+								 .Attr(x => x.Name, (x, v) => x.Name = v);
 
 			var textbox = item.Sub<TextBox>(ns + "TextBox");
+
+			_serializer = new XSerializer()
+				.Elem(report)
+				.Elem(body)
+				.Elem(textbox);
+		}
+
+		[Test]
+		public void DefaultReport()
+		{
+			var report = new Report();
+			var xml = _serializer.ToXmlString(report);
+			Assert.AreEqual("<Report xmlns=\"http://test.com\"/>", xml);
 		}
 
 		public class Report
