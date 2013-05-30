@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="ElementDef.cs" />
     <Compile Include="IElementDef.cs" />
-    <Compile Include="XSerializerTests.cs" />
+    <Compile Include="Tests\XSerializerTests.cs" />
     <Compile Include="XmlExtensions.cs" />
     <Compile Include="XSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
