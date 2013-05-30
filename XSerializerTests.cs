@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿#if NUNIT
+using System.Collections.Generic;
 using System.Globalization;
 using System.Xml.Linq;
 using NUnit.Framework;
 
-namespace XmlSerialization
+namespace XmlSerialization.Tests
 {
 	[TestFixture]
 	public class XSerializerTests
@@ -147,3 +148,4 @@ namespace XmlSerialization
 		}
 	}
 }
+#endif
