@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>XSerializer</id>
+    <version>0.1.0.0</version>
+    <authors>TsvBits</authors>
+    <owners>TsvBits</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/sergeyt/xserializer</projectUrl>
+    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Package description</description>
+    <releaseNotes>Initial release of XSerializer capable to (de)serialize POC objects with IList collections.</releaseNotes>
+    <copyright>Copyright 2013</copyright>
+    <tags>xml serialization</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+</package>
