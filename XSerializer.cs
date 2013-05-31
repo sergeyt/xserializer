@@ -41,7 +41,15 @@ namespace XmlSerialization
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
 		private readonly IDictionary<XName, IElementDef> _elementDefsByName = new Dictionary<XName, IElementDef>();
 		
-		public XSerializer()
+		private XSerializer(IEnumerable<IElementDef> elements)
+		{
+			RegisterTypes();
+
+			foreach (var element in elements)
+				Elem(element);
+		}
+
+		private void RegisterTypes()
 		{
 			Type(x => x, x => x);
 			Type(x => Convert.ToBoolean(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
@@ -57,6 +65,11 @@ namespace XmlSerialization
 			Type(x => Convert.ToDouble(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
 			Type(x => Convert.ToDecimal(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
 			Type(x => Convert.ToDateTime(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x, XmlDateTimeSerializationMode.Utc));
+		}
+
+		public static XSerializer New(params IElementDef[] defs)
+		{
+			return new XSerializer(defs);
 		}
 
 		/// <summary>
@@ -94,11 +107,13 @@ namespace XmlSerialization
 		/// </summary>
 		/// <typeparam name="T">The object type to create.</typeparam>
 		/// <param name="xml">The xml string to parse.</param>
-		public T Parse<T>(string xml) where T : new()
+		public T Parse<T>(string xml)
 		{
-			var obj = new T();
-			ReadXmlString(xml, obj);
-			return obj;
+			using (var input = new StringReader(xml))
+			using (var reader = XmlReader.Create(input))
+			{
+				return Read<T>(reader);
+			}
 		}
 
 		/// <summary>
@@ -129,7 +144,26 @@ namespace XmlSerialization
 			var def = ResolveElementDef(obj.GetType());
 			ReadElement(reader, obj, def);
 		}
-		
+
+		/// <summary>
+		/// Reads object with given reader.
+		/// </summary>
+		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="reader">The xml reader.</param>
+		public T Read<T>(XmlReader reader)
+		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
+			while (reader.NodeType != XmlNodeType.Element && reader.Read()){}
+
+			var def = _elementDefsByName[reader.CurrentXName()];
+			// TODO: support immutable objects
+			var obj = Activator.CreateInstance(def.Type);
+			ReadElement(reader, obj, def);
+
+			return (T)obj;
+		}
+
 		/// <summary>
 		/// Serializes given object.
 		/// </summary>

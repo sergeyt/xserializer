@@ -21,8 +21,8 @@ namespace XmlSerialization.Tests
 			                       .Elem(x => x.Body);
 
 			var body = ElementDef.New<Body>(ns + "Body")
-								 .Elem(x => x.Height)
-								 .Elem(x => x.ReportItems);
+			                     .Elem(x => x.Height)
+			                     .Elem(x => x.ReportItems);
 
 			var item = ElementDef.New<ReportItem>(ns + "ReportItemBase")
 			                     .Attr(x => x.Name);
@@ -30,11 +30,8 @@ namespace XmlSerialization.Tests
 			var textbox = item.Sub<TextBox>(ns + "TextBox")
 			                  .Elem(x => x.Value);
 
-			_serializer = new XSerializer()
-				.Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
-				.Elem(report)
-				.Elem(body)
-				.Elem(textbox);
+			_serializer = XSerializer.New(report, body, textbox)
+			                         .Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "");
 		}
 
 		[Test]

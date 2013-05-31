@@ -46,6 +46,7 @@
     <Compile Include="DefCollection.cs" />
     <Compile Include="ElementDef.cs" />
     <Compile Include="IElementDef.cs" />
+    <Compile Include="Tests\ImmutableObjectsTests.cs" />
     <Compile Include="Tests\XSerializerTests.cs" />
     <Compile Include="XmlExtensions.cs" />
     <Compile Include="XSerializer.cs" />

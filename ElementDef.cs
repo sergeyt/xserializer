@@ -7,8 +7,8 @@ namespace XmlSerialization
 {
 	public sealed class ElementDef<T> : IElementDef
 	{
-		private readonly DefCollection<IPropertyDef> _attributeDefs = new DefCollection<IPropertyDef>();
-		private readonly DefCollection<IPropertyDef> _elementDefs = new DefCollection<IPropertyDef>();
+		private readonly DefCollection<IPropertyDef> _attributes = new DefCollection<IPropertyDef>();
+		private readonly DefCollection<IPropertyDef> _elements = new DefCollection<IPropertyDef>();
 
 		public ElementDef(XName name)
 		{
@@ -20,7 +20,7 @@ namespace XmlSerialization
 		public ElementDef<T> Attr<TValue>(XName name, Func<T, TValue> getter, Action<T, TValue> setter)
 		{
 			var attr = new PropertyDef<TValue>(name, getter, setter);
-			_attributeDefs.Add(name, attr);
+			_attributes.Add(name, attr);
 			return this;
 		}
 
@@ -29,15 +29,13 @@ namespace XmlSerialization
 			var name = GetPropertyName(property);
 			var getter = property.Compile();
 			var setter = ResolveSetter(property);
-			// TODO: support readonly attributes
-			if (setter == null) throw new NotSupportedException();
 			return Attr(XNamespace.None + name, getter, setter);
 		}
 
 		public ElementDef<T> Elem<TValue>(XName name, Func<T, TValue> getter, Action<T, TValue> setter)
 		{
 			var elem = new PropertyDef<TValue>(name, getter, setter);
-			_elementDefs.Add(name, elem);
+			_elements.Add(name, elem);
 			return this;
 		}
 
@@ -56,27 +54,15 @@ namespace XmlSerialization
 		public ElementDef<TElement> Sub<TElement>(XName name)
 		{
 			var elem = new ElementDef<TElement>(name);
-			elem._attributeDefs.AddRange(_attributeDefs);
-			elem._elementDefs.AddRange(_elementDefs);
+			elem._attributes.AddRange(_attributes);
+			elem._elements.AddRange(_elements);
 			return elem;
 		}
 
 		public XName Name { get; private set; }
-
-		public Type Type
-		{
-			get { return typeof(T); }
-		}
-
-		public IDefCollection<IPropertyDef> Attributes
-		{
-			get { return _attributeDefs; }
-		}
-
-		public IDefCollection<IPropertyDef> Elements
-		{
-			get { return _elementDefs; }
-		}
+		public Type Type { get { return typeof(T); } }
+		public IDefCollection<IPropertyDef> Attributes { get { return _attributes; } }
+		public IDefCollection<IPropertyDef> Elements { get { return _elements; } }
 
 		public override string ToString()
 		{
