@@ -4,14 +4,11 @@ using System.Xml.Linq;
 
 namespace XmlSerialization
 {
-	public interface INodeDef
+	public interface IPropertyDef
 	{
 		XName Name { get; }
 		Type Type { get; }
-	}
 
-	public interface IPropertyDef : INodeDef
-	{
 		bool IsReadOnly { get; }
 
 		object GetValue(object target);
@@ -19,19 +16,17 @@ namespace XmlSerialization
 		void SetValue(object target, object value);
 	}
 
-	public interface IElementDef : INodeDef
+	public interface IDefCollection<T> : IEnumerable<T>
 	{
-		IEnumerable<IPropertyDef> Attributes { get; }
-		IPropertyDef GetAttribute(XName name);
+		T this[XName name] { get; }
+	}
 
-		// TODO: reuse IAttributeDef
-		IEnumerable<INodeDef> Elements { get; }
-		
-		Type GetElementType(XName name);
+	public interface IElementDef
+	{
+		XName Name { get; }
+		Type Type { get; }
 
-		object GetValue(XName name, object target);
-		void SetValue(XName name, object target, object value);
-
-		object CreateElement(XName name, object target);
+		IDefCollection<IPropertyDef> Attributes { get; }
+		IDefCollection<IPropertyDef> Elements { get; }
 	}
 }

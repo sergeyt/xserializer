@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml.Linq;
@@ -9,8 +7,8 @@ namespace XmlSerialization
 {
 	public sealed class ElementDef<T> : IElementDef
 	{
-		private readonly IDictionary<XName, IPropertyDef> _attributeDefs = new Dictionary<XName, IPropertyDef>();
-		private readonly IDictionary<XName, IPropertyDef> _elementDefs = new Dictionary<XName, IPropertyDef>();
+		private readonly DefCollection<IPropertyDef> _attributeDefs = new DefCollection<IPropertyDef>();
+		private readonly DefCollection<IPropertyDef> _elementDefs = new DefCollection<IPropertyDef>();
 
 		public ElementDef(XName name)
 		{
@@ -58,14 +56,8 @@ namespace XmlSerialization
 		public ElementDef<TElement> Sub<TElement>(XName name)
 		{
 			var elem = new ElementDef<TElement>(name);
-			foreach (var p in _attributeDefs)
-			{
-				elem._attributeDefs.Add(p.Key, p.Value);
-			}
-			foreach (var p in _elementDefs)
-			{
-				elem._elementDefs.Add(p.Key, p.Value);
-			}
+			elem._attributeDefs.AddRange(_attributeDefs);
+			elem._elementDefs.AddRange(_elementDefs);
 			return elem;
 		}
 
@@ -76,65 +68,19 @@ namespace XmlSerialization
 			get { return typeof(T); }
 		}
 
-		public IEnumerable<IPropertyDef> Attributes
+		public IDefCollection<IPropertyDef> Attributes
 		{
-			get { return _attributeDefs.Values; }
+			get { return _attributeDefs; }
 		}
 
-		public IPropertyDef GetAttribute(XName name)
+		public IDefCollection<IPropertyDef> Elements
 		{
-			IPropertyDef def;
-			return _attributeDefs.TryGetValue(name, out def) ? def : null;
-		}
-		
-		public IEnumerable<INodeDef> Elements
-		{
-			get { return _elementDefs.Values.Cast<INodeDef>(); }
-		}
-
-		public Type GetElementType(XName name)
-		{
-			var def = GetPropertyDef(name);
-			return def != null ? def.Type : null;
-		}
-
-		public object GetValue(XName name, object target)
-		{
-			var def = GetPropertyDef(name);
-			if (def == null) throw new NotSupportedException();
-			return def.GetValue(target);
-		}
-
-		public void SetValue(XName name, object target, object value)
-		{
-			var def = GetPropertyDef(name);
-			if (def == null) throw new NotSupportedException();
-			if (def.IsReadOnly) throw new NotSupportedException();
-			def.SetValue(target, value);
-		}
-
-		public object CreateElement(XName name, object target)
-		{
-			var def = GetPropertyDef(name);
-			if (def == null) throw new NotSupportedException();
-			if (def.IsReadOnly)
-			{
-				return def.GetValue(target);
-			}
-			var value = Activator.CreateInstance(def.Type);
-			def.SetValue(target, value);
-			return value;
+			get { return _elementDefs; }
 		}
 
 		public override string ToString()
 		{
 			return Name.ToString();
-		}
-
-		private IPropertyDef GetPropertyDef(XName name)
-		{
-			IPropertyDef def;
-			return _elementDefs.TryGetValue(name, out def) ? def : null;
 		}
 
 		private static string GetPropertyName<TValue>(Expression<Func<T, TValue>> expression)

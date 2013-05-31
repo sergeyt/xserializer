@@ -170,7 +170,7 @@ namespace XmlSerialization
 				do
 				{
 					var name = reader.CurrentXName();
-					var attr = def.GetAttribute(name);
+					var attr = def.Attributes[name];
 					if (attr != null)
 					{
 						var value = Parse(attr.Type, reader.Value);
@@ -196,15 +196,15 @@ namespace XmlSerialization
 				}
 
 				var name = reader.CurrentXName();
-				var type = def.GetElementType(name);
-				if (type == null) // unknown type
+				var property = def.Elements[name];
+				if (property == null) // unknown type
 				{
 					// todo: trace warning
 					reader.Skip();
 					continue;
 				}
 
-				if (ReadValue(reader, def, obj, type, name))
+				if (ReadValue(reader, def, obj, property))
 					continue;
 
 				// todo: trace warning
@@ -214,21 +214,23 @@ namespace XmlSerialization
 			reader.ReadEndElement();
 		}
 
-		private bool ReadValue(XmlReader reader, IElementDef def, object obj, Type type, XName name)
+		private bool ReadValue(XmlReader reader, IElementDef def, object obj, IPropertyDef property)
 		{
+			var type = property.Type;
+
 			TypeDef simpleType;
 			if (_types.TryGetValue(type, out simpleType))
 			{
 				var s = reader.ReadString();
 				var value = simpleType.Read(s);
-				def.SetValue(name, obj, value);
+				property.SetValue(obj, value);
 				return true;
 			}
 
 			IElementDef elementDef;
 			if (_elementDefs.TryGetValue(type, out elementDef))
 			{
-				var element = def.CreateElement(name, obj);
+				var element = CreateElement(property, obj);
 				ReadElement(reader, element, elementDef);
 				return true;
 			}
@@ -236,16 +238,27 @@ namespace XmlSerialization
 			var ienum = FindIEnumerable(type);
 			if (ienum != null)
 			{
-				// TODO: support non-IList collections
-				var collection = def.CreateElement(name, obj) as IList;
+				var collection = CreateElement(property, obj);
 				if (collection == null) throw new NotSupportedException();
 				var elementType = ienum.GetGenericArguments()[0];
-				elementDef = new CollectionDef(this, name, type, elementType);
+				elementDef = new CollectionDef(this, property.Name, type, elementType);
 				ReadElement(reader, collection, elementDef);
 				return true;
 			}
 
 			return false;
+		}
+
+		private static object CreateElement(IPropertyDef def, object target)
+		{
+			if (def == null) throw new NotSupportedException();
+			if (def.IsReadOnly)
+			{
+				return def.GetValue(target);
+			}
+			var value = Activator.CreateInstance(def.Type);
+			def.SetValue(target, value);
+			return value;
 		}
 
 		private void WriteElement(XmlWriter writer, object obj, IElementDef def, XName name)
@@ -276,7 +289,7 @@ namespace XmlSerialization
 			{
 				foreach (var elem in def.Elements)
 				{
-					var value = def.GetValue(elem.Name, obj);
+					var value = elem.GetValue(obj);
 					if (value == null) continue;
 					WriteValue(writer, elem, value);
 				}
@@ -285,7 +298,7 @@ namespace XmlSerialization
 			writer.WriteEndElement();
 		}
 
-		private void WriteValue(XmlWriter writer, INodeDef def, object value)
+		private void WriteValue(XmlWriter writer, IPropertyDef def, object value)
 		{
 			var name = def != null ? def.Name : null;
 
@@ -395,6 +408,7 @@ namespace XmlSerialization
 		{
 			private readonly XSerializer _serializer;
 			private readonly Type _elementType;
+			private readonly ItemDefCollection _elements;
 
 			public CollectionDef(XSerializer serializer, XName name, Type type, Type elementType)
 			{
@@ -402,15 +416,15 @@ namespace XmlSerialization
 				_elementType = elementType;
 				Name = name;
 				Type = type;
+				_elements = new ItemDefCollection(this);
 			}
 
 			public XName Name { get; private set; }
 			public Type Type { get; private set; }
-			public IEnumerable<IPropertyDef> Attributes { get { return Enumerable.Empty<IPropertyDef>(); } }
-			public IPropertyDef GetAttribute(XName name) { return null; }
-			public IEnumerable<INodeDef> Elements { get { return Enumerable.Empty<INodeDef>(); } }
+			public IDefCollection<IPropertyDef> Attributes { get { return DefCollection<IPropertyDef>.Empty; } }
+			public IDefCollection<IPropertyDef> Elements { get { return _elements; } }
 
-			public Type GetElementType(XName name)
+			private Type GetElementType(XName name)
 			{
 				if (_elementType.IsSealed) return _elementType;
 
@@ -423,23 +437,63 @@ namespace XmlSerialization
 				return _elementType;
 			}
 
-			public object GetValue(XName name, object target)
+			private sealed class ItemDefCollection : IDefCollection<IPropertyDef>
 			{
-				throw new NotSupportedException();
+				private readonly CollectionDef _collectionDef;
+
+				public ItemDefCollection(CollectionDef collectionDef)
+				{
+					_collectionDef = collectionDef;
+				}
+
+				public IEnumerator<IPropertyDef> GetEnumerator()
+				{
+					yield break;
+				}
+
+				IEnumerator IEnumerable.GetEnumerator()
+				{
+					return GetEnumerator();
+				}
+
+				public IPropertyDef this[XName name]
+				{
+					get { return new ItemDef(_collectionDef, name); }
+				}
 			}
 
-			public void SetValue(XName name, object target, object value)
+			private sealed class ItemDef : IPropertyDef
 			{
-				// TODO: support non-IList collections
-				((IList)target).Add(value);
-			}
+				private readonly CollectionDef _collectionDef;
 
-			public object CreateElement(XName name, object target)
-			{
-				var type = GetElementType(name);
-				var item = Activator.CreateInstance(type);
-				SetValue(name, target, item);
-				return item;
+				public ItemDef(CollectionDef collectionDef, XName name)
+				{
+					_collectionDef = collectionDef;
+					Name = name;
+				}
+
+				public XName Name { get; private set; }
+				public Type Type { get { return _collectionDef.GetElementType(Name); } }
+
+				public bool IsReadOnly { get { return false; } }
+
+				public object GetValue(object target)
+				{
+					throw new NotSupportedException();
+				}
+
+				public void SetValue(object target, object value)
+				{
+					var list = target as IList;
+					if (list != null)
+					{
+						list.Add(value);
+						return;
+					}
+
+					// TODO: optimize with expression tree or reflection emit
+					target.GetType().GetMethod("Add").Invoke(target, new [] {value});
+				}
 			}
 		}
 	}
