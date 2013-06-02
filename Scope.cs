@@ -43,6 +43,11 @@ namespace XmlSerialization
 			return new Scope(ns);
 		}
 
+		public static Scope New(string ns)
+		{
+			return new Scope(string.IsNullOrEmpty(ns) ? XNamespace.None : XNamespace.Get(ns));
+		}
+
 		private static void PrimitiveType<T>(Func<string, T> read, Func<T, string> write)
 		{
 			PrimitiveTypes.Add(typeof(T), new TypeDef(s => read(s), v => write((T)v)));

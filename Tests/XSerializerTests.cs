@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Xml.Linq;
 using NUnit.Framework;
 
 namespace XmlSerialization.Tests
@@ -15,9 +14,7 @@ namespace XmlSerialization.Tests
 		[SetUp]
 		public void Init()
 		{
-			var ns = XNamespace.Get("http://test.com");
-
-			var scope = Scope.New(ns)
+			var scope = Scope.New("http://test.com")
 			                 .Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
 			                 .Enum(DataElementOutput.Auto);
 
