@@ -269,6 +269,14 @@ namespace XmlSerialization
 				return true;
 			}
 
+			if (type.IsEnum)
+			{
+				var s = reader.ReadString();
+				var value = Enum.Parse(type, s);
+				property.SetValue(obj, value);
+				return true;
+			}
+
 			var ienum = FindIEnumerable(type);
 			if (ienum != null)
 			{
@@ -334,13 +342,13 @@ namespace XmlSerialization
 
 		private void WriteValue(XmlWriter writer, IPropertyDef def, object value)
 		{
+			if (value == null) return;
+
 			var name = def != null ? def.Name : null;
 
-			TypeDef simpleType;
-			var type = value.GetType();
-			if (_types.TryGetValue(type, out simpleType))
+			string s;
+			if (TryConvertToString(value, out s))
 			{
-				var s = simpleType.Write(value);
 				if (string.IsNullOrEmpty(s)) return;
 				writer.WriteElementString(name.LocalName, name.NamespaceName, s);
 				return;
@@ -362,9 +370,9 @@ namespace XmlSerialization
 				if (!empty) writer.WriteEndElement();
 				return;
 			}
-			
+
 			IElementDef elementDef;
-			if (_elementDefs.TryGetValue(type, out elementDef))
+			if (_elementDefs.TryGetValue(value.GetType(), out elementDef))
 			{
 				WriteElement(writer, value, elementDef, name);
 				return;
@@ -385,14 +393,37 @@ namespace XmlSerialization
 		{
 			if (value == null) return string.Empty;
 
+			string s;
+			if (TryConvertToString(value, out s))
+				return s;
+
+			return Convert.ToString(value, CultureInfo.InvariantCulture);
+		}
+
+		private bool TryConvertToString(object value, out string result)
+		{
+			if (value == null)
+			{
+				result = null;
+				return false;
+			}
+
 			TypeDef def;
 			var type = value.GetType();
 			if (_types.TryGetValue(type, out def))
 			{
-				return def.Write(value);
+				result = def.Write(value);
+				return true;
 			}
 
-			return Convert.ToString(value, CultureInfo.InvariantCulture);
+			if (value is Enum)
+			{
+				result = value.ToString();
+				return true;
+			}
+
+			result = null;
+			return false;
 		}
 
 		private static Type FindIEnumerable(Type type)

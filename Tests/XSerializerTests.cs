@@ -25,7 +25,9 @@ namespace XmlSerialization.Tests
 			                     .Elem(x => x.ReportItems);
 
 			var item = ElementDef.New<ReportItem>(ns + "ReportItemBase")
-			                     .Attr(x => x.Name);
+			                     .Attr(x => x.Name)
+								 .Elem(x => x.DataElementName)
+								 .Elem(x => x.DataElementOutput);
 
 			var textbox = item.Sub<TextBox>(ns + "TextBox")
 			                  .Elem(x => x.Value);
@@ -45,7 +47,7 @@ namespace XmlSerialization.Tests
 		[Test]
 		public void SimpleReport()
 		{
-			var textbox1 = new TextBox {Name = "textbox1", Value = "hello"};
+			var textbox1 = new TextBox {Name = "textbox1", Value = "hello", DataElementOutput = DataElementOutput.NoContent};
 			var report = new Report
 				{
 					Name = "report",
@@ -57,7 +59,7 @@ namespace XmlSerialization.Tests
 				};
 			
 			var xml = _serializer.ToXmlString(report, true);
-			Assert.AreEqual("<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><Value>hello</Value></TextBox></ReportItems></Body></Report>", xml);
+			Assert.AreEqual("<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox></ReportItems></Body></Report>", xml);
 
 			var report2 = _serializer.Parse<Report>(xml);
 			Assert.AreEqual(report.Name, report2.Name);
@@ -67,6 +69,7 @@ namespace XmlSerialization.Tests
 			Assert.NotNull(textbox2);
 			Assert.AreEqual(textbox1.Name, textbox2.Name);
 			Assert.AreEqual(textbox1.Value, textbox2.Value);
+			Assert.AreEqual(textbox1.DataElementOutput, textbox2.DataElementOutput);
 		}
 
 		public class Report
@@ -94,9 +97,13 @@ namespace XmlSerialization.Tests
 			public IList<ReportItem> ReportItems { get; private set; }
 		}
 
+		public enum DataElementOutput { Auto, NoContent }
+
 		public abstract class ReportItem
 		{
 			public string Name { get; set; }
+			public string DataElementName { get; set; }
+			public DataElementOutput DataElementOutput { get; set; }
 		}
 
 		public class TextBox : ReportItem
