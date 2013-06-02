@@ -41,6 +41,8 @@
 		<property name="define" value="${debug};NUNIT"/>
 		<property name="outdir" value="${buildroot}/${config}"/>
 	</target>
+	
+	<property name="nunit.framework.dll" value="${srcdir}/packages/NUnit.2.6.2/lib/nunit.framework.dll"/>
 
 	<target name="build">
 		<csc target="library" output="${outdir}/${assembly}.dll"
@@ -52,7 +54,7 @@
 				<include name="System.Drawing.dll"/>
 				<include name="System.Xml.dll"/>
 				<include name="System.Xml.Linq.dll"/>
-				<include name="${srcdir}/packages/NUnit.2.6.2/lib/nunit.framework.dll"/>
+				<include name="${nunit.framework.dll}"/>
 			</references>
 			<sources basedir="${srcdir}">
 				<include name="**/*.cs"/>
@@ -75,6 +77,7 @@
 	<target name="rebuild" depends="clean, build"/>
 
 	<target name="test">
+		<copy file="${nunit.framework.dll}" todir="${outdir}"/>
 		<nunit2>
 			<formatter type="Xml" usefile="true" extension=".xml" outputdir="${outdir}"/>
 			<formatter type="Plain"/>
