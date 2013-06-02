@@ -17,29 +17,31 @@ namespace XmlSerialization.Tests
 		{
 			var ns = XNamespace.Get("http://test.com");
 
-			var report = ElementDef.New<Report>(ns + "Report")
-			                       .Attr(x => x.Name)
-			                       .Elem(x => x.Width)
-			                       .Elem(x => x.Body);
+			var scope = Scope.New(ns)
+			                 .Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
+			                 .Enum(DataElementOutput.Auto);
 
-			var body = ElementDef.New<Body>(ns + "Body")
-			                     .Elem(x => x.Height)
-			                     .Elem(x => x.ReportItems);
+			scope.Elem<Report>()
+			     .Attr(x => x.Name)
+			     .Elem(x => x.Width)
+			     .Elem(x => x.Body);
 
-			var item = ElementDef.New<ReportItem>(ns + "ReportItem")
-			                     .Attr(x => x.Name)
-			                     .Elem(x => x.DataElementName)
-			                     .Elem(x => x.DataElementOutput);
+			scope.Elem<Body>()
+			     .Elem(x => x.Height)
+			     .Elem(x => x.ReportItems);
 
-			var textbox = item.Sub<TextBox>(ns + "TextBox")
-			                  .Elem(x => x.Value);
+			var item = scope.Elem<ReportItem>()
+			                .Attr(x => x.Name)
+			                .Elem(x => x.DataElementName)
+			                .Elem(x => x.DataElementOutput);
 
-			var rect = item.Sub<Rectangle>(ns + "Rectangle")
-			               .Elem(x => x.ReportItems);
+			item.Sub<TextBox>()
+			    .Elem(x => x.Value);
 
-			_serializer = XSerializer.New(report, body, textbox, rect)
-			                         .Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
-			                         .Enum(DataElementOutput.Auto);
+			item.Sub<Rectangle>()
+			    .Elem(x => x.ReportItems);
+
+			_serializer = XSerializer.New(scope);
 		}
 
 		[Test]

@@ -8,15 +8,18 @@ namespace XmlSerialization
 {
 	public sealed class ElementDef<T> : IElementDef
 	{
+		private readonly Scope _scope;
 		private readonly DefCollection<IPropertyDef> _attributes = new DefCollection<IPropertyDef>();
 		private readonly DefCollection<IPropertyDef> _elements = new DefCollection<IPropertyDef>();
 		private readonly IDictionary<int,string> _propertyIndex = new Dictionary<int, string>();
 		private Func<IDictionary<string, object>, T> _create;
 
-		public ElementDef(XName name)
+		internal ElementDef(Scope scope, XName name)
 		{
+			if (scope == null) throw new ArgumentNullException("scope");
 			if (name == null) throw new ArgumentNullException("name");
 
+			_scope = scope;
 			Name = name;
 		}
 
@@ -79,10 +82,16 @@ namespace XmlSerialization
 
 		public ElementDef<TElement> Sub<TElement>(XName name)
 		{
-			var elem = new ElementDef<TElement>(name);
+			var elem = _scope.Elem<TElement>(name);
+			// copy only attributes and elements
 			elem._attributes.AddRange(_attributes);
 			elem._elements.AddRange(_elements);
 			return elem;
+		}
+
+		public ElementDef<TElement> Sub<TElement>()
+		{
+			return Sub<TElement>(Name.Namespace + typeof(TElement).Name);
 		}
 
 		public ElementDef<T> Init(Func<IDictionary<string, object>, T> create)
@@ -237,14 +246,6 @@ namespace XmlSerialization
 			{
 				return Name.ToString();
 			}
-		}
-	}
-
-	public static class ElementDef
-	{
-		public static ElementDef<T> New<T>(XName name)
-		{
-			return new ElementDef<T>(name);
 		}
 	}
 }

@@ -11,11 +11,13 @@ namespace XmlSerialization.Tests
 		public void JustAttr()
 		{
 			var ns = XNamespace.None;
-			var item = ElementDef.New<Item>(ns + "Item")
-			                     .Attr(x => x.Name, 0)
-			                     .Init<string>(name => new Item(name));
+			var scope = Scope.New(ns);
 
-			var serializer = XSerializer.New(item);
+			scope.Elem<Item>()
+			     .Attr(x => x.Name, 0)
+			     .Init<string>(name => new Item(name));
+
+			var serializer = XSerializer.New(scope);
 
 			var item1 = new Item("test");
 			var xml = serializer.ToXmlString(item1, true);

@@ -15,93 +15,20 @@ namespace XmlSerialization
 	/// </summary>
 	public sealed partial class XSerializer
 	{
-		private sealed class TypeDef
+		private readonly Scope _rootScope;
+
+		private XSerializer(Scope scope)
 		{
-			private readonly Func<string, object> _read;
-			private readonly Func<object, string> _write;
+			if (scope == null) throw new ArgumentNullException("scope");
 
-			public TypeDef(Func<string, object> read, Func<object, string> write)
-			{
-				_read = read;
-				_write = write;
-			}
-
-			public object Read(string value)
-			{
-				return _read(value);
-			}
-
-			public string Write(object value)
-			{
-				return _write(value);
-			}
+			_rootScope = scope;
 		}
 
-		private readonly IDictionary<Type, TypeDef> _types = new Dictionary<Type, TypeDef>();
-		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
-		private readonly IDictionary<XName, IElementDef> _elementDefsByName = new Dictionary<XName, IElementDef>();
+		public static XSerializer New(Scope scope)
+		{
+			return new XSerializer(scope);
+		}
 		
-		private XSerializer(IEnumerable<IElementDef> elements)
-		{
-			RegisterTypes();
-
-			foreach (var element in elements)
-				Elem(element);
-		}
-
-		private void RegisterTypes()
-		{
-			Type(x => x, x => x);
-			Type(x => Convert.ToBoolean(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToSByte(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToByte(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToInt16(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToUInt16(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToInt32(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToUInt32(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToInt64(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToUInt64(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToSingle(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToDouble(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToDecimal(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			Type(x => Convert.ToDateTime(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x, XmlDateTimeSerializationMode.Utc));
-		}
-
-		public static XSerializer New(params IElementDef[] defs)
-		{
-			return new XSerializer(defs);
-		}
-
-		/// <summary>
-		/// Registers simple type serializable to string.
-		/// </summary>
-		/// <typeparam name="T">The type to register.</typeparam>
-		/// <param name="read">The parser.</param>
-		/// <param name="write">The writer.</param>
-		public XSerializer Type<T>(Func<string, T> read, Func<T, string> write)
-		{
-			_types.Add(typeof(T), new TypeDef(s => read(s), v => write((T)v)));
-			return this;
-		}
-
-		public XSerializer Enum<T>(T defval, bool ignoreCase)
-		{
-			var type = typeof(T);
-			_types.Add(type, new TypeDef(s => System.Enum.Parse(type, s, ignoreCase), v => Equals(v, defval) ? "" : v.ToString()));
-			return this;
-		}
-
-		public XSerializer Enum<T>(T defval)
-		{
-			return Enum(defval, true);
-		}
-
-		public XSerializer Elem(IElementDef def)
-		{
-			_elementDefs.Add(def.Type, def);
-			_elementDefsByName.Add(def.Name, def);
-			return this;
-		}
 
 		/// <summary>
 		/// Parses specified xml string.
@@ -142,7 +69,7 @@ namespace XmlSerialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = _elementDefs[obj.GetType()];
+			var def = _rootScope.ElemDef(obj.GetType());
 			ReadElement(reader, obj, def);
 		}
 
@@ -157,7 +84,7 @@ namespace XmlSerialization
 
 			while (reader.NodeType != XmlNodeType.Element && reader.Read()){}
 
-			var def = _elementDefsByName[reader.CurrentXName()];
+			var def = _rootScope.ElemDef(reader.CurrentXName());
 			if (def.IsImmutable)
 			{
 				return (T)ReadImmutable(reader, def);
@@ -176,7 +103,7 @@ namespace XmlSerialization
 		/// <param name="obj">The object to serialize.</param>
 		public void Write<T>(XmlWriter writer, T obj)
 		{
-			var def = _elementDefs[obj.GetType()];
+			var def = _rootScope.ElemDef(obj.GetType());
 			WriteElement(writer, obj, def, def.Name);
 		}
 		
@@ -227,7 +154,7 @@ namespace XmlSerialization
 					var property = def.Attributes[name];
 					if (property != null)
 					{
-						var value = Parse(property.Type, reader.Value);
+						var value = _rootScope.Parse(property.Type, reader.Value);
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 					}
 				} while (reader.MoveToNextAttribute());
@@ -271,16 +198,11 @@ namespace XmlSerialization
 		{
 			var type = property.Type;
 
-			TypeDef simpleType;
-			if (_types.TryGetValue(type, out simpleType))
-			{
-				var s = reader.ReadString();
-				value = simpleType.Read(s);
+			if (_rootScope.TryReadString(reader, type, out value))
 				return true;
-			}
 
-			IElementDef elementDef;
-			if (_elementDefs.TryGetValue(type, out elementDef))
+			var elementDef = _rootScope.ElemDef(type);
+			if (elementDef != null)
 			{
 				if (elementDef.IsImmutable)
 				{
@@ -372,7 +294,7 @@ namespace XmlSerialization
 			var name = def != null ? def.Name : null;
 
 			string s;
-			if (TryConvertToString(value, out s))
+			if (_rootScope.TryConvertToString(value, out s))
 			{
 				if (string.IsNullOrEmpty(s)) return;
 				writer.WriteElementString(name.LocalName, name.NamespaceName, s);
@@ -396,8 +318,8 @@ namespace XmlSerialization
 				return;
 			}
 
-			IElementDef elementDef;
-			if (_elementDefs.TryGetValue(value.GetType(), out elementDef))
+			var elementDef = _rootScope.ElemDef(value.GetType());
+			if (elementDef != null)
 			{
 				WriteElement(writer, value, elementDef, name);
 				return;
@@ -406,49 +328,15 @@ namespace XmlSerialization
 			throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", def.Name, def.Type));
 		}
 
-		private object Parse(Type type, string s)
-		{
-			TypeDef def;
-			if (!_types.TryGetValue(type, out def))
-				throw new NotSupportedException();
-			return def.Read(s);
-		}
-
 		private string ToString(object value)
 		{
 			if (value == null) return string.Empty;
 
 			string s;
-			if (TryConvertToString(value, out s))
+			if (_rootScope.TryConvertToString(value, out s))
 				return s;
 
 			return Convert.ToString(value, CultureInfo.InvariantCulture);
-		}
-
-		private bool TryConvertToString(object value, out string result)
-		{
-			if (value == null)
-			{
-				result = null;
-				return false;
-			}
-
-			TypeDef def;
-			var type = value.GetType();
-			if (_types.TryGetValue(type, out def))
-			{
-				result = def.Write(value);
-				return true;
-			}
-
-			if (value is Enum)
-			{
-				result = value.ToString();
-				return true;
-			}
-
-			result = null;
-			return false;
 		}
 
 		private static Type FindIEnumerable(Type type)
@@ -490,8 +378,8 @@ namespace XmlSerialization
 
 		private Type GetElementType(XName name)
 		{
-			IElementDef def;
-			return _elementDefsByName.TryGetValue(name, out def) ? def.Type : null;
+			var def = _rootScope.ElemDef(name);
+			return def != null ? def.Type : null;
 		}
 	}
 }
