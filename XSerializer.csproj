@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="xserializer.build" />
     <None Include="XSerializer.nuspec">
       <SubType>Designer</SubType>
     </None>

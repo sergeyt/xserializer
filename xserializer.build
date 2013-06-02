@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net" name="XSerializer" default="rebuild">
+
+	<property name="srcdir" value="${project::get-base-directory()}" unless="${property::exists('project.dir')}"/>
+
+	<!-- input properties -->
+	<property name="buildroot" value="${srcdir}/build" unless="${property::exists('buildroot')}"/>
+	<property name="runtime" value="clr" unless="${property::exists('runtime')}"/>
+	<property name="debug" value="false" unless="${property::exists('debug')}"/>
+	<property name="config" value="release"/>
+	<property name="delaysign" value="false" unless="${property::exists('delaysign')}"/>
+	<property name="assembly" value="xserializer"/>
+	<property name="define" value=""/>
+
+	<if test="${debug}">
+		<property name="define" value="DEBUG"/>
+		<property name="config" value="debug"/>
+	</if>
+	
+	<property name="outdir" value="${buildroot}/${config}"/>
+
+	<property name="nant.settings.currentframework" value="net-3.5" />
+	<if test="${runtime == 'mono'}">
+		<property name="nant.settings.currentframework" value="mono-3.5" />
+	</if>
+
+	<target name="release">
+		<property name="config" value="release"/>
+		<property name="define" value=""/>
+		<property name="outdir" value="${buildroot}/${config}"/>
+	</target>
+
+	<target name="debug">
+		<property name="config" value="debug"/>
+		<property name="define" value="DEBUG"/>
+		<property name="outdir" value="${buildroot}/${config}"/>
+	</target>
+	
+	<target name="nunit">
+		<property name="config" value="${config}-nunit"/>
+		<property name="define" value="${debug};NUNIT"/>
+		<property name="outdir" value="${buildroot}/${config}"/>
+	</target>
+
+	<target name="build">
+		<csc target="library" output="${outdir}/${assembly}.dll"
+			 debug="${debug}" unsafe="true" define="${define}"
+			 >
+			<references>
+				<include name="System.dll"/>
+				<include name="System.Core.dll"/>
+				<include name="System.Drawing.dll"/>
+				<include name="System.Xml.dll"/>
+				<include name="System.Xml.Linq.dll"/>
+				<include name="${srcdir}/packages/NUnit.2.6.2/lib/nunit.framework.dll"/>
+			</references>
+			<sources basedir="${srcdir}">
+				<include name="**/*.cs"/>
+			</sources>
+			<resources basedir="${srcdir}" prefix="${assembly}" dynamicprefix="true" failonempty="false">
+			</resources>
+		</csc>
+	</target>
+
+	<target name="clean">
+		<delete dir="${srcdir}\obj" failonerror="false"/>
+		<delete dir="${srcdir}\bin" failonerror="false"/>
+		<delete failonerror="false">
+			<fileset basedir="${outdir}">
+				<include name="${assembly}.*"/>
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="rebuild" depends="clean, build"/>
+
+	<target name="test">
+		<nunit2>
+			<formatter type="Xml" usefile="true" extension=".xml" outputdir="${outdir}"/>
+			<formatter type="Plain"/>
+			<test assemblyname="${outdir}/${assembly}.dll"/>
+		</nunit2>
+	</target>
+
+	<target name="pack">
+		<exec program="nuget.exe" basedir=".nuget" workingdir="${srcdir}">
+			<arg value="pack"/>
+			<arg value="xserializer.nuspec"/>
+			<arg value='-OutputDirectory "${buildroot}/${config}"'/>
+		</exec>
+	</target>
+
+</project>

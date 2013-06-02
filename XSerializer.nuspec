@@ -19,6 +19,6 @@
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="bin\release\XSerializer.dll" target="lib\net35-client"/>
+		<file src="build\release\xserializer.dll" target="lib\net35-client"/>
 	</files>
 </package>
