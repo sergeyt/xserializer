@@ -12,14 +12,17 @@ namespace XmlSerialization.Tests
 		{
 			var ns = XNamespace.None;
 			var item = ElementDef.New<Item>(ns + "Item")
-			                     .Attr(x => x.Name);
+			                     .Attr(x => x.Name, 0)
+			                     .Init<string>(name => new Item(name));
 
 			var serializer = XSerializer.New(item);
 
-			var xml = serializer.ToXmlString(new Item("test"), true);
+			var item1 = new Item("test");
+			var xml = serializer.ToXmlString(item1, true);
 			Assert.AreEqual("<Item Name=\"test\" />", xml);
 
-			var obj = serializer.Parse<Item>(xml);
+			var item2 = serializer.Parse<Item>(xml);
+			Assert.AreEqual(item1.Name, item2.Name);
 		}
 
 		class Item

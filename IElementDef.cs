@@ -68,6 +68,11 @@ namespace XmlSerialization
 		Type Type { get; }
 
 		/// <summary>
+		/// Specifies whether the elemnt is immutable.
+		/// </summary>
+		bool IsImmutable { get; }
+
+		/// <summary>
 		/// Gets element attribute definitions.
 		/// </summary>
 		IDefCollection<IPropertyDef> Attributes { get; }
@@ -76,5 +81,11 @@ namespace XmlSerialization
 		/// Gets child element definitions.
 		/// </summary>
 		IDefCollection<IPropertyDef> Elements { get; }
+
+		/// <summary>
+		/// Creates new instance with specified properties.
+		/// </summary>
+		/// <param name="properties">The properties to initialize the object with.</param>
+		object Create(IDictionary<string, object> properties);
 	}
 }

@@ -13,7 +13,7 @@ namespace XmlSerialization
 	/// <summary>
 	/// Implements XML (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.
 	/// </summary>
-	public sealed class XSerializer
+	public sealed partial class XSerializer
 	{
 		private sealed class TypeDef
 		{
@@ -94,14 +94,6 @@ namespace XmlSerialization
 			return this;
 		}
 
-		private IElementDef ResolveElementDef(Type type)
-		{
-			IElementDef def;
-			if (!_elementDefs.TryGetValue(type, out def))
-				throw new XmlException(string.Format("Unknown type: {0}", type));
-			return def;
-		}
-
 		/// <summary>
 		/// Parses specified xml string.
 		/// </summary>
@@ -141,7 +133,7 @@ namespace XmlSerialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = ResolveElementDef(obj.GetType());
+			var def = _elementDefs[obj.GetType()];
 			ReadElement(reader, obj, def);
 		}
 
@@ -157,10 +149,13 @@ namespace XmlSerialization
 			while (reader.NodeType != XmlNodeType.Element && reader.Read()){}
 
 			var def = _elementDefsByName[reader.CurrentXName()];
-			// TODO: support immutable objects
-			var obj = Activator.CreateInstance(def.Type);
-			ReadElement(reader, obj, def);
+			if (def.IsImmutable)
+			{
+				return (T)ReadImmutable(reader, def);
+			}
 
+			var obj = Activator.CreateInstance(typeof(T));
+			ReadElement(reader, obj, def);
 			return (T)obj;
 		}
 
@@ -172,7 +167,7 @@ namespace XmlSerialization
 		/// <param name="obj">The object to serialize.</param>
 		public void Write<T>(XmlWriter writer, T obj)
 		{
-			var def = ResolveElementDef(obj.GetType());
+			var def = _elementDefs[obj.GetType()];
 			WriteElement(writer, obj, def, def.Name);
 		}
 		
@@ -195,6 +190,22 @@ namespace XmlSerialization
 
 		private void ReadElement(XmlReader reader, object obj, IElementDef def)
 		{
+			foreach (var p in ReadProperties(reader, obj, def))
+			{
+				var property = p.Key;
+				if (!property.IsReadOnly)
+					property.SetValue(obj, p.Value);
+			}
+		}
+
+		private object ReadImmutable(XmlReader reader, IElementDef def)
+		{
+			var props = ReadProperties(reader, null, def).ToDictionary(x => x.Key.Name.LocalName, x => x.Value);
+			return def.Create(props);
+		}
+
+		private IEnumerable<KeyValuePair<IPropertyDef, object>> ReadProperties(XmlReader reader, object obj, IElementDef def)
+		{
 			if (!reader.IsStartElement(def.Name.LocalName, def.Name.NamespaceName))
 				throw new XmlException(string.Format("Xml element not foud: {0}", def.Name));
 
@@ -204,31 +215,25 @@ namespace XmlSerialization
 				do
 				{
 					var name = reader.CurrentXName();
-					var attr = def.Attributes[name];
-					if (attr != null)
+					var property = def.Attributes[name];
+					if (property != null)
 					{
-						var value = Parse(attr.Type, reader.Value);
-						attr.SetValue(obj, value);
+						var value = Parse(property.Type, reader.Value);
+						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 					}
 				} while (reader.MoveToNextAttribute());
 
 				reader.MoveToElement();
 			}
 
-			if (reader.IsEmptyElement) return;
+			if (reader.IsEmptyElement) yield break;
 
 			// read child elements
 			int depth = reader.Depth;
 			reader.Read(); // move to first child node
 
-			while (!(reader.NodeType == XmlNodeType.EndElement && reader.Depth == depth))
+			while (reader.MoveToNextElement(depth))
 			{
-				if (reader.NodeType != XmlNodeType.Element)
-				{
-					reader.Read();
-					continue;
-				}
-
 				var name = reader.CurrentXName();
 				var property = def.Elements[name];
 				if (property == null) // unknown type
@@ -238,17 +243,22 @@ namespace XmlSerialization
 					continue;
 				}
 
-				if (ReadValue(reader, def, obj, property))
-					continue;
-
-				// todo: trace warning
-				reader.Skip();
+				object value;
+				if (ReadValue(reader, obj, def, property, out value))
+				{
+					yield return new KeyValuePair<IPropertyDef, object>(property, value);
+				}
+				else
+				{
+					// todo: trace warning
+					reader.Skip();
+				}
 			}
 
 			reader.ReadEndElement();
 		}
 
-		private bool ReadValue(XmlReader reader, IElementDef def, object obj, IPropertyDef property)
+		private bool ReadValue(XmlReader reader, object obj, IElementDef def, IPropertyDef property, out object value)
 		{
 			var type = property.Type;
 
@@ -256,51 +266,57 @@ namespace XmlSerialization
 			if (_types.TryGetValue(type, out simpleType))
 			{
 				var s = reader.ReadString();
-				var value = simpleType.Read(s);
-				property.SetValue(obj, value);
+				value = simpleType.Read(s);
 				return true;
 			}
 
 			IElementDef elementDef;
 			if (_elementDefs.TryGetValue(type, out elementDef))
 			{
-				var element = CreateElement(property, obj);
-				ReadElement(reader, element, elementDef);
+				if (elementDef.IsImmutable)
+				{
+					value = ReadImmutable(reader, elementDef);
+				}
+				else
+				{
+					value = CreateElement(property, obj);
+					ReadElement(reader, value, elementDef);
+				}
 				return true;
 			}
 
 			if (type.IsEnum)
 			{
 				var s = reader.ReadString();
-				var value = Enum.Parse(type, s);
-				property.SetValue(obj, value);
+				value = Enum.Parse(type, s);
 				return true;
 			}
 
 			var ienum = FindIEnumerable(type);
 			if (ienum != null)
 			{
-				var collection = CreateElement(property, obj);
-				if (collection == null) throw new NotSupportedException();
 				var elementType = ienum.GetGenericArguments()[0];
 				elementDef = new CollectionDef(this, property.Name, type, elementType);
-				ReadElement(reader, collection, elementDef);
+				value = def.IsImmutable ? CreateCollection(elementType) : CreateElement(property, obj);
+				ReadElement(reader, value, elementDef);
 				return true;
 			}
 
+			value = null;
 			return false;
+		}
+
+		private static object CreateCollection(Type elementType)
+		{
+			var listType = typeof(List<>).MakeGenericType(elementType);
+			return Activator.CreateInstance(listType);
 		}
 
 		private static object CreateElement(IPropertyDef def, object target)
 		{
 			if (def == null) throw new NotSupportedException();
-			if (def.IsReadOnly)
-			{
-				return def.GetValue(target);
-			}
-			var value = Activator.CreateInstance(def.Type);
-			def.SetValue(target, value);
-			return value;
+			var element = target != null ? def.GetValue(target) : null;
+			return element ?? Activator.CreateInstance(def.Type);
 		}
 
 		private void WriteElement(XmlWriter writer, object obj, IElementDef def, XName name)
@@ -467,99 +483,6 @@ namespace XmlSerialization
 		{
 			IElementDef def;
 			return _elementDefsByName.TryGetValue(name, out def) ? def.Type : null;
-		}
-
-		private sealed class CollectionDef : IElementDef
-		{
-			private readonly XSerializer _serializer;
-			private readonly Type _elementType;
-			private readonly ItemDefCollection _elements;
-
-			public CollectionDef(XSerializer serializer, XName name, Type type, Type elementType)
-			{
-				_serializer = serializer;
-				_elementType = elementType;
-				Name = name;
-				Type = type;
-				_elements = new ItemDefCollection(this);
-			}
-
-			public XName Name { get; private set; }
-			public Type Type { get; private set; }
-			public IDefCollection<IPropertyDef> Attributes { get { return DefCollection<IPropertyDef>.Empty; } }
-			public IDefCollection<IPropertyDef> Elements { get { return _elements; } }
-
-			private Type GetElementType(XName name)
-			{
-				if (_elementType.IsSealed) return _elementType;
-
-				// TODO: determine whether there are elementDefs for subclasses
-				if (_elementType.IsAbstract)
-				{
-					return _serializer.GetElementType(name);
-				}
-				
-				return _elementType;
-			}
-
-			private sealed class ItemDefCollection : IDefCollection<IPropertyDef>
-			{
-				private readonly CollectionDef _collectionDef;
-
-				public ItemDefCollection(CollectionDef collectionDef)
-				{
-					_collectionDef = collectionDef;
-				}
-
-				public IEnumerator<IPropertyDef> GetEnumerator()
-				{
-					yield break;
-				}
-
-				IEnumerator IEnumerable.GetEnumerator()
-				{
-					return GetEnumerator();
-				}
-
-				public IPropertyDef this[XName name]
-				{
-					get { return new ItemDef(_collectionDef, name); }
-				}
-			}
-
-			private sealed class ItemDef : IPropertyDef
-			{
-				private readonly CollectionDef _collectionDef;
-
-				public ItemDef(CollectionDef collectionDef, XName name)
-				{
-					_collectionDef = collectionDef;
-					Name = name;
-				}
-
-				public XName Name { get; private set; }
-				public Type Type { get { return _collectionDef.GetElementType(Name); } }
-
-				public bool IsReadOnly { get { return false; } }
-
-				public object GetValue(object target)
-				{
-					throw new NotSupportedException();
-				}
-
-				public void SetValue(object target, object value)
-				{
-					var list = target as IList;
-					if (list != null)
-					{
-						list.Add(value);
-						return;
-					}
-
-					// TODO: optimize with expression tree or reflection emit
-					target.GetType().GetMethod("Add").Invoke(target, new [] {value});
-				}
-			}
 		}
 	}
 }

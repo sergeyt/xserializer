@@ -45,10 +45,11 @@
   <ItemGroup>
     <Compile Include="DefCollection.cs" />
     <Compile Include="ElementDef.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="IElementDef.cs" />
     <Compile Include="Tests\ImmutableObjectsTests.cs" />
     <Compile Include="Tests\XSerializerTests.cs" />
-    <Compile Include="XmlExtensions.cs" />
+    <Compile Include="XSerializer.CollectionDef.cs" />
     <Compile Include="XSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
