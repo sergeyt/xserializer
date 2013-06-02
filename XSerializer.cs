@@ -80,17 +80,26 @@ namespace XmlSerialization
 		/// <param name="write">The writer.</param>
 		public XSerializer Type<T>(Func<string, T> read, Func<T, string> write)
 		{
-			_types.Add(typeof(T), new TypeDef(s => read(s), o => write((T)o)));
+			_types.Add(typeof(T), new TypeDef(s => read(s), v => write((T)v)));
 			return this;
+		}
+
+		public XSerializer Enum<T>(T defval, bool ignoreCase)
+		{
+			var type = typeof(T);
+			_types.Add(type, new TypeDef(s => System.Enum.Parse(type, s, ignoreCase), v => Equals(v, defval) ? "" : v.ToString()));
+			return this;
+		}
+
+		public XSerializer Enum<T>(T defval)
+		{
+			return Enum(defval, true);
 		}
 
 		public XSerializer Elem(IElementDef def)
 		{
 			_elementDefs.Add(def.Type, def);
-
-			if (!_elementDefsByName.ContainsKey(def.Name))
-				_elementDefsByName.Add(def.Name, def);
-
+			_elementDefsByName.Add(def.Name, def);
 			return this;
 		}
 
@@ -288,7 +297,7 @@ namespace XmlSerialization
 			if (type.IsEnum)
 			{
 				var s = reader.ReadString();
-				value = Enum.Parse(type, s);
+				value = System.Enum.Parse(type, s);
 				return true;
 			}
 

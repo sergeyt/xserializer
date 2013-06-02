@@ -100,8 +100,7 @@ namespace XmlSerialization
 						return;
 					}
 
-					// TODO: optimize with expression tree or reflection emit
-					target.GetType().GetMethod("Add").Invoke(target, new[] { value });
+					target.GetType().GetMethod("Add", new[] {value.GetType()}).Invoke(target, new[] {value});
 				}
 			}
 		}

@@ -1,4 +1,5 @@
 ﻿#if NUNIT
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml.Linq;
@@ -15,6 +16,7 @@ namespace XmlSerialization.Tests
 		public void Init()
 		{
 			var ns = XNamespace.Get("http://test.com");
+
 			var report = ElementDef.New<Report>(ns + "Report")
 			                       .Attr(x => x.Name)
 			                       .Elem(x => x.Width)
@@ -24,16 +26,20 @@ namespace XmlSerialization.Tests
 			                     .Elem(x => x.Height)
 			                     .Elem(x => x.ReportItems);
 
-			var item = ElementDef.New<ReportItem>(ns + "ReportItemBase")
+			var item = ElementDef.New<ReportItem>(ns + "ReportItem")
 			                     .Attr(x => x.Name)
-								 .Elem(x => x.DataElementName)
-								 .Elem(x => x.DataElementOutput);
+			                     .Elem(x => x.DataElementName)
+			                     .Elem(x => x.DataElementOutput);
 
 			var textbox = item.Sub<TextBox>(ns + "TextBox")
 			                  .Elem(x => x.Value);
 
-			_serializer = XSerializer.New(report, body, textbox)
-			                         .Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "");
+			var rect = item.Sub<Rectangle>(ns + "Rectangle")
+			               .Elem(x => x.ReportItems);
+
+			_serializer = XSerializer.New(report, body, textbox, rect)
+			                         .Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
+			                         .Enum(DataElementOutput.Auto);
 		}
 
 		[Test]
@@ -45,31 +51,48 @@ namespace XmlSerialization.Tests
 		}
 
 		[Test]
-		public void SimpleReport()
+		public void WriteReadReport()
 		{
 			var textbox1 = new TextBox {Name = "textbox1", Value = "hello", DataElementOutput = DataElementOutput.NoContent};
+			var textbox2 = new TextBox {Name = "textbox2", Value = "world"};
+			var rect1 = new Rectangle
+				{
+					ReportItems = {textbox2}
+				};
 			var report = new Report
 				{
 					Name = "report",
 					Width = "12in",
 					Body =
 						{
-							ReportItems = {textbox1}
+							ReportItems = {textbox1, rect1}
 						}
 				};
 			
 			var xml = _serializer.ToXmlString(report, true);
-			Assert.AreEqual("<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox></ReportItems></Body></Report>", xml);
+			Assert.AreEqual("<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>", xml);
 
 			var report2 = _serializer.Parse<Report>(xml);
+
 			Assert.AreEqual(report.Name, report2.Name);
 			Assert.AreEqual(report.Width, report2.Width);
 			Assert.AreEqual(report.Body.ReportItems.Count, report2.Body.ReportItems.Count);
-			var textbox2 = report2.Body.ReportItems[0] as TextBox;
-			Assert.NotNull(textbox2);
-			Assert.AreEqual(textbox1.Name, textbox2.Name);
-			Assert.AreEqual(textbox1.Value, textbox2.Value);
-			Assert.AreEqual(textbox1.DataElementOutput, textbox2.DataElementOutput);
+
+			var tb1 = report2.Body.ReportItems[0] as TextBox;
+			Assert.NotNull(tb1);
+			Assert.AreEqual(textbox1.Name, tb1.Name);
+			Assert.AreEqual(textbox1.Value, tb1.Value);
+			Assert.AreEqual(textbox1.DataElementOutput, tb1.DataElementOutput);
+
+			var rect2 = report2.Body.ReportItems[1] as Rectangle;
+			Assert.NotNull(rect2);
+			Assert.AreEqual(rect1.ReportItems.Count, rect2.ReportItems.Count);
+
+			var tb2 = rect2.ReportItems[0] as TextBox;
+			Assert.NotNull(tb2);
+			Assert.AreEqual(textbox2.Name, tb2.Name);
+			Assert.AreEqual(textbox2.Value, tb2.Value);
+			Assert.AreEqual(textbox2.DataElementOutput, tb2.DataElementOutput);
 		}
 
 		public class Report
@@ -89,12 +112,12 @@ namespace XmlSerialization.Tests
 		{
 			public Body()
 			{
-				ReportItems = new List<ReportItem>();
+				ReportItems = new ReportItemCollection();
 			}
 
 			public Length Height { get; set; }
 
-			public IList<ReportItem> ReportItems { get; private set; }
+			public ReportItemCollection ReportItems { get; private set; }
 		}
 
 		public enum DataElementOutput { Auto, NoContent }
@@ -106,9 +129,55 @@ namespace XmlSerialization.Tests
 			public DataElementOutput DataElementOutput { get; set; }
 		}
 
+		public class ReportItemCollection : IEnumerable<ReportItem>
+		{
+			private readonly List<ReportItem> _list = new List<ReportItem>();
+
+			public int Count
+			{
+				get { return _list.Count; }
+			}
+
+			public ReportItem this[int index]
+			{
+				get { return _list[index]; }
+			}
+
+			public IEnumerator<ReportItem> GetEnumerator()
+			{
+				return _list.GetEnumerator();
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+
+			public void Add(ReportItem item)
+			{
+				_list.Add(item);
+			}
+
+			// intentionally for testing
+			public void Add(TextBox item)
+			{
+				_list.Add(item);
+			}
+		}
+
 		public class TextBox : ReportItem
 		{
 			public string Value { get; set; }
+		}
+
+		public class Rectangle : ReportItem
+		{
+			public Rectangle()
+			{
+				ReportItems = new ReportItemCollection();
+			}
+
+			public ReportItemCollection ReportItems { get; private set; }
 		}
 
 		public struct Length
