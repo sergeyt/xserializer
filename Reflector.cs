@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace TsvBits.XmlSerialization
+{
+	/// <summary>
+	/// Reflection helpers.
+	/// </summary>
+	internal static class Reflector
+	{
+		public static Type FindIEnumerable(Type type)
+		{
+			if (type == null || type == typeof(string))
+				return null;
+
+			if (type.IsArray)
+				return typeof(IEnumerable<>).MakeGenericType(type.GetElementType());
+
+			if (type.IsGenericType)
+			{
+				var ienum = type.GetGenericArguments()
+				                .Select(x => typeof(IEnumerable<>).MakeGenericType(x))
+				                .FirstOrDefault(x => x.IsAssignableFrom(type));
+				if (ienum != null)
+				{
+					return ienum;
+				}
+			}
+
+			var ifaces = type.GetInterfaces();
+			if (ifaces.Length > 0)
+			{
+				var ienum = ifaces.Select(x => FindIEnumerable(x)).FirstOrDefault(x => x != null);
+				if (ienum != null)
+				{
+					return ienum;
+				}
+			}
+
+			if (type.BaseType != null && type.BaseType != typeof(object))
+			{
+				return FindIEnumerable(type.BaseType);
+			}
+
+			return null;
+		}
+	}
+}

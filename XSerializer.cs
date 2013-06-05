@@ -81,17 +81,10 @@ namespace TsvBits.XmlSerialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			while (reader.NodeType != XmlNodeType.Element && reader.Read()){}
-
+			reader.MoveToFirstElement();
+			
 			var def = _rootScope.ElemDef(reader.CurrentXName());
-			if (def.IsImmutable)
-			{
-				return (T)ReadImmutable(reader, def);
-			}
-
-			var obj = Activator.CreateInstance(typeof(T));
-			ReadElement(reader, obj, def);
-			return (T)obj;
+			return (T)ReadElement(reader, def);
 		}
 
 		/// <summary>
@@ -121,6 +114,18 @@ namespace TsvBits.XmlSerialization
 			using (var writer = XmlWriter.Create(output, xws))
 				Write(writer, obj);
 			return output.ToString();
+		}
+
+		private object ReadElement(XmlReader reader, IElementDef def)
+		{
+			if (def.IsImmutable)
+			{
+				return ReadImmutable(reader, def);
+			}
+
+			var obj = Activator.CreateInstance(def.Type);
+			ReadElement(reader, obj, def);
+			return obj;
 		}
 
 		private void ReadElement(XmlReader reader, object obj, IElementDef def)
@@ -218,16 +223,16 @@ namespace TsvBits.XmlSerialization
 			if (type.IsEnum)
 			{
 				var s = reader.ReadString();
-				value = System.Enum.Parse(type, s);
+				value = Enum.Parse(type, s);
 				return true;
 			}
 
-			var ienum = FindIEnumerable(type);
+			var ienum = Reflector.FindIEnumerable(type);
 			if (ienum != null)
 			{
 				var elementType = ienum.GetGenericArguments()[0];
 				elementDef = new CollectionDef(this, property.Name, type, elementType);
-				value = def.IsImmutable ? CreateCollection(elementType) : CreateElement(property, obj);
+				value = def.IsImmutable ? CreateList(elementType) : CreateElement(property, obj);
 				ReadElement(reader, value, elementDef);
 				return true;
 			}
@@ -236,7 +241,7 @@ namespace TsvBits.XmlSerialization
 			return false;
 		}
 
-		private static object CreateCollection(Type elementType)
+		private static object CreateList(Type elementType)
 		{
 			var listType = typeof(List<>).MakeGenericType(elementType);
 			return Activator.CreateInstance(listType);
@@ -264,23 +269,11 @@ namespace TsvBits.XmlSerialization
 				writer.WriteAttributeString(attr.Name.LocalName, attr.Name.NamespaceName, s);
 			}
 
-			var collection = obj as IEnumerable;
-			if (collection != null)
+			foreach (var elem in def.Elements)
 			{
-				// TODO: support custom collections with own properties
-				foreach (var item in collection)
-				{
-					WriteValue(writer, null, item);
-				}
-			}
-			else
-			{
-				foreach (var elem in def.Elements)
-				{
-					var value = elem.GetValue(obj);
-					if (value == null) continue;
-					WriteValue(writer, elem, value);
-				}
+				var value = elem.GetValue(obj);
+				if (value == null) continue;
+				WriteValue(writer, elem, value);
 			}
 			
 			writer.WriteEndElement();
@@ -297,6 +290,13 @@ namespace TsvBits.XmlSerialization
 			{
 				if (string.IsNullOrEmpty(s)) return;
 				writer.WriteElementString(name.LocalName, name.NamespaceName, s);
+				return;
+			}
+
+			var elementDef = _rootScope.ElemDef(value.GetType());
+			if (elementDef != null)
+			{
+				WriteElement(writer, value, elementDef, name);
 				return;
 			}
 
@@ -317,13 +317,6 @@ namespace TsvBits.XmlSerialization
 				return;
 			}
 
-			var elementDef = _rootScope.ElemDef(value.GetType());
-			if (elementDef != null)
-			{
-				WriteElement(writer, value, elementDef, name);
-				return;
-			}
-
 			throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", def.Name, def.Type));
 		}
 
@@ -336,43 +329,6 @@ namespace TsvBits.XmlSerialization
 				return s;
 
 			return Convert.ToString(value, CultureInfo.InvariantCulture);
-		}
-
-		private static Type FindIEnumerable(Type type)
-		{
-			if (type == null || type == typeof(string))
-				return null;
-
-			if (type.IsArray)
-				return typeof(IEnumerable<>).MakeGenericType(type.GetElementType());
-
-			if (type.IsGenericType)
-			{
-				foreach (var arg in type.GetGenericArguments())
-				{
-					var ienum = typeof(IEnumerable<>).MakeGenericType(arg);
-					if (ienum.IsAssignableFrom(type))
-					{
-						return ienum;
-					}
-				}
-			}
-
-			var ifaces = type.GetInterfaces();
-			if (ifaces.Length > 0)
-			{
-				foreach (var ienum in ifaces.Select(iface => FindIEnumerable(iface)).Where(ienum => ienum != null))
-				{
-					return ienum;
-				}
-			}
-
-			if (type.BaseType != null && type.BaseType != typeof(object))
-			{
-				return FindIEnumerable(type.BaseType);
-			}
-
-			return null;
 		}
 
 		private Type GetElementType(XName name)

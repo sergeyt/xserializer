@@ -13,6 +13,11 @@ namespace TsvBits.XmlSerialization
 			return XNamespace.Get(reader.NamespaceURI).GetName(reader.LocalName);
 		}
 
+		internal static void MoveToFirstElement(this XmlReader reader)
+		{
+			while (reader.NodeType != XmlNodeType.Element && reader.Read()){}
+		}
+
 		internal static bool MoveToNextElement(this XmlReader reader, int depth)
 		{
 			do
