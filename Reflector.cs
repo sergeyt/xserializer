@@ -53,5 +53,12 @@ namespace TsvBits.XmlSerialization
 
 			return null;
 		}
+
+		public static Type GetItemType(Type type)
+		{
+			if (type.IsArray) return type.GetElementType();
+			var ienum = FindIEnumerable(type);
+			return ienum.GetGenericArguments()[0];
+		}
 	}
 }

@@ -131,8 +131,16 @@ namespace TsvBits.XmlSerialization
 			var def = FindType(type);
 			if (def != null)
 			{
-				var s = reader.ReadString();
-				value = def.Read(s);
+				if (reader.IsEmptyElement)
+				{
+					value = def.Read(null);
+					reader.Read();
+				}
+				else
+				{
+					var s = reader.ReadString();
+					value = def.Read(s);
+				}
 				return true;
 			}
 			value = null;
@@ -143,7 +151,7 @@ namespace TsvBits.XmlSerialization
 		{
 			if (value == null)
 			{
-				result = null;
+				result = "";
 				return false;
 			}
 

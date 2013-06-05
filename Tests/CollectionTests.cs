@@ -8,12 +8,16 @@ namespace TsvBits.XmlSerialization.Tests
 	public class CollectionTests
 	{
 		[TestCase("a", "b", "c")]
-		public void TestObjectContainer(string a, string b, string c)
+		[TestCase("a", null, "c")]
+		[TestCase(1, 2, 3)]
+		[TestCase(1, null, 3)]
+		public void TestObjectContainer(object a, object b, object c)
 		{
-			TestCore<object>(a, b, c);
+			TestCore(a, b, c);
 		}
 
 		[TestCase("a", "b", "c")]
+		[TestCase("a", null, "c")]
 		public void TestStringContainer(string a, string b, string c)
 		{
 			TestCore(a, b, c);
