@@ -264,17 +264,15 @@ namespace TsvBits.XmlSerialization
 			{
 				var value = elem.GetValue(obj);
 				if (value == null) continue;
-				WriteValue(writer, elem, value);
+				WriteValue(writer, elem, elem.Name, value);
 			}
 			
 			writer.WriteEndElement();
 		}
 
-		private void WriteValue(XmlWriter writer, IPropertyDef def, object value)
+		private void WriteValue(XmlWriter writer, IPropertyDef def, XName name, object value)
 		{
 			if (value == null) return;
-
-			var name = def != null ? def.Name : null;
 
 			string s;
 			if (_rootScope.TryConvertToString(value, out s))
@@ -287,7 +285,7 @@ namespace TsvBits.XmlSerialization
 			var elementDef = _rootScope.ElemDef(value.GetType());
 			if (elementDef != null)
 			{
-				WriteElement(writer, value, elementDef, name);
+				WriteElement(writer, value, elementDef, elementDef.Name);
 				return;
 			}
 
@@ -302,13 +300,13 @@ namespace TsvBits.XmlSerialization
 						writer.WriteStartElement(name.LocalName, name.NamespaceName);
 						empty = false;
 					}
-					WriteValue(writer, null, item);
+					WriteValue(writer, null, def.ElementName, item);
 				}
 				if (!empty) writer.WriteEndElement();
 				return;
 			}
 
-			throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", def.Name, def.Type));
+			throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", name, value.GetType()));
 		}
 
 		private string ToString(object value)

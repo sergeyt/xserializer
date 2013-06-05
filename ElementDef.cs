@@ -22,61 +22,59 @@ namespace TsvBits.XmlSerialization
 			Name = name;
 		}
 
-		public ElementDef<T> Attr<TValue>(XName name, Func<T, TValue> getter, Action<T, TValue> setter)
+		private static IPropertyDef MakeProperty<TValue>(Expression<Func<T, TValue>> property, XNamespace ns)
 		{
-			var attr = new PropertyDef<TValue>(name, getter, setter);
-			_attributes.Add(name, attr);
+			var member = property.ResolveMember();
+			var name = ns + member.Name;
+
+			var nameAttr = member.ResolveAttribute<NameAttribute>(true);
+			if (nameAttr != null)
+			{
+				name = string.IsNullOrEmpty(nameAttr.Namespace)
+					       ? ns + nameAttr.Name
+					       : XNamespace.Get(nameAttr.Namespace) + nameAttr.Name;
+			}
+
+			var elementName = ns + member.Name.ToSingular();
+			var itemAttr = member.ResolveAttribute<ItemNameAttribute>(true);
+			if (itemAttr != null)
+			{
+				elementName = string.IsNullOrEmpty(itemAttr.Namespace)
+					              ? ns + itemAttr.Name
+					              : XNamespace.Get(itemAttr.Namespace) + itemAttr.Name;
+			}
+
+			var getter = property.Compile();
+			var setter = MethodGenerator.Set(property);
+			return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter);
+		}
+
+		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, int initIndex)
+		{
+			var def = MakeProperty(property, XNamespace.None);
+			_attributes.Add(def.Name, def);
+			if (initIndex >= 0) _propertyIndex[initIndex] = def.PropertyName;
 			return this;
 		}
 
 		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property)
 		{
-			var name = property.GetPropertyName();
-			var getter = property.Compile();
-			var setter = MethodGenerator.Set(property);
-			return Attr(XNamespace.None + name, getter, setter);
-		}
-
-		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, int initIndex)
-		{
-			var name = property.GetPropertyName();
-			var getter = property.Compile();
-			Attr(XNamespace.None + name, getter, null);
-			_propertyIndex[initIndex] = name;
-			return this;
-		}
-
-		public ElementDef<T> Elem<TValue>(XName name, Func<T, TValue> getter, Action<T, TValue> setter)
-		{
-			var elem = new PropertyDef<TValue>(name, getter, setter);
-			_elements.Add(name, elem);
-			return this;
-		}
-
-		public ElementDef<T> Elem<TValue>(XName name, Func<T, TValue> getter)
-		{
-			return Elem(name, getter, null);
-		}
-
-		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property)
-		{
-			var name = property.GetPropertyName();
-			var getter = property.Compile();
-			return Elem(Name.Namespace + name, getter, MethodGenerator.Set(property));
-		}
-
-		public ElementDef<T> Elem<TValue>(XName name, Func<T, TValue> getter, int initIndex)
-		{
-			Elem(name, getter, null);
-			_propertyIndex[initIndex] = name.LocalName;
+			Attr(property, -1);
 			return this;
 		}
 
 		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property, int initIndex)
 		{
-			var name = property.GetPropertyName();
-			var getter = property.Compile();
-			return Elem(Name.Namespace + name, getter, initIndex);
+			var def = MakeProperty(property, Name.Namespace);
+			_elements.Add(def.Name, def);
+			if (initIndex >= 0) _propertyIndex[initIndex] = def.PropertyName;
+			return this;
+		}
+
+		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property)
+		{
+			Elem(property, -1);
+			return this;
 		}
 
 		public ElementDef<TElement> Sub<TElement>(XName name)
@@ -180,7 +178,7 @@ namespace TsvBits.XmlSerialization
 			private readonly Func<T, TValue> _getter;
 			private readonly Action<T, TValue> _setter;
 
-			public PropertyDef(XName name, Func<T, TValue> getter, Action<T, TValue> setter)
+			public PropertyDef(string propertyName, XName name, XName elementName, Func<T, TValue> getter, Action<T, TValue> setter)
 			{
 				if (name == null) throw new ArgumentNullException("name");
 				if (getter == null) throw new ArgumentNullException("getter");
@@ -188,20 +186,16 @@ namespace TsvBits.XmlSerialization
 				_getter = getter;
 				_setter = setter;
 
+				PropertyName = propertyName;
 				Name = name;
+				ElementName = elementName;
 			}
 
+			public string PropertyName { get; private set; }
 			public XName Name { get; private set; }
-
-			public Type Type
-			{
-				get { return typeof(TValue); }
-			}
-
-			public bool IsReadOnly
-			{
-				get { return _setter == null; }
-			}
+			public XName ElementName { get; private set; }
+			public Type Type { get { return typeof(TValue); } }
+			public bool IsReadOnly { get { return _setter == null; } }
 
 			public object GetValue(object target)
 			{

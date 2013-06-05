@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -41,12 +42,15 @@ namespace TsvBits.XmlSerialization
 			return dictionary.Get<TValue>(propertyGetter.GetPropertyName());
 		}
 
-		public static string GetPropertyName<T,TValue>(this Expression<Func<T, TValue>> propertyGetter)
+		public static MemberInfo ResolveMember<T, TValue>(this Expression<Func<T, TValue>> propertyGetter)
 		{
 			var me = (MemberExpression)propertyGetter.Body;
-			return me.Member.Name;
+			return me.Member;
 		}
 
-		
+		public static string GetPropertyName<T,TValue>(this Expression<Func<T, TValue>> propertyGetter)
+		{
+			return propertyGetter.ResolveMember().Name;
+		}
 	}
 }

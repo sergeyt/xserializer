@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace TsvBits.XmlSerialization
 {
@@ -9,6 +10,13 @@ namespace TsvBits.XmlSerialization
 	/// </summary>
 	internal static class Reflector
 	{
+		public static T ResolveAttribute<T>(this ICustomAttributeProvider provider, bool inherit)
+			where T : Attribute
+		{
+			var attrs = (T[])provider.GetCustomAttributes(typeof(T), inherit);
+			return attrs.Length > 0 ? attrs[0] : null;
+		}
+
 		public static Type FindIEnumerable(Type type)
 		{
 			if (type == null || type == typeof(string))

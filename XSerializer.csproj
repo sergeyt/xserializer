@@ -47,9 +47,12 @@
     <Compile Include="ElementDef.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IElementDef.cs" />
+    <Compile Include="Inflector.cs" />
+    <Compile Include="Metadata.cs" />
     <Compile Include="MethodGenerator.cs" />
     <Compile Include="Reflector.cs" />
     <Compile Include="Scope.cs" />
+    <Compile Include="Tests\CollectionTests.cs" />
     <Compile Include="Tests\ImmutableObjectsTests.cs" />
     <Compile Include="Tests\FieldSerializationTests.cs" />
     <Compile Include="Tests\XSerializerTests.cs" />

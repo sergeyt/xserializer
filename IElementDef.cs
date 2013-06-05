@@ -10,15 +10,25 @@ namespace TsvBits.XmlSerialization
 	public interface IPropertyDef
 	{
 		/// <summary>
-		/// Gets property name.
+		/// Gets the original property name.
 		/// </summary>
-		XName Name { get; }
+		string PropertyName { get; }
 
 		/// <summary>
 		/// Gets property type.
 		/// </summary>
 		Type Type { get; }
 
+		/// <summary>
+		/// Gets XML name of the property.
+		/// </summary>
+		XName Name { get; }
+
+		/// <summary>
+		/// Gets XML name of collection element.
+		/// </summary>
+		XName ElementName { get; }
+		
 		/// <summary>
 		/// Specifies whether the property is readonly.
 		/// </summary>
