@@ -9,7 +9,7 @@
 	<property name="debug" value="false" unless="${property::exists('debug')}"/>
 	<property name="config" value="release"/>
 	<property name="delaysign" value="false" unless="${property::exists('delaysign')}"/>
-	<property name="assembly" value="xserializer"/>
+	<property name="assembly" value="TsvBits.XSerializer"/>
 	<property name="define" value=""/>
 
 	<if test="${debug}">

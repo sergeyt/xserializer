@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace XmlSerialization
+namespace TsvBits.XmlSerialization
 {
 	public static class XmlExtensions
 	{

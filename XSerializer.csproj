@@ -7,8 +7,8 @@
     <ProjectGuid>{5D238F55-5C9D-4862-9C96-2E3994AA54C9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XmlSerialization</RootNamespace>
-    <AssemblyName>XSerializer</AssemblyName>
+    <RootNamespace>TsvBits.XmlSerialization</RootNamespace>
+    <AssemblyName>TsvBits.XSerializer</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>

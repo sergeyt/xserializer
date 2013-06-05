@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace XmlSerialization
+namespace TsvBits.XmlSerialization
 {
 	/// <summary>
 	/// Property definition.

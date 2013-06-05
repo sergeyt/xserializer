@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace XmlSerialization
+namespace TsvBits.XmlSerialization
 {
 	public sealed class ElementDef<T> : IElementDef
 	{

@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using NUnit.Framework;
 
-namespace XmlSerialization.Tests
+namespace TsvBits.XmlSerialization.Tests
 {
 	[TestFixture]
 	public class ImmutableObjectsTests

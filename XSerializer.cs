@@ -8,7 +8,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace XmlSerialization
+namespace TsvBits.XmlSerialization
 {
 	/// <summary>
 	/// Implements XML (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.

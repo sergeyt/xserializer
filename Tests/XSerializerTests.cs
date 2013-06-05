@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using NUnit.Framework;
 
-namespace XmlSerialization.Tests
+namespace TsvBits.XmlSerialization.Tests
 {
 	[TestFixture]
 	public class XSerializerTests
