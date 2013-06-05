@@ -12,6 +12,7 @@ namespace TsvBits.XmlSerialization
 			private readonly XSerializer _serializer;
 			private readonly Type _elementType;
 			private readonly ItemDefCollection _elements;
+			private readonly Dictionary<Type, Action<object, object>> _addMethods = new Dictionary<Type, Action<object, object>>();
 
 			public CollectionDef(XSerializer serializer, XName name, Type type, Type elementType)
 			{
@@ -44,6 +45,33 @@ namespace TsvBits.XmlSerialization
 				}
 
 				return _elementType;
+			}
+
+			private void Add(object target, object item)
+			{
+				var list = target as IList;
+				if (list != null)
+				{
+					list.Add(item);
+					return;
+				}
+
+				var add = ResolveAddMethod(target, item);
+
+				add(target, item);
+			}
+
+			private Action<object, object> ResolveAddMethod(object target, object item)
+			{
+				var itemType = item != null ? item.GetType() : _elementType;
+
+				Action<object, object> action;
+				if (_addMethods.TryGetValue(itemType, out action))
+					return action;
+
+				action = MethodGenerator.Add(target, item, _elementType);
+				_addMethods.Add(itemType, action);
+				return action;
 			}
 
 			private sealed class ItemDefCollection : IDefCollection<IPropertyDef>
@@ -93,14 +121,7 @@ namespace TsvBits.XmlSerialization
 
 				public void SetValue(object target, object value)
 				{
-					var list = target as IList;
-					if (list != null)
-					{
-						list.Add(value);
-						return;
-					}
-
-					target.GetType().GetMethod("Add", new[] {value.GetType()}).Invoke(target, new[] {value});
+					_collectionDef.Add(target, value);
 				}
 			}
 		}

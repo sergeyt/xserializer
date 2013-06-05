@@ -77,23 +77,29 @@ namespace TsvBits.XmlSerialization
 			return Enum(defval, true);
 		}
 
-		private Scope Elem(IElementDef def)
+		private void Register(IElementDef def)
 		{
 			_elementDefs.Add(def.Type, def);
 			_elementDefsByName.Add(def.Name, def);
-			return this;
 		}
 
 		public ElementDef<T> Elem<T>(XName name)
 		{
 			var def = new ElementDef<T>(this, name);
-			Elem(def);
+			Register(def);
 			return def;
 		}
 
 		public ElementDef<T> Elem<T>()
 		{
-			return Elem<T>(_ns + typeof(T).Name);
+			var type = typeof(T);
+			var name = type.Name;
+			if (type.IsGenericType)
+			{
+				var i = name.LastIndexOf('`');
+				if (i >= 0) name = name.Substring(0, i);
+			}
+			return Elem<T>(_ns + name);
 		}
 
 		internal IElementDef ElemDef(Type type)

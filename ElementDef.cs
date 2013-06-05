@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Xml.Linq;
 
 namespace TsvBits.XmlSerialization
@@ -34,7 +33,7 @@ namespace TsvBits.XmlSerialization
 		{
 			var name = property.GetPropertyName();
 			var getter = property.Compile();
-			var setter = ResolveSetter(property);
+			var setter = MethodGenerator.Set(property);
 			return Attr(XNamespace.None + name, getter, setter);
 		}
 
@@ -63,7 +62,7 @@ namespace TsvBits.XmlSerialization
 		{
 			var name = property.GetPropertyName();
 			var getter = property.Compile();
-			return Elem(Name.Namespace + name, getter, ResolveSetter(property));
+			return Elem(Name.Namespace + name, getter, MethodGenerator.Set(property));
 		}
 
 		public ElementDef<T> Elem<TValue>(XName name, Func<T, TValue> getter, int initIndex)
@@ -174,34 +173,6 @@ namespace TsvBits.XmlSerialization
 		public override string ToString()
 		{
 			return Name.ToString();
-		}
-
-		private static Action<T, TValue> ResolveSetter<TValue>(Expression<Func<T, TValue>> expression)
-		{
-			var me = (MemberExpression)expression.Body;
-			var pi = me.Member as PropertyInfo;
-			if (pi != null)
-			{
-				// TODO: handle collections
-
-				var setMethod = pi.GetSetMethod();
-				if (setMethod == null) return null;
-				
-				var target = Expression.Parameter(typeof(T), "target");
-				var value = Expression.Parameter(typeof(TValue), "value");
-				
-				var setter = Expression.Call(target, setMethod, value);
-				return Expression.Lambda<Action<T, TValue>>(setter, target, value).Compile();
-			}
-
-			var fi = me.Member as FieldInfo;
-			if (fi != null)
-			{
-				// TODO: optimize with reflection emit
-				return (target, value) => fi.SetValue(target, value);
-			}
-
-			throw new NotSupportedException();
 		}
 
 		private sealed class PropertyDef<TValue> : IPropertyDef

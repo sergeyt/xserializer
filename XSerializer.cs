@@ -28,7 +28,6 @@ namespace TsvBits.XmlSerialization
 		{
 			return new XSerializer(scope);
 		}
-		
 
 		/// <summary>
 		/// Parses specified xml string.
