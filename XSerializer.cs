@@ -69,7 +69,7 @@ namespace TsvBits.XmlSerialization
 			if (reader == null) throw new ArgumentNullException("reader");
 
 			var def = _rootScope.ElemDef(obj.GetType());
-			ReadElement(reader, obj, def);
+			ReadElement(reader, def, obj);
 		}
 
 		/// <summary>
@@ -84,7 +84,7 @@ namespace TsvBits.XmlSerialization
 			reader.MoveToFirstElement();
 			
 			var def = _rootScope.ElemDef(reader.CurrentXName());
-			return (T)ReadElement(reader, def);
+			return (T)ReadElement(reader, def, null);
 		}
 
 		/// <summary>
@@ -116,19 +116,20 @@ namespace TsvBits.XmlSerialization
 			return output.ToString();
 		}
 
-		private object ReadElement(XmlReader reader, IElementDef def)
+		private object ReadElement(XmlReader reader, IElementDef def, Func<object> create)
 		{
 			if (def.IsImmutable)
 			{
-				return ReadImmutable(reader, def);
+				var props = ReadProperties(reader, null, def).ToDictionary(x => x.Key.Name.LocalName, x => x.Value);
+				return def.Create(props);
 			}
 
-			var obj = Activator.CreateInstance(def.Type);
-			ReadElement(reader, obj, def);
+			var obj = create != null ? create() : Activator.CreateInstance(def.Type);
+			ReadElement(reader, def, obj);
 			return obj;
 		}
 
-		private void ReadElement(XmlReader reader, object obj, IElementDef def)
+		private void ReadElement(XmlReader reader, IElementDef def, object obj)
 		{
 			foreach (var p in ReadProperties(reader, obj, def))
 			{
@@ -136,12 +137,6 @@ namespace TsvBits.XmlSerialization
 				if (!property.IsReadOnly)
 					property.SetValue(obj, p.Value);
 			}
-		}
-
-		private object ReadImmutable(XmlReader reader, IElementDef def)
-		{
-			var props = ReadProperties(reader, null, def).ToDictionary(x => x.Key.Name.LocalName, x => x.Value);
-			return def.Create(props);
 		}
 
 		private IEnumerable<KeyValuePair<IPropertyDef, object>> ReadProperties(XmlReader reader, object obj, IElementDef def)
@@ -166,7 +161,11 @@ namespace TsvBits.XmlSerialization
 				reader.MoveToElement();
 			}
 
-			if (reader.IsEmptyElement) yield break;
+			if (reader.IsEmptyElement)
+			{
+				reader.Read();
+				yield break;
+			}
 
 			// read child elements
 			int depth = reader.Depth;
@@ -208,15 +207,7 @@ namespace TsvBits.XmlSerialization
 			var elementDef = _rootScope.ElemDef(type);
 			if (elementDef != null)
 			{
-				if (elementDef.IsImmutable)
-				{
-					value = ReadImmutable(reader, elementDef);
-				}
-				else
-				{
-					value = CreateElement(property, obj);
-					ReadElement(reader, value, elementDef);
-				}
+				value = ReadElement(reader, elementDef, () => CreateElement(property, obj));
 				return true;
 			}
 
@@ -233,7 +224,7 @@ namespace TsvBits.XmlSerialization
 				var elementType = ienum.GetGenericArguments()[0];
 				elementDef = new CollectionDef(this, property.Name, type, elementType);
 				value = def.IsImmutable ? CreateList(elementType) : CreateElement(property, obj);
-				ReadElement(reader, value, elementDef);
+				ReadElement(reader, elementDef, value);
 				return true;
 			}
 
