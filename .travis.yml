@@ -4,6 +4,7 @@ install:
   - sudo apt-get install mono-devel mono-gmcs nunit nunit-console
  
 script:
-  - gmcs /target:library /r:System /r:System.Core /r:System.Xml /r:System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:XSerializerWithTests.dll
-  - gmcs /target:library /r:System /r:System.Core /r:System.Xml /r:System.Xml.Linq /optimize+ /recurse:*.cs -out:TsvBits.XSerializer.dll
-  - nunit-console XSerializerWithTests.dll
+  - mkdir build
+  - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/XSerializerWithTests.dll
+  - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/TsvBits.XSerializer.dll
+  - nunit-console build/XSerializerWithTests.dll
