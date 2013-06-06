@@ -10,6 +10,8 @@ Fast, easy to use XML serializer.
 * High performance with streaming serialization
 * Declarative configuration of serializer
 
+## Sample Usage
+
 ## License
 
 (The MIT License)
