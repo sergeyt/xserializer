@@ -15,7 +15,6 @@
 	</ItemGroup>
 	<Target Name="CI" DependsOnTargets="Build"/>
 	<Target Name="Build">
-		<RemoveDir Directories="$(OutDir)"/>
 		<MakeDir Directories="$(OutDir)"/>
 		<Csc TargetType="library"
 			 OutputAssembly="$(OutDir)/TsvBits.XSerializer.dll"
