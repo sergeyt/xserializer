@@ -1,6 +1,6 @@
 xserializer
 ===========
 
-[![Build Status](https://secure.travis-ci.org/sergeeyt/xserializer.png)]
+[![Build Status](https://travis-ci.org/sergeyt/xserializer.png)]
 
 Fast, easy to use XML serializer.
