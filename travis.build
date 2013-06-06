@@ -11,7 +11,7 @@
 		<Reference Include="System.Core" />
 		<Reference Include="System.Xml" />
 		<Reference Include="System.Xml.Linq" />
-		<Reference Include="NUnit-2.6.2/bin/framework/nunit.framework.dll"/>
+		<Reference Include="build/travis/nunit.framework.dll"/>
 	</ItemGroup>
 	<Target Name="CI" DependsOnTargets="Build"/>
 	<Target Name="Build">
