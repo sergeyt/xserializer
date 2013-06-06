@@ -70,8 +70,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ci.proj" />
     <None Include="packages.config" />
+    <None Include="travis.build" />
     <None Include="xserializer.build" />
     <None Include="XSerializer.nuspec">
       <SubType>Designer</SubType>
