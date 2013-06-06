@@ -6,5 +6,7 @@ install:
 script:
   - wget http://launchpad.net/nunitv2/2.6.2/2.6.2/+download/NUnit-2.6.2.zip
   - unzip NUnit-2.6.2.zip
+  - mkdir build/travis
+  - copy NUnit-2.6.2/bin/framework/nunit.framework.dll build/travis/nunit.framework.dll
   - xbuild travis.build
   - nunit-console ./build/travis/XSerializerWithTests.dll
