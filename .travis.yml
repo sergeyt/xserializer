@@ -5,4 +5,4 @@ install:
  
 script:
   - xbuild ci.proj
-  - nunit-console ./bin/ReleaseUnitTests/TsvBits.XSerializer.dll
+  - nunit-console ./build/travis/XSerializerWithTests.dll
