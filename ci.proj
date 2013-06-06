@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <Project DefaultTargets="CI" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<OutDir Condition="'$(OutDir)'==''">build/travis</OutDir>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Include="**/*.cs"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="nunit.framework, Version=2.5, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77"/>
+	</ItemGroup>
 	<Target Name="CI" DependsOnTargets="Build"/>
 	<Target Name="Build">
-		<PropertyGroup>
-			<OutDir Condition="'$(OutDir)'==''">build/travis</OutDir>
-		</PropertyGroup>
-		<ItemGroup>
-			<Compile Include="**/*.cs"/>
-		</ItemGroup>
-		<ItemGroup>
-			<Reference Include="nunit.framework, Version=2.5, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77"/>
-		</ItemGroup>
 		<RemoveDir Directories="$(OutDir)"/>
 		<MakeDir Directories="$(OutDir)"/>
 		<Csc TargetType="library"
