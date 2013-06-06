@@ -4,5 +4,7 @@ install:
   - sudo apt-get install mono-devel mono-gmcs nunit nunit-console
  
 script:
+  - wget http://launchpad.net/nunitv2/2.6.2/2.6.2/+download/NUnit-2.6.2.zip -o nunit.zip
+  - unzip nunit.zip
   - xbuild travis.build
   - nunit-console ./build/travis/XSerializerWithTests.dll
