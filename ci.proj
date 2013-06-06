@@ -7,6 +7,10 @@
 		<Compile Include="**/*.cs"/>
 	</ItemGroup>
 	<ItemGroup>
+		<Reference Include="System" />
+		<Reference Include="System.Core" />
+		<Reference Include="System.Xml" />
+		<Reference Include="System.Xml.Linq" />
 		<Reference Include="nunit.framework, Version=2.5, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77"/>
 	</ItemGroup>
 	<Target Name="CI" DependsOnTargets="Build"/>
@@ -15,7 +19,7 @@
 		<MakeDir Directories="$(OutDir)"/>
 		<Csc TargetType="library"
 			 OutputAssembly="$(OutDir)/TsvBits.XSerializer.dll"
-			 Sources="@(Compile)"
+			 Sources="@(Compile)" References="@(Reference)"
 			 Optimize="true" NoLogo="true"/>
 		<Csc TargetType="library" DefineConstants="NUNIT"
 			 OutputAssembly="$(OutDir)/XSerializerWithTests.dll"
