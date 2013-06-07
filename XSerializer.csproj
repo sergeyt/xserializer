@@ -65,6 +65,7 @@
     <Compile Include="Tests\ImmutableObjectsTests.cs" />
     <Compile Include="Tests\FieldSerializationTests.cs" />
     <Compile Include="Tests\XSerializerTests.cs" />
+    <Compile Include="Version.cs" />
     <Compile Include="XSerializer.CollectionDef.cs" />
     <Compile Include="XSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

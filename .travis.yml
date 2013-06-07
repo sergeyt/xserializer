@@ -4,7 +4,9 @@ install:
   - sudo apt-get install mono-devel mono-gmcs nunit nunit-console
  
 script:
-  - mkdir build
-  - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/XSerializerWithTests.dll
-  - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/TsvBits.XSerializer.dll
-  - nunit-console build/XSerializerWithTests.dll /trace=Verbose
+  - mkdir build/release
+  - mkdir build/test
+  - echo 'class ThisAssembly { public const string Version = "0.1.%{build_number}.0"; }' >> Version.cs
+  - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/test/XSerializerWithTests.dll
+  - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/release/TsvBits.XSerializer.dll
+  - nunit-console /trace=Verbose ./build/test/XSerializerWithTests.dll
