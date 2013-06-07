@@ -7,4 +7,4 @@ script:
   - mkdir build
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/XSerializerWithTests.dll
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/TsvBits.XSerializer.dll
-  - nunit-console build/XSerializerWithTests.dll
+  - nunit-console build/XSerializerWithTests.dll /trace=Verbose
