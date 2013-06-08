@@ -9,7 +9,7 @@ script:
   - mkdir build/test
   - which mono
   - which xbuild
-  - ls /usr
+  - cat /usr/bin/mono
   - echo 'updating version.cs'
   - rm Version.cs
   - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
