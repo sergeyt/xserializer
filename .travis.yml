@@ -7,8 +7,6 @@ script:
   - mkdir build
   - mkdir build/release
   - mkdir build/test
-  - which mono
-  - which xbuild
   - echo 'updating version.cs'
   - rm Version.cs
   - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
@@ -27,6 +25,4 @@ script:
   - wget -O .nuget/Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
   - mozroots --import --sync
   - bash nuget pack XSerializer.nuspec
-  - NUPKG_FILE=XSerializer.$BUILD_VERSION.nupkg
-  - bash nuget push $NUPKG_FILE af4a97e5-c5b0-4aa0-891d-e57d66dd7d0c
 
