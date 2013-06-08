@@ -19,9 +19,9 @@ script:
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/release/TsvBits.XSerializer.dll
   - nunit-console ./build/test/XSerializerWithTests.dll
   - echo 'building nuget package'
-  - sed 's/VERSION/$BUILD_VERSION/' XSerializer.nuspec.template
-  - cat XSerializer.nuspec.template
-  - cp XSerializer.nuspec.template XSerializer.nuspec
+  - SED_ARG=s/VERSION/$BUILD_VERSION/
+  - sed $SED_ARG XSerializer.nuspec.template > XSerializer.nuspec
+  - cat XSerializer.nuspec
   - cp nuget /opt/mono/bin/nuget
   - chmod +x /opt/mono/bin/nuget
   - nuget pack XSerializer.nuspec
