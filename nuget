@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /opt/mono/bin/mono --runtime=v4.0.30319 --gc=sgen ./.nuget/NuGet.exe "$@"

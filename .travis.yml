@@ -7,11 +7,18 @@ script:
   - mkdir build
   - mkdir build/release
   - mkdir build/test
+  - echo 'updating version.cs'
   - rm Version.cs
   - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
-  - ASSEMBLY_VERSION="partial class AssemblyInfo { public const string Version = \"0.1.$BUILD_NUMBER.0\"; }"
-  - echo $ASSEMBLY_VERSION >> Version.cs
+  - BUILD_VERSION=0.1.$BUILD_NUMBER.0
+  - VERSION_CS="partial class AssemblyInfo { public const string Version = \"$BUILD_VERSION\"; }"
+  - echo $VERSION_CS >> Version.cs
   - cat Version.cs
+  - echo 'compiling xserializer assembly'
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/test/XSerializerWithTests.dll
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/release/TsvBits.XSerializer.dll
   - nunit-console ./build/test/XSerializerWithTests.dll
+  - echo 'building nuget package'
+  - sed 's/VERSION/$BUILD_VERSION' XSerializer.nuspec.template
+  - cp XSerializer.nuspec.template XSerializer.nuspec
+  - nuget pack XSerializer.nuspec
