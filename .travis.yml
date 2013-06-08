@@ -13,4 +13,4 @@ script:
   - echo $ASSEMBLY_VERSION >> Version.cs
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/test/XSerializerWithTests.dll
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/release/TsvBits.XSerializer.dll
-  - nunit-console ./build/test/XSerializerWithTests.dll /trace:Verbose
+  - nunit-console ./build/test/XSerializerWithTests.dll
