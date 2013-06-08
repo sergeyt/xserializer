@@ -11,6 +11,7 @@ script:
   - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
   - ASSEMBLY_VERSION="partial class AssemblyInfo { public const string Version = \"0.1.$BUILD_NUMBER.0\"; }"
   - echo $ASSEMBLY_VERSION >> Version.cs
+  - cat Version.cs
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/test/XSerializerWithTests.dll
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/release/TsvBits.XSerializer.dll
   - nunit-console ./build/test/XSerializerWithTests.dll
