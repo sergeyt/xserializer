@@ -24,9 +24,7 @@ script:
   - SED_ARG=s/VERSION/$BUILD_VERSION/
   - sed $SED_ARG XSerializer.nuspec.template > XSerializer.nuspec
   - cat XSerializer.nuspec
-  - gacutil -l
-  - find / -name Microsoft.Build.dll
-  - cp /usr/lib/mono/4.0/Microsoft.Build.dll ./.nuget/Microsoft.Build.dll
+  - wget -O .nuget/Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
   - mozroots --import --sync
-  - mono --runtime=v4.0.30319 ./.nuget/NuGet.exe
-  - mono --runtime=v4.0.30319 ./.nuget/NuGet.exe pack XSerializer.nuspec
+  - mono --runtime=v4.0.30319 .nuget/NuGet.exe
+  - mono --runtime=v4.0.30319 .nuget/NuGet.exe pack XSerializer.nuspec
