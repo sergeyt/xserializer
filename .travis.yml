@@ -22,5 +22,6 @@ script:
   - sed 's/VERSION/$BUILD_VERSION/' XSerializer.nuspec.template
   - cat XSerializer.nuspec.template
   - cp XSerializer.nuspec.template XSerializer.nuspec
-  - chmod +x nuget
+  - cp nuget /opt/mono/bin/nuget
+  - chmod +x /opt/mono/bin/nuget
   - nuget pack XSerializer.nuspec
