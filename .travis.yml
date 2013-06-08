@@ -8,6 +8,7 @@ script:
   - mkdir build/release
   - mkdir build/test
   - which mono
+  - which xbuild
   - echo 'updating version.cs'
   - rm Version.cs
   - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
@@ -23,5 +24,6 @@ script:
   - SED_ARG=s/VERSION/$BUILD_VERSION/
   - sed $SED_ARG XSerializer.nuspec.template > XSerializer.nuspec
   - cat XSerializer.nuspec
+  - mozroots --import --sync
   - mono --runtime=v4.0.30319 ./.nuget/NuGet.exe
   - mono --runtime=v4.0.30319 ./.nuget/NuGet.exe pack XSerializer.nuspec
