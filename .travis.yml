@@ -26,7 +26,7 @@ script:
   - cat XSerializer.nuspec
   - wget -O .nuget/Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
   - mozroots --import --sync
-  - bash nuget setApiKey af4a97e5-c5b0-4aa0-891d-e57d66dd7d0c
   - bash nuget pack XSerializer.nuspec
   - NUPKG_FILE=XSerializer.$BUILD_VERSION.nupkg
-  - bash nuget push $NUPKG_FILE
+  - bash nuget push $NUPKG_FILE af4a97e5-c5b0-4aa0-891d-e57d66dd7d0c
+
