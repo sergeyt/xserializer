@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>XSerializer</id>
-		<version>$version</version>
+		<version>VERSION</version>
 		<authors>Sergey Todyshev (stodyshev@gmail.com)</authors>
 		<owners>TsvBits</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
