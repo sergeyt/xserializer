@@ -8,7 +8,7 @@ script:
   - mkdir build/release
   - mkdir build/test
   - rm Version.cs
-  - echo 'class ThisAssembly { public const string Version = "0.1.%{build_number}.0"; }' >> Version.cs
+  - echo 'class ThisAssembly { public const string Version = "0.1.$TRAVIS_BUILD_NUMBER.0"; }' >> Version.cs
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq -pkg:nunit /define:NUNIT /optimize+ /recurse:*.cs -out:build/test/XSerializerWithTests.dll
   - gmcs /target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs -out:build/release/TsvBits.XSerializer.dll
-  - nunit-console /trace=Verbose ./build/test/XSerializerWithTests.dll
+  - nunit-console /trace:Verbose ./build/test/XSerializerWithTests.dll
