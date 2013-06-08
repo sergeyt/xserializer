@@ -4,6 +4,7 @@ install:
   - sudo apt-get install mono-devel mono-gmcs nunit nunit-console
  
 script:
+  - mkdir build
   - mkdir build/release
   - mkdir build/test
   - rm Version.cs
