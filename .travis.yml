@@ -26,5 +26,4 @@ script:
   - cat XSerializer.nuspec
   - wget -O .nuget/Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
   - mozroots --import --sync
-  - mono --runtime=v4.0.30319 .nuget/NuGet.exe
-  - mono --runtime=v4.0.30319 .nuget/NuGet.exe pack XSerializer.nuspec
+  - bash nuget pack XSerializer.nuspec
