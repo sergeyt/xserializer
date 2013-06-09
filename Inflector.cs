@@ -11,6 +11,8 @@ namespace TsvBits.XmlSerialization
 	{
 		private static readonly List<Rule> PluralRules = new List<Rule>();
 		private static readonly List<Rule> SingularRules = new List<Rule>();
+		private static readonly HashSet<string> Plurals = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+		private static readonly HashSet<string> Singulars = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
 		private static readonly HashSet<string> Uncountables = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
 			{
@@ -21,7 +23,17 @@ namespace TsvBits.XmlSerialization
 				"species",
 				"series",
 				"fish",
-				"sheep"
+				"sheep",
+				"bison",
+				"buffalo",
+				"deer",
+				"moose",
+				"pike",
+				"salmon",
+				"trout",
+				"swine",
+				"plankton",
+				"squid"
 			};
 
 		static Inflector()
@@ -32,16 +44,16 @@ namespace TsvBits.XmlSerialization
 			AddPluralRule("(octop|vir)us$", "$1i");
 			AddPluralRule("(alias|status)$", "$1es");
 			AddPluralRule("(bu)s$", "$1ses");
-			AddPluralRule("(buffal|tomat)o$", "$1oes");
+			AddPluralRule("(\\w+)o$", "$1oes");
+			AddPluralRule("(cant|heter|kimon|phot|pian|portic|pr|quart|zer)o$", "$1os");
 			AddPluralRule("([ti])um$", "$1a");
 			AddPluralRule("sis$", "ses");
 			AddPluralRule("(?:([^f])fe|([lr])f)$", "$1$2ves");
+			AddPluralRule("(lea)f$", "$1ves");
 			AddPluralRule("(hive)$", "$1s");
 			AddPluralRule("([^aeiouy]|qu)y$", "$1ies");
 			AddPluralRule("(x|ch|ss|sh)$", "$1es");
 			AddPluralRule("(matr|vert|ind)ix|ex$", "$1ices");
-			AddPluralRule("([m|l])ouse$", "$1ice");
-			AddPluralRule("^(ox)$", "$1en");
 			AddPluralRule("(quiz)$", "$1zes");
 
 			AddSingularRule("s$", String.Empty);
@@ -51,6 +63,7 @@ namespace TsvBits.XmlSerialization
 			AddSingularRule("((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$", "$1$2sis");
 			AddSingularRule("(^analy)ses$", "$1sis");
 			AddSingularRule("([^f])ves$", "$1fe");
+			AddSingularRule("(lea)ves$", "$1f");
 			AddSingularRule("(hive)s$", "$1");
 			AddSingularRule("(tive)s$", "$1");
 			AddSingularRule("([lr])ves$", "$1f");
@@ -58,7 +71,6 @@ namespace TsvBits.XmlSerialization
 			AddSingularRule("(s)eries$", "$1eries");
 			AddSingularRule("(m)ovies$", "$1ovie");
 			AddSingularRule("(x|ch|ss|sh)es$", "$1");
-			AddSingularRule("([m|l])ice$", "$1ouse");
 			AddSingularRule("(bus)es$", "$1");
 			AddSingularRule("(o)es$", "$1");
 			AddSingularRule("(shoe)s$", "$1");
@@ -66,21 +78,32 @@ namespace TsvBits.XmlSerialization
 			AddSingularRule("(octop|vir)i$", "$1us");
 			AddSingularRule("(alias|status)$", "$1");
 			AddSingularRule("(alias|status)es$", "$1");
-			AddSingularRule("^(ox)en", "$1");
 			AddSingularRule("(vert|ind)ices$", "$1ex");
 			AddSingularRule("(matr)ices$", "$1ix");
 			AddSingularRule("(quiz)zes$", "$1");
 
 			AddIrregularRule("person", "people");
 			AddIrregularRule("man", "men");
+			AddIrregularRule("woman", "women");
 			AddIrregularRule("child", "children");
 			AddIrregularRule("sex", "sexes");
 			AddIrregularRule("tax", "taxes");
 			AddIrregularRule("move", "moves");
+			AddIrregularRule("foot", "feet");
+			AddIrregularRule("goose", "geese");
+			AddIrregularRule("penny", "pence");
+			AddIrregularRule("tooth", "teeth");
+			AddIrregularRule("die", "dice");
+			AddIrregularRule("ox", "oxen");
+			AddIrregularRule("louse", "lice");
+			AddIrregularRule("mouse", "mice");
 		}
 
 		private static void AddIrregularRule(string singular, string plural)
 		{
+			Singulars.Add(singular);
+			Plurals.Add(plural);
+
 			AddPluralRule(string.Concat("(", singular[0], ")", singular.Substring(1), "$"),
 			              string.Concat("$1", plural.Substring(1)));
 			AddSingularRule(string.Concat("(", plural[0], ")", plural.Substring(1), "$"),
@@ -103,6 +126,8 @@ namespace TsvBits.XmlSerialization
 		/// <param name="word">The word to pluralize.</param>
 		public static string ToPlural(this string word)
 		{
+			if (string.IsNullOrEmpty(word)) return word;
+			if (Plurals.Contains(word)) return word;
 			return ApplyRules(PluralRules, word);
 		}
 
@@ -112,6 +137,8 @@ namespace TsvBits.XmlSerialization
 		/// <param name="word">The word to singularize.</param>
 		public static string ToSingular(this string word)
 		{
+			if (string.IsNullOrEmpty(word)) return word;
+			if (Singulars.Contains(word)) return word;
 			return ApplyRules(SingularRules, word);
 		}
 
