@@ -115,12 +115,10 @@ namespace TsvBits.XmlSerialization
 
 		internal object Parse(Type type, string s)
 		{
-			var def = FindType(type);
-			if (def != null) return def.Read(s);
-
-			if (type.IsEnum)
+			var parser = GetParser(type, true);
+			if (parser != null)
 			{
-				return System.Enum.Parse(type, s, true);
+				return parser(s);
 			}
 
 			throw new NotSupportedException(string.Format("Unknown type: {0}", type));
@@ -128,19 +126,11 @@ namespace TsvBits.XmlSerialization
 
 		internal bool TryReadString(XmlReader reader, Type type, out object value)
 		{
-			var def = FindType(type);
-			if (def != null)
+			var parser = GetParser(type, false);
+			if (parser != null)
 			{
-				if (reader.IsEmptyElement)
-				{
-					value = def.Read(null);
-					reader.Read();
-				}
-				else
-				{
-					var s = reader.ReadString();
-					value = def.Read(s);
-				}
+				var s = reader.ReadStringOrNull();
+				value = parser(s);
 				return true;
 			}
 			value = null;
@@ -155,7 +145,14 @@ namespace TsvBits.XmlSerialization
 				return false;
 			}
 
-			var def = FindType(value.GetType());
+			var type = value.GetType();
+			if (type.IsNullable())
+			{
+				type = type.GetGenericArguments()[0];
+				value = value.UnboxNullable();
+			}
+
+			var def = FindType(type);
 			if (def != null)
 			{
 				result = def.Write(value);
@@ -170,6 +167,24 @@ namespace TsvBits.XmlSerialization
 
 			result = null;
 			return false;
+		}
+
+		private Func<string, object> GetParser(Type type, bool withEnumSupport)
+		{
+			if (type.IsNullable())
+			{
+				type = type.GetGenericArguments()[0];
+			}
+
+			var def = FindType(type);
+			if (def != null) return s => def.Read(s);
+
+			if (withEnumSupport && type.IsEnum)
+			{
+				return s => System.Enum.Parse(type, s, true);
+			}
+
+			return null;
 		}
 
 		private TypeDef FindType(Type type)

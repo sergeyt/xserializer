@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -7,6 +8,24 @@ namespace TsvBits.XmlSerialization
 {
 	internal static class MethodGenerator
 	{
+		private static readonly IDictionary<Type, Func<object,object>> UnboxNullableCache = new Dictionary<Type, Func<object, object>>();
+
+		public static Func<object, object> UnboxNullable(Type type)
+		{
+			Func<object, object> func;
+			if (UnboxNullableCache.TryGetValue(type, out func))
+				return func;
+
+			var thisArg = Expression.Parameter(type, "target");
+			var value = Expression.Property(thisArg, "Value");
+			var result = Expression.Convert(value, typeof(object));
+			func = Expression.Lambda<Func<object, object>>(result, thisArg).Compile();
+
+			UnboxNullableCache.Add(type, func);
+
+			return func;
+		}
+
 		public static Action<object, object> Add(object target, object item, Type elementType)
 		{
 			var type = target.GetType();

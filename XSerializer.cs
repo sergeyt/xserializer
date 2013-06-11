@@ -116,6 +116,11 @@ namespace TsvBits.XmlSerialization
 			return output.ToString();
 		}
 
+		public string ToXmlFragment<T>(T obj)
+		{
+			return ToXmlString(obj, true);
+		}
+
 		private object ReadElement(XmlReader reader, IElementDef def, Func<object> create)
 		{
 			if (def.IsImmutable)
@@ -234,12 +239,8 @@ namespace TsvBits.XmlSerialization
 				return true;
 			}
 
-			if (type.IsEnum)
-			{
-				var s = reader.ReadString();
-				value = Enum.Parse(type, s);
+			if (ReadEnumElement(reader, type, out value))
 				return true;
-			}
 
 			var ienum = Reflector.FindIEnumerable(type);
 			if (ienum != null)
@@ -248,6 +249,24 @@ namespace TsvBits.XmlSerialization
 				elementDef = new CollectionDef(this, property.Name, type, elementType);
 				value = def.IsImmutable ? CreateList(elementType) : CreateElement(property, obj);
 				ReadElement(reader, elementDef, value);
+				return true;
+			}
+
+			value = null;
+			return false;
+		}
+
+		private static bool ReadEnumElement(XmlReader reader, Type type, out object value)
+		{
+			if (type.IsNullable())
+			{
+				type = type.GetGenericArguments()[0];
+			}
+
+			if (type.IsEnum)
+			{
+				var s = reader.ReadStringOrNull();
+				value = Enum.Parse(type, s);
 				return true;
 			}
 

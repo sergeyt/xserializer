@@ -7,11 +7,21 @@ using System.Xml.Linq;
 
 namespace TsvBits.XmlSerialization
 {
-	public static class XmlExtensions
+	public static class Extensions
 	{
 		public static XName CurrentXName(this XmlReader reader)
 		{
 			return XNamespace.Get(reader.NamespaceURI).GetName(reader.LocalName);
+		}
+
+		internal static string ReadStringOrNull(this XmlReader reader)
+		{
+			if (reader.IsEmptyElement)
+			{
+				reader.Read();
+				return null;
+			}
+			return reader.ReadString();
 		}
 
 		internal static void MoveToFirstElement(this XmlReader reader)
@@ -51,6 +61,56 @@ namespace TsvBits.XmlSerialization
 		public static string GetPropertyName<T,TValue>(this Expression<Func<T, TValue>> propertyGetter)
 		{
 			return propertyGetter.ResolveMember().Name;
+		}
+
+		public static TR IfNotNull<T, TR>(this T value, Func<T, TR> selector)
+		{
+			return Equals(value, default(T)) ? default(TR) : selector(value);
+		}
+
+		public static object UnboxNullable(this object value)
+		{
+			if (value == null) return null;
+
+			var type = value.GetType();
+			if (!type.IsNullable()) return value;
+
+			var valueType = type.GetGenericArguments()[0];
+			switch (Type.GetTypeCode(valueType))
+			{
+				case TypeCode.Boolean:
+					return (bool)value;
+				case TypeCode.Char:
+					return (char)value;
+				case TypeCode.SByte:
+					return (sbyte)value;
+				case TypeCode.Byte:
+					return (byte)value;
+				case TypeCode.Int16:
+					return (Int16)value;
+				case TypeCode.UInt16:
+					return (UInt16)value;
+				case TypeCode.Int32:
+					return (int)value;
+				case TypeCode.UInt32:
+					return (uint)value;
+				case TypeCode.Int64:
+					return (Int64)value;
+				case TypeCode.UInt64:
+					return (UInt64)value;
+				case TypeCode.Single:
+					return (Single)value;
+				case TypeCode.Double:
+					return (Double)value;
+				case TypeCode.Decimal:
+					return (Decimal)value;
+				case TypeCode.DateTime:
+					return (DateTime)value;
+				case TypeCode.String:
+					return value;
+				default:
+					return MethodGenerator.UnboxNullable(type)(value);
+			}
 		}
 	}
 }

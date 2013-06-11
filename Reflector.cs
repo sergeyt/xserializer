@@ -10,6 +10,11 @@ namespace TsvBits.XmlSerialization
 	/// </summary>
 	internal static class Reflector
 	{
+		public static bool IsNullable(this Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+		}
+
 		public static T ResolveAttribute<T>(this ICustomAttributeProvider provider, bool inherit)
 			where T : Attribute
 		{

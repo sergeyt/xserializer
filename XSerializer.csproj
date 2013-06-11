@@ -62,10 +62,13 @@
     <Compile Include="Reflector.cs" />
     <Compile Include="Scope.cs" />
     <Compile Include="Tests\CollectionTests.cs" />
+    <Compile Include="Tests\ExtensionsTests.cs" />
     <Compile Include="Tests\ImmutableObjectsTests.cs" />
     <Compile Include="Tests\FieldSerializationTests.cs" />
     <Compile Include="Tests\InflectorTests.cs" />
     <Compile Include="Tests\MethodGeneratorTests.cs" />
+    <Compile Include="Tests\NullableTests.cs" />
+    <Compile Include="Tests\ReflectorTests.cs" />
     <Compile Include="Tests\XSerializerTests.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="XSerializer.CollectionDef.cs" />
