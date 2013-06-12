@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	internal sealed class DefCollection<T> : IDefCollection<T>
 	{

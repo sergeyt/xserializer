@@ -1,7 +1,7 @@
 ﻿#if NUNIT
 using NUnit.Framework;
 
-namespace TsvBits.XmlSerialization.Tests
+namespace TsvBits.Serialization.Tests
 {
 	[TestFixture]
 	public class InflectorTests

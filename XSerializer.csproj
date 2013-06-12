@@ -7,7 +7,7 @@
     <ProjectGuid>{5D238F55-5C9D-4862-9C96-2E3994AA54C9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TsvBits.XmlSerialization</RootNamespace>
+    <RootNamespace>TsvBits.Serialization</RootNamespace>
     <AssemblyName>TsvBits.XSerializer</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -57,6 +57,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="IElementDef.cs" />
     <Compile Include="Inflector.cs" />
+    <Compile Include="IWriter.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="MethodGenerator.cs" />
     <Compile Include="Reflector.cs" />
@@ -71,9 +72,11 @@
     <Compile Include="Tests\ReflectorTests.cs" />
     <Compile Include="Tests\XSerializerTests.cs" />
     <Compile Include="Version.cs" />
+    <Compile Include="Xml\XmlWriterImpl.cs" />
     <Compile Include="XSerializer.CollectionDef.cs" />
     <Compile Include="XSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Xml\Xsi.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

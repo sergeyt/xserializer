@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Xml.Linq;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	public sealed class ElementDef<T> : IElementDef
 	{

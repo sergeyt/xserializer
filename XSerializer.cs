@@ -7,8 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using TsvBits.Serialization.Xml;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	/// <summary>
 	/// Implements XML (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.
@@ -91,9 +92,9 @@ namespace TsvBits.XmlSerialization
 		/// Serializes given object.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
-		/// <param name="writer">The xml writer.</param>
+		/// <param name="writer">The writer.</param>
 		/// <param name="obj">The object to serialize.</param>
-		public void Write<T>(XmlWriter writer, T obj)
+		public void Write<T>(IWriter writer, T obj)
 		{
 			var def = _rootScope.ElemDef(obj.GetType());
 			WriteElement(writer, obj, def, def.Name);
@@ -111,7 +112,7 @@ namespace TsvBits.XmlSerialization
 			var output = new StringBuilder();
 			var xws = new XmlWriterSettings();
 			if (asFragment) xws.ConformanceLevel = ConformanceLevel.Fragment;
-			using (var writer = XmlWriter.Create(output, xws))
+			using (var writer = XmlWriterImpl.Create(output, xws))
 				Write(writer, obj);
 			return output.ToString();
 		}
@@ -287,11 +288,14 @@ namespace TsvBits.XmlSerialization
 			return element ?? Activator.CreateInstance(def.Type);
 		}
 
-		private void WriteElement(XmlWriter writer, object obj, IElementDef def, XName name)
+		private void WriteElement(IWriter writer, object obj, IElementDef def, XName name)
 		{
 			if (name == null) name = def.Name;
 
-			writer.WriteStartElement(name.LocalName, name.NamespaceName);
+			writer.WriteStartElement(name);
+
+			if (def.Attributes.Any() && !writer.SupportAttributes)
+				throw new InvalidOperationException("Attributes are not supported in this context.");
 
 			foreach (var attr in def.Attributes)
 			{
@@ -299,7 +303,7 @@ namespace TsvBits.XmlSerialization
 				if (value == null) continue;
 				var s = ToString(value);
 				if (string.IsNullOrEmpty(s)) continue;
-				writer.WriteAttributeString(attr.Name.LocalName, attr.Name.NamespaceName, s);
+				writer.WriteAttributeString(attr.Name, s);
 			}
 
 			foreach (var elem in def.Elements)
@@ -312,29 +316,29 @@ namespace TsvBits.XmlSerialization
 			writer.WriteEndElement();
 		}
 
-		private void WriteValue(XmlWriter writer, IPropertyDef property, XName name, object value)
+		private void WriteValue(IWriter writer, IPropertyDef property, XName name, object value)
 		{
 			if (value == null) return;
 
-			string s;
-			if (_rootScope.TryConvertToString(value, out s))
+			if (value is Enum && WriteStringElement(writer, property, name, value))
+				return;
+
+			if (value.IsPrimitive())
 			{
-				if (string.IsNullOrEmpty(s)) return;
 				if (property.Type == typeof(object))
 				{
-					writer.WriteStartElement(name.LocalName, name.NamespaceName);
-					var xsiType = Xsi.TypeOf(value);
-					writer.WriteAttributeString("type", Xsi.Uri, xsiType);
-					writer.WriteString(s);
-					writer.WriteEndElement();
+					writer.WriteObjectElement(name, value);
 				}
 				else
 				{
-					writer.WriteElementString(name.LocalName, name.NamespaceName, s);
-				}				
+					writer.WritePrimitiveElement(name, value);
+				}
 				return;
 			}
 
+			if (WriteStringElement(writer, property, name, value))
+				return;
+			
 			var type = value.GetType();
 			var elementDef = _rootScope.ElemDef(type);
 			if (elementDef != null)
@@ -347,17 +351,17 @@ namespace TsvBits.XmlSerialization
 			if (collection != null)
 			{
 				var itemDef = new CollectionItemDef(property.ElementName, Reflector.GetItemType(type));
-				bool empty = true;
+				var empty = true;
 				foreach (var item in collection)
 				{
 					if (empty)
 					{
-						writer.WriteStartElement(name.LocalName, name.NamespaceName);
+						writer.WriteStartElement(name);
 						empty = false;
 					}
 					if (item == null)
 					{
-						WriteNullElement(writer, property.ElementName);
+						writer.WriteNullElement(property.ElementName);
 						continue;
 					}
 					WriteValue(writer, itemDef, property.ElementName, item);
@@ -369,11 +373,21 @@ namespace TsvBits.XmlSerialization
 			throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", name, type));
 		}
 
-		private static void WriteNullElement(XmlWriter writer, XName name)
+		private bool WriteStringElement(IWriter writer, IPropertyDef property, XName name, object value)
 		{
-			writer.WriteStartElement(name.LocalName, name.NamespaceName);
-			writer.WriteAttributeString("nil", Xsi.Uri, "true");
-			writer.WriteEndElement();
+			string s;
+			if (!_rootScope.TryConvertToString(value, out s))
+				return false;
+
+			if (string.IsNullOrEmpty(s))
+				return true;
+
+			if (property.Type == typeof(object))
+				writer.WriteObjectElement(name, value);
+			else
+				writer.WritePrimitiveElement(name, s);
+
+			return true;
 		}
 
 		private string ToString(object value)
@@ -391,75 +405,6 @@ namespace TsvBits.XmlSerialization
 		{
 			var def = _rootScope.ElemDef(name);
 			return def != null ? def.Type : null;
-		}
-
-		private static class Xsi
-		{
-			public const string Uri = "http://www.w3.org/2001/XMLSchema-instance";
-
-			public static readonly IDictionary<string, Type> Name2Type = new Dictionary<string, Type>
-				{
-					{"boolean", typeof(bool)},
-					{"unsignedByte", typeof(byte)},
-					{"byte", typeof(sbyte)},
-					{"short", typeof(short)},
-					{"xsd:unsignedShort", typeof(ushort)},
-					{"int", typeof(int)},
-					{"unsignedInt", typeof(uint)},
-					{"long", typeof(long)},
-					{"unsignedLong", typeof(ulong)},
-					{"float", typeof(float)},
-					{"double", typeof(double)},
-					{"decimal", typeof(decimal)},
-					{"dateTime", typeof(DateTime)},
-					{"string", typeof(string)}
-				};
-
-			public static string TypeOf(object value)
-			{
-				if (value == null) return null;
-
-				switch (Type.GetTypeCode(value.GetType()))
-				{
-					case TypeCode.Empty:
-					case TypeCode.DBNull:
-						return null;
-					case TypeCode.Object:
-						throw new NotSupportedException(string.Format("Unsupported type: {0}", value.GetType()));
-					case TypeCode.Boolean:
-						return "xsd:boolean";
-					case TypeCode.Char:
-						return "xsd:unsignedByte";
-					case TypeCode.SByte:
-						return "xsd:byte";
-					case TypeCode.Byte:
-						return "xsd:unsignedByte";
-					case TypeCode.Int16:
-						return "xsd:short";
-					case TypeCode.UInt16:
-						return "xsd:unsignedShort";
-					case TypeCode.Int32:
-						return "xsd:int";
-					case TypeCode.UInt32:
-						return "xsd:unsignedInt";
-					case TypeCode.Int64:
-						return "xsd:long";
-					case TypeCode.UInt64:
-						return "xsd:unsignedLong";
-					case TypeCode.Single:
-						return "xsd:float";
-					case TypeCode.Double:
-						return "xsd:double";
-					case TypeCode.Decimal:
-						return "xsd:decimal";
-					case TypeCode.DateTime:
-						return "xsd:dateTime";
-					case TypeCode.String:
-						return "xsd:string";
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
 		}
 
 		private sealed class CollectionItemDef : IPropertyDef

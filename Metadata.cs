@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	/// <summary>
 	/// Allows customization of XML name for the property/field.

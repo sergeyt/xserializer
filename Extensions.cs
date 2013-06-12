@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	public static class Extensions
 	{
@@ -110,6 +110,35 @@ namespace TsvBits.XmlSerialization
 					return value;
 				default:
 					return MethodGenerator.UnboxNullable(type)(value);
+			}
+		}
+
+		public static bool IsPrimitive(this object value)
+		{
+			if (value == null) return true;
+
+			switch (Type.GetTypeCode(value.GetType()))
+			{
+				case TypeCode.Empty:
+				case TypeCode.DBNull:
+				case TypeCode.Boolean:
+				case TypeCode.Char:
+				case TypeCode.SByte:
+				case TypeCode.Byte:
+				case TypeCode.Int16:
+				case TypeCode.UInt16:
+				case TypeCode.Int32:
+				case TypeCode.UInt32:
+				case TypeCode.Int64:
+				case TypeCode.UInt64:
+				case TypeCode.Single:
+				case TypeCode.Double:
+				case TypeCode.Decimal:
+				case TypeCode.DateTime:
+				case TypeCode.String:
+					return true;
+				default:
+					return false;
 			}
 		}
 	}

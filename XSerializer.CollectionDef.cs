@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	partial class XSerializer
 	{

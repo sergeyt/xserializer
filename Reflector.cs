@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	/// <summary>
 	/// Reflection helpers.

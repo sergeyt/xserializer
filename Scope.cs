@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace TsvBits.XmlSerialization
+namespace TsvBits.Serialization
 {
 	public sealed class Scope
 	{
