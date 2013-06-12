@@ -57,6 +57,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="IElementDef.cs" />
     <Compile Include="Inflector.cs" />
+    <Compile Include="IReader.cs" />
     <Compile Include="IWriter.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="MethodGenerator.cs" />
@@ -72,6 +73,8 @@
     <Compile Include="Tests\ReflectorTests.cs" />
     <Compile Include="Tests\XSerializerTests.cs" />
     <Compile Include="Version.cs" />
+    <Compile Include="Xml\XmlExtensions.cs" />
+    <Compile Include="Xml\XmlReaderImpl.cs" />
     <Compile Include="Xml\XmlWriterImpl.cs" />
     <Compile Include="XSerializer.CollectionDef.cs" />
     <Compile Include="XSerializer.cs" />

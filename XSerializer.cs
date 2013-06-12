@@ -12,7 +12,7 @@ using TsvBits.Serialization.Xml;
 namespace TsvBits.Serialization
 {
 	/// <summary>
-	/// Implements XML (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.
+	/// Implements (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.
 	/// </summary>
 	public sealed partial class XSerializer
 	{
@@ -38,7 +38,7 @@ namespace TsvBits.Serialization
 		public T Parse<T>(string xml)
 		{
 			using (var input = new StringReader(xml))
-			using (var reader = XmlReader.Create(input))
+			using (var reader = XmlReaderImpl.Create(input))
 			{
 				return Read<T>(reader);
 			}
@@ -53,7 +53,7 @@ namespace TsvBits.Serialization
 		public void ReadXmlString<T>(string xml, T obj)
 		{
 			using (var input = new StringReader(xml))
-			using (var reader = XmlReader.Create(input))
+			using (var reader = XmlReaderImpl.Create(input))
 			{
 				Read(reader, obj);
 			}
@@ -63,9 +63,9 @@ namespace TsvBits.Serialization
 		/// Reads specified object with given reader.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
-		/// <param name="reader">The xml reader.</param>
+		/// <param name="reader">The reader.</param>
 		/// <param name="obj">The object to deserialize.</param>
-		public void Read<T>(XmlReader reader, T obj)
+		public void Read<T>(IReader reader, T obj)
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
@@ -77,15 +77,36 @@ namespace TsvBits.Serialization
 		/// Reads object with given reader.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
-		/// <param name="reader">The xml reader.</param>
-		public T Read<T>(XmlReader reader)
+		/// <param name="reader">The reader.</param>
+		public T Read<T>(IReader reader)
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			reader.MoveToFirstElement();
-			
-			var def = _rootScope.ElemDef(reader.CurrentXName());
+			var def = _rootScope.ElemDef(reader.CurrentName);
 			return (T)ReadElement(reader, def, null);
+		}
+
+		/// <summary>
+		/// Reads specified object with given reader.
+		/// </summary>
+		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="reader">The xml reader.</param>
+		/// <param name="obj">The object to deserialize.</param>
+		public void Read<T>(XmlReader reader, T obj)
+		{
+			using (var impl = XmlReaderImpl.Create(reader))
+				Read(impl, obj);
+		}
+
+		/// <summary>
+		/// Reads object with given reader.
+		/// </summary>
+		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="reader">The xml reader.</param>
+		public T Read<T>(XmlReader reader)
+		{
+			using (var impl = XmlReaderImpl.Create(reader))
+				return Read<T>(impl);
 		}
 
 		/// <summary>
@@ -98,6 +119,18 @@ namespace TsvBits.Serialization
 		{
 			var def = _rootScope.ElemDef(obj.GetType());
 			WriteElement(writer, obj, def, def.Name);
+		}
+
+		/// <summary>
+		/// Serializes given object.
+		/// </summary>
+		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="writer">The xml writer.</param>
+		/// <param name="obj">The object to serialize.</param>
+		public void Write<T>(XmlWriter writer, T obj)
+		{
+			using (var impl = XmlWriterImpl.Create(writer))
+				Write(impl, obj);
 		}
 		
 		/// <summary>
@@ -122,7 +155,7 @@ namespace TsvBits.Serialization
 			return ToXmlString(obj, true);
 		}
 
-		private object ReadElement(XmlReader reader, IElementDef def, Func<object> create)
+		private object ReadElement(IReader reader, IElementDef def, Func<object> create)
 		{
 			if (def.IsImmutable)
 			{
@@ -135,7 +168,7 @@ namespace TsvBits.Serialization
 			return obj;
 		}
 
-		private void ReadElement(XmlReader reader, IElementDef def, object obj)
+		private void ReadElement(IReader reader, IElementDef def, object obj)
 		{
 			foreach (var p in ReadProperties(reader, obj, def))
 			{
@@ -145,42 +178,28 @@ namespace TsvBits.Serialization
 			}
 		}
 
-		private IEnumerable<KeyValuePair<IPropertyDef, object>> ReadProperties(XmlReader reader, object obj, IElementDef def)
+		private IEnumerable<KeyValuePair<IPropertyDef, object>> ReadProperties(IReader reader, object obj, IElementDef def)
 		{
-			if (!reader.IsStartElement(def.Name.LocalName, def.Name.NamespaceName))
+			if (!reader.ReadStartElement(def.Name))
 				throw new XmlException(string.Format("Xml element not foud: {0}", def.Name));
 
 			// read attributes
-			if (def.Attributes.Any() && reader.MoveToFirstAttribute())
+			if (def.Attributes.Any())
 			{
-				do
+				foreach (var attr in reader.ReadAttributes())
 				{
-					var name = reader.CurrentXName();
-					var property = def.Attributes[name];
+					var property = def.Attributes[attr.Key];
 					if (property != null)
 					{
-						var value = _rootScope.Parse(property.Type, reader.Value);
+						var value = _rootScope.Parse(property.Type, attr.Value);
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 					}
-				} while (reader.MoveToNextAttribute());
-
-				reader.MoveToElement();
-			}
-
-			if (reader.IsEmptyElement)
-			{
-				reader.Read();
-				yield break;
+				}
 			}
 
 			// read child elements
-			int depth = reader.Depth;
-			reader.Read(); // move to first child node
-
-			while (reader.MoveToNextElement(depth))
+			foreach (var property in reader.ReadChildElements().Select(name => def.Elements[name]))
 			{
-				var name = reader.CurrentXName();
-				var property = def.Elements[name];
 				if (property == null) // unknown type
 				{
 					// todo: trace warning
@@ -199,38 +218,19 @@ namespace TsvBits.Serialization
 					reader.Skip();
 				}
 			}
-
-			reader.ReadEndElement();
 		}
 
-		private bool ReadValue(XmlReader reader, object obj, IElementDef def, IPropertyDef property, out object value)
+		private bool ReadValue(IReader reader, object obj, IElementDef def, IPropertyDef property, out object value)
 		{
 			var type = property.Type;
 
 			if (type == typeof(object))
 			{
-				value = null;
-				var xsiType = reader.GetAttribute("type", Xsi.Uri);
-
-				if (reader.IsEmptyElement)
-				{
-					reader.Read();
-					return true;
-				}
-
-				var s = reader.ReadString();
-				if (string.IsNullOrEmpty(xsiType)) return true;
-
-				xsiType = xsiType.Substring(xsiType.IndexOf(':') + 1);
-				Type valueType;
-				if (Xsi.Name2Type.TryGetValue(xsiType, out valueType))
-				{
-					value = _rootScope.Parse(valueType, s);
-				}
+				value = reader.ReadObject();
 				return true;
 			}
 
-			if (_rootScope.TryReadString(reader, type, out value))
+			if (_rootScope.TryReadString(() => reader.ReadString(), type, out value))
 				return true;
 
 			var elementDef = _rootScope.ElemDef(type);
@@ -257,7 +257,7 @@ namespace TsvBits.Serialization
 			return false;
 		}
 
-		private static bool ReadEnumElement(XmlReader reader, Type type, out object value)
+		private static bool ReadEnumElement(IReader reader, Type type, out object value)
 		{
 			if (type.IsNullable())
 			{
@@ -266,7 +266,7 @@ namespace TsvBits.Serialization
 
 			if (type.IsEnum)
 			{
-				var s = reader.ReadStringOrNull();
+				var s = reader.ReadString();
 				value = Enum.Parse(type, s);
 				return true;
 			}

@@ -8,20 +8,32 @@ namespace TsvBits.Serialization.Xml
 	internal sealed class XmlWriterImpl : IWriter
 	{
 		private readonly XmlWriter _writer;
+		private readonly bool _dispose;
 
-		public XmlWriterImpl(XmlWriter writer)
+		private XmlWriterImpl(XmlWriter writer, bool dispose)
 		{
+			if (writer == null) throw new ArgumentNullException("writer");
+
 			_writer = writer;
+			_dispose = dispose;
 		}
 
 		public static IWriter Create(StringBuilder output, XmlWriterSettings settings)
 		{
-			return new XmlWriterImpl(XmlWriter.Create(output, settings));
+			return new XmlWriterImpl(XmlWriter.Create(output, settings), true);
+		}
+
+		public static IWriter Create(XmlWriter writer)
+		{
+			return new XmlWriterImpl(writer, false);
 		}
 
 		public void Dispose()
 		{
-			((IDisposable)_writer).Dispose();
+			if (_dispose)
+			{
+				((IDisposable)_writer).Dispose();
+			}
 		}
 
 		public bool SupportAttributes

@@ -2,45 +2,11 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Xml;
-using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
 	public static class Extensions
 	{
-		public static XName CurrentXName(this XmlReader reader)
-		{
-			return XNamespace.Get(reader.NamespaceURI).GetName(reader.LocalName);
-		}
-
-		internal static string ReadStringOrNull(this XmlReader reader)
-		{
-			if (reader.IsEmptyElement)
-			{
-				reader.Read();
-				return null;
-			}
-			return reader.ReadString();
-		}
-
-		internal static void MoveToFirstElement(this XmlReader reader)
-		{
-			while (reader.NodeType != XmlNodeType.Element && reader.Read()){}
-		}
-
-		internal static bool MoveToNextElement(this XmlReader reader, int depth)
-		{
-			do
-			{
-				if (reader.NodeType == XmlNodeType.Element)
-					return true;
-				if (reader.NodeType == XmlNodeType.EndElement && reader.Depth == depth)
-					return false;
-			} while (reader.Read());
-			return false;
-		}
-
 		public static T Get<T>(this IDictionary<string, object> dictionary, string name)
 		{
 			object value;

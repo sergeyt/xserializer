@@ -124,12 +124,12 @@ namespace TsvBits.Serialization
 			throw new NotSupportedException(string.Format("Unknown type: {0}", type));
 		}
 
-		internal bool TryReadString(XmlReader reader, Type type, out object value)
+		internal bool TryReadString(Func<string> stringReader, Type type, out object value)
 		{
 			var parser = GetParser(type, false);
 			if (parser != null)
 			{
-				var s = reader.ReadStringOrNull();
+				var s = stringReader();
 				value = parser(s);
 				return true;
 			}
