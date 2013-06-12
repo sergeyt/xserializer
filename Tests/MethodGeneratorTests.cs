@@ -12,17 +12,17 @@ namespace TsvBits.Serialization.Tests
 		public void TestAdd()
 		{
 			{
-				var c1 = new Collection1();
-				var item1 = new Item { Name = "item1" };
+				var c1 = new MyCollection();
+				var item1 = new Item {Name = "item1"};
 				var adder = MethodGenerator.Add(c1, item1, typeof(Item));
 				Assert.AreEqual(0, c1.Count);
 				adder(c1, item1);
 				Assert.AreEqual(1, c1.Count);
-				Assert.AreSame(item1, c1[0]);	
+				Assert.AreSame(item1, c1[0]);
 			}
 			{
-				var c1 = new Collection1();
-				var item1 = new Item { Name = "item1" };
+				var c1 = new MyCollection();
+				var item1 = new Item {Name = "item1"};
 				var adder = MethodGenerator.Add(c1, item1, typeof(object));
 				Assert.AreEqual(0, c1.Count);
 				adder(c1, item1);
@@ -46,10 +46,10 @@ namespace TsvBits.Serialization.Tests
 		public void TestSetField()
 		{
 			var setter = MethodGenerator.Set<Item, string>(x => x.Field);
-			var item = new Item();
+			var item = new Item {Field = "abc"};
 			setter(item, "test");
 			Assert.AreEqual("test", item.Field);
-			Assert.IsNull(item.Name);	
+			Assert.IsNull(item.Name);
 		}
 
 		[Test]
@@ -59,7 +59,7 @@ namespace TsvBits.Serialization.Tests
 			Assert.IsNull(setter);
 		}
 
-		class Item
+		private class Item
 		{
 			public string Field;
 			public string Name { get; set; }
@@ -70,7 +70,7 @@ namespace TsvBits.Serialization.Tests
 			}
 		}
 
-		class Item2
+		private class Item2
 		{
 			public readonly string Name;
 
@@ -80,7 +80,7 @@ namespace TsvBits.Serialization.Tests
 			}
 		}
 
-		private class Collection1 : IEnumerable<Item>
+		private class MyCollection : IEnumerable<Item>
 		{
 			private readonly IList<Item> _items = new List<Item>();
 

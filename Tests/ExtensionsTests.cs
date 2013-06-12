@@ -23,7 +23,7 @@ namespace TsvBits.Serialization.Tests
 			TestUnboxNullable<ushort>(123);
 			TestUnboxNullable(123);
 			TestUnboxNullable(123u);
-			TestUnboxNullable(123l);
+			TestUnboxNullable(123L);
 			TestUnboxNullable(123ul);
 			TestUnboxNullable(3.14f);
 			TestUnboxNullable(3.14);
