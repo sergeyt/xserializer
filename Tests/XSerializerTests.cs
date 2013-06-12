@@ -41,12 +41,12 @@ namespace TsvBits.Serialization.Tests
 			_serializer = XSerializer.New(scope);
 		}
 
-		[Test]
-		public void WriteDefaultReport()
+		[TestCase(Format.Xml, Result = "<Report xmlns=\"http://test.com\"><Body /></Report>")]
+		[TestCase(Format.Json, Result = "{\"Body\":{}}")]
+		public string WriteDefaultReport(Format format)
 		{
 			var report = new Report();
-			var xml = _serializer.ToXmlString(report, true);
-			Assert.AreEqual("<Report xmlns=\"http://test.com\"><Body /></Report>", xml);
+			return _serializer.ToString(report, format);
 		}
 
 		[Test]

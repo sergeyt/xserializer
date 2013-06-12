@@ -36,11 +36,6 @@ namespace TsvBits.Serialization.Xml
 			}
 		}
 
-		public bool SupportAttributes
-		{
-			get { return true; }
-		}
-
 		public void WriteAttributeString(XName name, string value)
 		{
 			_writer.WriteAttributeString(name.LocalName, name.NamespaceName, value);
@@ -56,6 +51,16 @@ namespace TsvBits.Serialization.Xml
 			_writer.WriteEndElement();
 		}
 
+		public void WriteStartCollection(XName name)
+		{
+			WriteStartElement(name);
+		}
+
+		public void WriteEndCollection()
+		{
+			WriteEndElement();
+		}
+
 		public void WritePrimitiveElement(XName name, object value)
 		{
 			WriteStartElement(name);
@@ -63,7 +68,7 @@ namespace TsvBits.Serialization.Xml
 			WriteEndElement();
 		}
 
-		public void WriteNullElement(XName name)
+		public void WriteNullItem(XName name)
 		{
 			WriteStartElement(name);
 			_writer.WriteAttributeString("nil", Xsi.Uri, "true");

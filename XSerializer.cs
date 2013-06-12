@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using TsvBits.Serialization.Json;
 using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization
@@ -155,6 +156,34 @@ namespace TsvBits.Serialization
 			return ToXmlString(obj, true);
 		}
 
+		/// <summary>
+		/// Serializes given object as JSON string.
+		/// </summary>
+		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="obj">The object to serialize.</param>
+		/// <returns>JSON string representing the object.</returns>
+		public string ToJsonString<T>(T obj)
+		{
+			var output = new StringBuilder();
+			using (var textWriter = new StringWriter(output))
+			using (var writer = new JsonWriterImpl(textWriter))
+				Write(writer, obj);
+			return output.ToString();
+		}
+
+		public string ToString<T>(T obj, Format format)
+		{
+			switch (format)
+			{
+				case Format.Xml:
+					return ToXmlString(obj, true);
+				case Format.Json:
+					return ToJsonString(obj);
+				default:
+					throw new ArgumentOutOfRangeException("format");
+			}
+		}
+
 		private object ReadElement(IReader reader, IElementDef def, Func<object> create)
 		{
 			if (def.IsImmutable)
@@ -294,9 +323,6 @@ namespace TsvBits.Serialization
 
 			writer.WriteStartElement(name);
 
-			if (def.Attributes.Any() && !writer.SupportAttributes)
-				throw new InvalidOperationException("Attributes are not supported in this context.");
-
 			foreach (var attr in def.Attributes)
 			{
 				var value = attr.GetValue(obj);
@@ -356,17 +382,17 @@ namespace TsvBits.Serialization
 				{
 					if (empty)
 					{
-						writer.WriteStartElement(name);
+						writer.WriteStartCollection(name);
 						empty = false;
 					}
 					if (item == null)
 					{
-						writer.WriteNullElement(property.ElementName);
+						writer.WriteNullItem(property.ElementName);
 						continue;
 					}
 					WriteValue(writer, itemDef, property.ElementName, item);
 				}
-				if (!empty) writer.WriteEndElement();
+				if (!empty) writer.WriteEndCollection();
 				return;
 			}
 
@@ -433,4 +459,10 @@ namespace TsvBits.Serialization
 			}
 		}
 	}
+
+	public enum Format
+	{
+		Xml,
+		Json
+	};
 }
