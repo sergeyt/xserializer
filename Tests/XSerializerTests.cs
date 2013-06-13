@@ -43,6 +43,7 @@ namespace TsvBits.Serialization.Tests
 
 		[TestCase(Format.Xml, Result = "<Report xmlns=\"http://test.com\"><Body /></Report>")]
 		[TestCase(Format.Json, Result = "{\"Body\":{}}")]
+		[TestCase(Format.JsonML, Result = "[\"Report\",{\"xmlns\":\"http://test.com\"},[\"Body\"]]")]
 		public string WriteDefaultReport(Format format)
 		{
 			var report = new Report();

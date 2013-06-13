@@ -153,21 +153,10 @@ namespace TsvBits.Serialization
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
 		/// <param name="obj">The object to serialize.</param>
-		/// <param name="asFragment">Specifies whether to omit xml declaration.</param>
 		/// <returns>XML string representing the object.</returns>
-		public string ToXmlString<T>(T obj, bool asFragment)
+		public string ToXmlString<T>(T obj)
 		{
-			var output = new StringBuilder();
-			var xws = new XmlWriterSettings();
-			if (asFragment) xws.ConformanceLevel = ConformanceLevel.Fragment;
-			using (var writer = XmlWriterImpl.Create(output, xws))
-				Write(writer, obj);
-			return output.ToString();
-		}
-
-		public string ToXmlFragment<T>(T obj)
-		{
-			return ToXmlString(obj, true);
+			return ToString(obj, Format.Xml);
 		}
 
 		/// <summary>
@@ -178,21 +167,29 @@ namespace TsvBits.Serialization
 		/// <returns>JSON string representing the object.</returns>
 		public string ToJsonString<T>(T obj)
 		{
-			var output = new StringBuilder();
-			using (var textWriter = new StringWriter(output))
-			using (var writer = new JsonWriterImpl(textWriter))
-				Write(writer, obj);
-			return output.ToString();
+			return ToString(obj, Format.Json);
 		}
 
 		public string ToString<T>(T obj, Format format)
 		{
+			var output = new StringBuilder();
+			using (var textWriter = new StringWriter(output))
+			using (var writer = CreateWriter(textWriter, format))
+				Write(writer, obj);
+			return output.ToString();
+		}
+
+		private static IWriter CreateWriter(TextWriter output, Format format)
+		{
 			switch (format)
 			{
 				case Format.Xml:
-					return ToXmlString(obj, true);
+					var xws = new XmlWriterSettings {ConformanceLevel = ConformanceLevel.Fragment};
+					return XmlWriterImpl.Create(output, xws);
 				case Format.Json:
-					return ToJsonString(obj);
+					return JsonWriterImpl.Create(output);
+				case Format.JsonML:
+					return JsonMLWriter.Create(output);
 				default:
 					throw new ArgumentOutOfRangeException("format");
 			}

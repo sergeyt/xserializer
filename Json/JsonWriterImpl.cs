@@ -13,14 +13,19 @@ namespace TsvBits.Serialization.Json
 		private enum  ElementKind { Obj, Ctor }
 		private readonly Stack<ElementKind> _elementStack = new Stack<ElementKind>();
 
-		public JsonWriterImpl(TextWriter writer)
+		private JsonWriterImpl(JsonWriter writer)
 		{
 			if (writer == null) throw new ArgumentNullException("writer");
 
-			_writer = CreateJsonWriter(writer);
+			_writer = writer;
 		}
 
-		private static JsonWriter CreateJsonWriter(TextWriter output)
+		public static IWriter Create(TextWriter output)
+		{
+			return new JsonWriterImpl(CreateJsonWriter(output));
+		}
+
+		internal static JsonWriter CreateJsonWriter(TextWriter output)
 		{
 			return new JsonTextWriter(output)
 				{

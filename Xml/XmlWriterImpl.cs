@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Text;
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -18,7 +18,7 @@ namespace TsvBits.Serialization.Xml
 			_dispose = dispose;
 		}
 
-		public static IWriter Create(StringBuilder output, XmlWriterSettings settings)
+		public static IWriter Create(TextWriter output, XmlWriterSettings settings)
 		{
 			return new XmlWriterImpl(XmlWriter.Create(output, settings), true);
 		}

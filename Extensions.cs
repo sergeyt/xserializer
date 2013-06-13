@@ -7,15 +7,16 @@ namespace TsvBits.Serialization
 {
 	public static class Extensions
 	{
+		public static TValue Get<TKey,TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+		{
+			TValue value;
+			return dictionary.TryGetValue(key, out value) ? value : default(TValue);
+		}
+
 		public static T Get<T>(this IDictionary<string, object> dictionary, string name)
 		{
 			object value;
 			return dictionary.TryGetValue(name, out value) ? (T)value : default(T);
-		}
-
-		public static TValue Get<T, TValue>(this IDictionary<string, object> dictionary, Expression<Func<T, TValue>> propertyGetter)
-		{
-			return dictionary.Get<TValue>(propertyGetter.GetPropertyName());
 		}
 
 		public static MemberInfo ResolveMember<T, TValue>(this Expression<Func<T, TValue>> propertyGetter)
