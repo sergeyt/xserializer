@@ -4,9 +4,17 @@ using NUnit.Framework;
 
 namespace TsvBits.Serialization.Tests
 {
-	[TestFixture]
+	[TestFixture(Format.Xml)]
+	[TestFixture(Format.Json)]
 	public class NullableTests
 	{
+		private readonly Format _format;
+
+		public NullableTests(Format format)
+		{
+			_format = format;
+		}
+
 		[TestCase(false)]
 		[TestCase(true)]
 		public void TestItem(bool asAttr)
@@ -20,7 +28,7 @@ namespace TsvBits.Serialization.Tests
 			TestItem(StringComparison.Ordinal, asAttr);
 		}
 
-		private static void TestItem<T>(T value, bool asAttr) where T : struct
+		private void TestItem<T>(T value, bool asAttr) where T : struct
 		{
 			var scope = Scope.New("");
 			var elem = scope.Elem<Item<T>>();
@@ -30,13 +38,13 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(scope);
 
 			var item1 = new Item<T>();
-			var xml = serializer.ToXmlFragment(item1);
-			var item2 = serializer.Parse<Item<T>>(xml, Format.Xml);
+			var xml = serializer.ToString(item1, _format);
+			var item2 = serializer.Parse<Item<T>>(xml, _format);
 			Assert.AreEqual(item1.Value, item2.Value);
 
 			item1 = new Item<T> {Value = value};
-			xml = serializer.ToXmlFragment(item1);
-			item2 = serializer.Parse<Item<T>>(xml, Format.Xml);
+			xml = serializer.ToString(item1, _format);
+			item2 = serializer.Parse<Item<T>>(xml, _format);
 			Assert.AreEqual(item1.Value, item2.Value);
 		}
 

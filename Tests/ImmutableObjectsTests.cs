@@ -1,4 +1,5 @@
 ﻿#if NUNIT
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -6,9 +7,17 @@ using NUnit.Framework;
 
 namespace TsvBits.Serialization.Tests
 {
-	[TestFixture]
+	[TestFixture(Format.Xml)]
+	[TestFixture(Format.Json)]
 	public class ImmutableObjectsTests
 	{
+		private readonly Format _format;
+
+		public ImmutableObjectsTests(Format format)
+		{
+			_format = format;
+		}
+
 		[Test]
 		public void JustAttr()
 		{
@@ -21,10 +30,20 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(scope);
 
 			var item1 = new Item("test");
-			var xml = serializer.ToXmlString(item1, true);
-			Assert.AreEqual("<Item Name=\"test\" />", xml);
+			var serial = serializer.ToString(item1, _format);
+			switch (_format)
+			{
+				case Format.Xml:
+					Assert.AreEqual("<Item Name=\"test\" />", serial);
+					break;
+				case Format.Json:
+					Assert.AreEqual("{\"Name\":\"test\"}", serial);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 
-			var item2 = serializer.Parse<Item>(xml, Format.Xml);
+			var item2 = serializer.Parse<Item>(serial, _format);
 			Assert.AreEqual(item1.Name, item2.Name);
 		}
 
@@ -44,10 +63,20 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(scope);
 
 			var container = new Container(new[] {new Item("a"), new Item("b")});
-			var xml = serializer.ToXmlString(container, true);
-			Assert.AreEqual("<Container><Items><Item Name=\"a\" /><Item Name=\"b\" /></Items></Container>", xml);
+			var serial = serializer.ToString(container, _format);
+			switch (_format)
+			{
+				case Format.Xml:
+					Assert.AreEqual("<Container><Items><Item Name=\"a\" /><Item Name=\"b\" /></Items></Container>", serial);
+					break;
+				case Format.Json:
+					Assert.AreEqual("{\"Items\":[new Item({\"Name\":\"a\"}),new Item({\"Name\":\"b\"})]}", serial);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 
-			var container2 = serializer.Parse<Container>(xml, Format.Xml);
+			var container2 = serializer.Parse<Container>(serial, _format);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			Assert.AreEqual(container.Items[0].Name, container2.Items[0].Name);
 			Assert.AreEqual(container.Items[1].Name, container2.Items[1].Name);

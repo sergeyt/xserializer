@@ -5,9 +5,17 @@ using NUnit.Framework;
 
 namespace TsvBits.Serialization.Tests
 {
-	[TestFixture]
+	[TestFixture(Format.Xml)]
+	[TestFixture(Format.Json)]
 	public class FieldSerializationTests
 	{
+		private readonly Format _format;
+
+		public FieldSerializationTests(Format format)
+		{
+			_format = format;
+		}
+
 		[TestCase(true, 0f, 0f)]
 		[TestCase(true, 1.2f, 2.3f)]
 		[TestCase(true, -1.2f, -2.3f)]
@@ -23,12 +31,12 @@ namespace TsvBits.Serialization.Tests
 		public void TestPoint(bool asAttrs, object x, object y)
 		{
 			var type = typeof(FieldSerializationTests);
-			var method = type.GetMethod("TestPointT", BindingFlags.NonPublic | BindingFlags.Static);
+			var method = type.GetMethod("TestPointT", BindingFlags.NonPublic | BindingFlags.Instance);
 			method = method.MakeGenericMethod(x.GetType());
-			method.Invoke(null, new [] {asAttrs, x, y});
+			method.Invoke(this, new [] {asAttrs, x, y});
 		}
 
-		private static void TestPointT<T>(bool asAttrs, T x, T y)
+		private void TestPointT<T>(bool asAttrs, T x, T y)
 		{
 			var scope = Scope.New("");
 
@@ -48,8 +56,8 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(scope);
 
 			var pt = new Point<T>(x, y);
-			var xml = serializer.ToXmlString(pt, true);
-			var pt2 = serializer.Parse<Point<T>>(xml, Format.Xml);
+			var xml = serializer.ToString(pt, _format);
+			var pt2 = serializer.Parse<Point<T>>(xml, _format);
 
 			Assert.AreEqual(pt, pt2);
 		}
@@ -79,8 +87,8 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(scope);
 
 			var pt = new CPoint(x, y);
-			var xml = serializer.ToXmlString(pt, true);
-			var pt2 = serializer.Parse<CPoint>(xml, Format.Xml);
+			var xml = serializer.ToString(pt, _format);
+			var pt2 = serializer.Parse<CPoint>(xml, _format);
 
 			Assert.AreEqual(pt, pt2);
 		}

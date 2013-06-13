@@ -93,7 +93,8 @@ namespace TsvBits.Serialization.Json
 
 		public void WritePrimitiveElement(XName name, object value)
 		{
-			WritePropertyName(name);
+			if (_writer.WriteState != WriteState.Array)
+				WritePropertyName(name);
 			_writer.WriteValue(value);
 		}
 

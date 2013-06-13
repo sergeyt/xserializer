@@ -4,9 +4,17 @@ using NUnit.Framework;
 
 namespace TsvBits.Serialization.Tests
 {
-	[TestFixture]
+	[TestFixture(Format.Xml)]
+	[TestFixture(Format.Json)]
 	public class CollectionTests
 	{
+		private readonly Format _format;
+
+		public CollectionTests(Format format)
+		{
+			_format = format;
+		}
+
 		[TestCase("a", "b", "c")]
 		[TestCase("a", null, "c")]
 		[TestCase(1, 2, 3)]
@@ -29,7 +37,7 @@ namespace TsvBits.Serialization.Tests
 			TestCore(a, b, c);
 		}
 
-		private static void TestCore<T>(params T[] items)
+		private void TestCore<T>(params T[] items)
 		{
 			var scope = Scope.New("");
 
@@ -44,9 +52,9 @@ namespace TsvBits.Serialization.Tests
 				container.Items.Add(item);
 			}
 			
-			var xml = serializer.ToXmlString(container, true);
+			var serial = serializer.ToString(container, _format);
 
-			var container2 = serializer.Parse<Container<T>>(xml, Format.Xml);
+			var container2 = serializer.Parse<Container<T>>(serial, _format);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			for (int i = 0; i < container.Items.Count; i++)
 			{

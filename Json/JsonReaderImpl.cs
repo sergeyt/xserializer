@@ -74,7 +74,8 @@ namespace TsvBits.Serialization.Json
 
 		public string ReadString()
 		{
-			return Convert.ToString(ReadObject(), CultureInfo.InvariantCulture);
+			var value = ReadObject();
+			return value == null ? null : Convert.ToString(value, CultureInfo.InvariantCulture);
 		}
 
 		public object ReadObject()
@@ -94,8 +95,13 @@ namespace TsvBits.Serialization.Json
 			}
 
 			_elementStack.Push(ElementKind.Object);
-			_reader.MoveToPropertyName();
 
+			if (!_reader.MoveTo(JsonToken.StartObject))
+				throw new InvalidOperationException();
+
+			if (!_reader.MoveTo(JsonToken.PropertyName, JsonToken.EndObject))
+				throw new InvalidOperationException();
+			
 			if (_root)
 			{
 				_root = false;
@@ -112,6 +118,13 @@ namespace TsvBits.Serialization.Json
 			var kind = _elementStack.Peek();
 			if (kind == ElementKind.Object)
 			{
+				// handling empty object
+				if (_reader.TokenType == JsonToken.EndObject)
+				{
+					EndElement();
+					yield break;
+				}
+
 				int depth = _reader.Depth - 1;
 				while (true)
 				{
@@ -120,23 +133,29 @@ namespace TsvBits.Serialization.Json
 						EndElement();
 						yield break;
 					}
-						
 
 					if (_reader.TokenType == JsonToken.PropertyName)
 					{
 						var name = CurrentName;
-						_reader.Read();
+						_reader.MustRead();
 						yield return name;
 					}
 					else
 					{
-						_reader.Read();
+						_reader.MustRead();
 					}
 				}
 			}
 
 			if (kind == ElementKind.Array)
 			{
+				// handling empty array
+				if (_reader.TokenType == JsonToken.EndArray)
+				{
+					EndElement();
+					yield break;
+				}
+
 				int depth = _reader.Depth - 1;
 				while (true)
 				{
@@ -146,15 +165,20 @@ namespace TsvBits.Serialization.Json
 						yield break;
 					}
 
-					if (_reader.TokenType == JsonToken.StartConstructor || IsPrimitive(_reader.TokenType))
+					if (_reader.TokenType == JsonToken.StartConstructor)
 					{
 						var name = CurrentName;
-						_reader.Read();
+						_reader.MustRead();
+						yield return name;
+					}
+					else if (IsPrimitive(_reader.TokenType))
+					{
+						var name = CurrentName;
 						yield return name;
 					}
 					else
 					{
-						_reader.Read();
+						_reader.MustRead();
 					}
 				}
 			}
@@ -167,7 +191,7 @@ namespace TsvBits.Serialization.Json
 			_reader.Read();
 
 			if (_reader.TokenType == JsonToken.EndConstructor)
-				_reader.Read();
+				_reader.MustRead();
 		}
 
 		private static bool IsPrimitive(JsonToken token)
@@ -191,11 +215,20 @@ namespace TsvBits.Serialization.Json
 
 	internal static class JsonReaderExtensions
 	{
-		public static void MoveToPropertyName(this JsonReader reader)
+		public static void MustRead(this JsonReader reader)
 		{
-			while (reader.TokenType != JsonToken.PropertyName && reader.Read())
+			if (!reader.Read())
+				throw new InvalidOperationException();
+		}
+
+		public static bool MoveTo(this JsonReader reader, params JsonToken[] tokens)
+		{
+			do
 			{
-			}
+				if (Array.IndexOf(tokens, reader.TokenType) >= 0)
+					return true;
+			} while (reader.Read());
+			return false;
 		}
 	}
 }
