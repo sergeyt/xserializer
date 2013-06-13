@@ -39,6 +39,11 @@ namespace TsvBits.Serialization.Xml
 			}
 		}
 
+		public Format Format
+		{
+			get { return Format.Xml; }
+		}
+
 		public XName CurrentName
 		{
 			get { return _reader.CurrentXName(); }

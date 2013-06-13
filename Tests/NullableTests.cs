@@ -31,12 +31,12 @@ namespace TsvBits.Serialization.Tests
 
 			var item1 = new Item<T>();
 			var xml = serializer.ToXmlFragment(item1);
-			var item2 = serializer.Parse<Item<T>>(xml);
+			var item2 = serializer.Parse<Item<T>>(xml, Format.Xml);
 			Assert.AreEqual(item1.Value, item2.Value);
 
 			item1 = new Item<T> {Value = value};
 			xml = serializer.ToXmlFragment(item1);
-			item2 = serializer.Parse<Item<T>>(xml);
+			item2 = serializer.Parse<Item<T>>(xml, Format.Xml);
 			Assert.AreEqual(item1.Value, item2.Value);
 		}
 

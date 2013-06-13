@@ -32,16 +32,30 @@ namespace TsvBits.Serialization
 		}
 
 		/// <summary>
-		/// Parses specified xml string.
+		/// Parses specified string.
 		/// </summary>
 		/// <typeparam name="T">The object type to create.</typeparam>
-		/// <param name="xml">The xml string to parse.</param>
-		public T Parse<T>(string xml)
+		/// <param name="s">The string to parse.</param>
+		/// <param name="format">Specifies string format.</param>
+		public T Parse<T>(string s, Format format)
 		{
-			using (var input = new StringReader(xml))
-			using (var reader = XmlReaderImpl.Create(input))
+			using (var input = new StringReader(s))
+			using (var reader = CreateReader(input, format))
 			{
 				return Read<T>(reader);
+			}
+		}
+
+		private IReader CreateReader(TextReader input, Format format)
+		{
+			switch (format)
+			{
+				case Format.Xml:
+					return XmlReaderImpl.Create(input);
+				case Format.Json:
+					return JsonReaderImpl.Create(_rootScope.Namespace, input);
+				default:
+					throw new ArgumentOutOfRangeException("format");
 			}
 		}
 
@@ -83,7 +97,7 @@ namespace TsvBits.Serialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = _rootScope.ElemDef(reader.CurrentName);
+			var def = _rootScope.ElemDef(typeof(T));
 			return (T)ReadElement(reader, def, null);
 		}
 
@@ -226,9 +240,25 @@ namespace TsvBits.Serialization
 				}
 			}
 
+			bool json = reader.Format == Format.Json;
+
 			// read child elements
-			foreach (var property in reader.ReadChildElements().Select(name => def.Elements[name]))
+			foreach (var name in reader.ReadChildElements())
 			{
+				var property = def.Elements[name];
+				object value;
+
+				if (json && property == null)
+				{
+					property = def.Attributes[XNamespace.None + name.LocalName];
+					if (property != null)
+					{
+						value = _rootScope.Parse(property.Type, reader.ReadString());
+						yield return new KeyValuePair<IPropertyDef, object>(property, value);
+						continue;
+					}
+				}
+
 				if (property == null) // unknown type
 				{
 					// todo: trace warning
@@ -236,7 +266,6 @@ namespace TsvBits.Serialization
 					continue;
 				}
 
-				object value;
 				if (ReadValue(reader, obj, def, property, out value))
 				{
 					yield return new KeyValuePair<IPropertyDef, object>(property, value);
@@ -463,6 +492,8 @@ namespace TsvBits.Serialization
 	public enum Format
 	{
 		Xml,
-		Json
+		Json,
+		JsonML,
+		Bson
 	};
 }

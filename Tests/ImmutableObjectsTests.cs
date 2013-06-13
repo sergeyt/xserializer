@@ -24,7 +24,7 @@ namespace TsvBits.Serialization.Tests
 			var xml = serializer.ToXmlString(item1, true);
 			Assert.AreEqual("<Item Name=\"test\" />", xml);
 
-			var item2 = serializer.Parse<Item>(xml);
+			var item2 = serializer.Parse<Item>(xml, Format.Xml);
 			Assert.AreEqual(item1.Name, item2.Name);
 		}
 
@@ -47,7 +47,7 @@ namespace TsvBits.Serialization.Tests
 			var xml = serializer.ToXmlString(container, true);
 			Assert.AreEqual("<Container><Items><Item Name=\"a\" /><Item Name=\"b\" /></Items></Container>", xml);
 
-			var container2 = serializer.Parse<Container>(xml);
+			var container2 = serializer.Parse<Container>(xml, Format.Xml);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			Assert.AreEqual(container.Items[0].Name, container2.Items[0].Name);
 			Assert.AreEqual(container.Items[1].Name, container2.Items[1].Name);

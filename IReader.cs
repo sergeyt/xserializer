@@ -6,6 +6,7 @@ namespace TsvBits.Serialization
 {
 	public interface IReader : IDisposable
 	{
+		Format Format { get; }
 		XName CurrentName { get; }
 
 		IEnumerable<KeyValuePair<XName, string>> ReadAttributes();

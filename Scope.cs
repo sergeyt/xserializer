@@ -8,7 +8,6 @@ namespace TsvBits.Serialization
 {
 	public sealed class Scope
 	{
-		private readonly XNamespace _ns;
 		private static readonly IDictionary<Type, TypeDef> PrimitiveTypes = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, TypeDef> _types = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
@@ -35,13 +34,15 @@ namespace TsvBits.Serialization
 
 		private Scope(XNamespace ns)
 		{
-			_ns = ns ?? XNamespace.None;
+			Namespace = ns ?? XNamespace.None;
 		}
 
 		public static Scope New(XNamespace ns)
 		{
 			return new Scope(ns);
 		}
+
+		public XNamespace Namespace { get; private set; }
 
 		public static Scope New(string ns)
 		{
@@ -99,7 +100,7 @@ namespace TsvBits.Serialization
 				var i = name.LastIndexOf('`');
 				if (i >= 0) name = name.Substring(0, i);
 			}
-			return Elem<T>(_ns + name);
+			return Elem<T>(Namespace + name);
 		}
 
 		internal IElementDef ElemDef(Type type)

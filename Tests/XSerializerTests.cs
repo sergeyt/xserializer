@@ -49,8 +49,9 @@ namespace TsvBits.Serialization.Tests
 			return _serializer.ToString(report, format);
 		}
 
-		[Test]
-		public void WriteReadReport()
+		[TestCase(Format.Xml, "<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>")]
+		[TestCase(Format.Json, "{\"Name\":\"report\",\"Width\":\"12in\",\"Body\":{\"ReportItems\":[new TextBox({\"Name\":\"textbox1\",\"DataElementOutput\":\"NoContent\",\"Value\":\"hello\"}),new Rectangle({\"ReportItems\":[new TextBox({\"Name\":\"textbox2\",\"Value\":\"world\"})]})]}}")]
+		public void WriteReadReport(Format format, string expectedString)
 		{
 			var textbox1 = new TextBox {Name = "textbox1", Value = "hello", DataElementOutput = DataElementOutput.NoContent};
 			var textbox2 = new TextBox {Name = "textbox2", Value = "world"};
@@ -68,10 +69,10 @@ namespace TsvBits.Serialization.Tests
 						}
 				};
 			
-			var xml = _serializer.ToXmlString(report, true);
-			Assert.AreEqual("<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>", xml);
+			var reportString = _serializer.ToString(report, format);
+			Assert.AreEqual(expectedString, reportString);
 
-			var report2 = _serializer.Parse<Report>(xml);
+			var report2 = _serializer.Parse<Report>(reportString, format);
 
 			Assert.AreEqual(report.Name, report2.Name);
 			Assert.AreEqual(report.Width, report2.Width);

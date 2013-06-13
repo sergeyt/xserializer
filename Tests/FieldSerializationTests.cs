@@ -49,7 +49,7 @@ namespace TsvBits.Serialization.Tests
 
 			var pt = new Point<T>(x, y);
 			var xml = serializer.ToXmlString(pt, true);
-			var pt2 = serializer.Parse<Point<T>>(xml);
+			var pt2 = serializer.Parse<Point<T>>(xml, Format.Xml);
 
 			Assert.AreEqual(pt, pt2);
 		}
@@ -80,7 +80,7 @@ namespace TsvBits.Serialization.Tests
 
 			var pt = new CPoint(x, y);
 			var xml = serializer.ToXmlString(pt, true);
-			var pt2 = serializer.Parse<CPoint>(xml);
+			var pt2 = serializer.Parse<CPoint>(xml, Format.Xml);
 
 			Assert.AreEqual(pt, pt2);
 		}

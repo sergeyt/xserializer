@@ -46,7 +46,7 @@ namespace TsvBits.Serialization.Tests
 			
 			var xml = serializer.ToXmlString(container, true);
 
-			var container2 = serializer.Parse<Container<T>>(xml);
+			var container2 = serializer.Parse<Container<T>>(xml, Format.Xml);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			for (int i = 0; i < container.Items.Count; i++)
 			{

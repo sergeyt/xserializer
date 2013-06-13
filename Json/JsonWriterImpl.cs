@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
 using Newtonsoft.Json;
@@ -9,6 +10,8 @@ namespace TsvBits.Serialization.Json
 	{
 		private readonly JsonWriter _writer;
 		private bool _root = true;
+		private enum  ElementKind { Obj, Ctor }
+		private readonly Stack<ElementKind> _elementStack = new Stack<ElementKind>();
 
 		public JsonWriterImpl(TextWriter writer)
 		{
@@ -42,10 +45,20 @@ namespace TsvBits.Serialization.Json
 			if (_root)
 			{
 				_root = false;
+				_elementStack.Push(ElementKind.Obj);
 			}
 			else
 			{
-				WritePropertyName(name);
+				if (_writer.WriteState == WriteState.Array)
+				{
+					_elementStack.Push(ElementKind.Ctor);
+					_writer.WriteStartConstructor(name.LocalName);
+				}
+				else
+				{
+					_elementStack.Push(ElementKind.Obj);
+					WritePropertyName(name);
+				}
 			}
 
 			_writer.WriteStartObject();
@@ -53,7 +66,18 @@ namespace TsvBits.Serialization.Json
 
 		public void WriteEndElement()
 		{
-			_writer.WriteEndObject();
+			switch (_elementStack.Pop())
+			{
+				case ElementKind.Obj:
+					_writer.WriteEndObject();
+					break;
+				case ElementKind.Ctor:
+					_writer.WriteEndObject();
+					_writer.WriteEndConstructor();
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		public void WriteStartCollection(XName name)
