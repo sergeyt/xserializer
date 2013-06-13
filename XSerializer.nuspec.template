@@ -12,7 +12,9 @@
 		<releaseNotes>Initial release of XSerializer capable to (de)serialize objects with IList collections into XML documents.</releaseNotes>
 		<copyright>Copyright 2013</copyright>
 		<tags>xml serialization</tags>
-		<dependencies/>
+		<dependencies>
+			<dependency id="Newtonsoft.Json" version="5.0.6"/>
+		</dependencies>
 		<frameworkAssemblies>
 			<frameworkAssembly assemblyName="System.Xml"/>
 			<frameworkAssembly assemblyName="System.Xml.Linq"/>

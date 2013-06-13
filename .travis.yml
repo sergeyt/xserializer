@@ -7,6 +7,13 @@ script:
   - mkdir build
   - mkdir build/release
   - mkdir build/test
+  - echo 'setting up nuget'
+  - wget -O .nuget/Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
+  - mozroots --import --sync
+  - echo 'getting dependencies'
+  - bash nuget install Newtonsoft.Json
+  - JSON_DLL=Newtonsoft.Json.5.0.6/lib/net35/Newtonsoft.Json.dll
+  - cp $JSON_DLL build/test
   - echo 'updating version.cs'
   - rm Version.cs
   - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
@@ -15,7 +22,7 @@ script:
   - echo $VERSION_CS >> Version.cs
   - cat Version.cs
   - echo 'compiling xserializer assembly'
-  - MCS_COMMON_OPTS='/target:library /r:System,System.Core,System.Xml,System.Xml.Linq /optimize+ /recurse:*.cs'
+  - MCS_COMMON_OPTS='/target:library /r:System,System.Core,System.Xml,System.Xml.Linq /r:$JSON_DLL /optimize+ /recurse:*.cs'
   - gmcs $MCS_COMMON_OPTS -pkg:nunit /define:NUNIT -out:build/test/XSerializerWithTests.dll
   - gmcs $MCS_COMMON_OPTS -out:build/release/TsvBits.XSerializer.dll
   - nunit-console ./build/test/XSerializerWithTests.dll
@@ -23,7 +30,5 @@ script:
   - SED_ARG=s/VERSION/$BUILD_VERSION/
   - sed $SED_ARG XSerializer.nuspec.template > XSerializer.nuspec
   - cat XSerializer.nuspec
-  - wget -O .nuget/Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
-  - mozroots --import --sync
   - bash nuget pack XSerializer.nuspec
 
