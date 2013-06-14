@@ -52,6 +52,7 @@ namespace TsvBits.Serialization.Tests
 
 		[TestCase(Format.Xml, "<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>")]
 		[TestCase(Format.Json, "{\"Name\":\"report\",\"Width\":\"12in\",\"Body\":{\"ReportItems\":[new TextBox({\"Name\":\"textbox1\",\"DataElementOutput\":\"NoContent\",\"Value\":\"hello\"}),new Rectangle({\"ReportItems\":[new TextBox({\"Name\":\"textbox2\",\"Value\":\"world\"})]})]}}")]
+		[TestCase(Format.JsonML, "[\"Report\",{\"xmlns\":\"http://test.com\",\"Name\":\"report\"},[\"Width\",\"12in\"],[\"Body\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox1\"},[\"DataElementOutput\",\"NoContent\"],[\"Value\",\"hello\"]],[\"Rectangle\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox2\"},[\"Value\",\"world\"]]]]]]]")]
 		public void WriteReadReport(Format format, string expectedString)
 		{
 			var textbox1 = new TextBox {Name = "textbox1", Value = "hello", DataElementOutput = DataElementOutput.NoContent};

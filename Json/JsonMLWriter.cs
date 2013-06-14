@@ -111,7 +111,7 @@ namespace TsvBits.Serialization.Json
 		public void WritePrimitiveElement(XName name, object value)
 		{
 			WriteStartElement(name);
-			_writer.WriteValue(value);
+			if (value != null) _writer.WriteValue(value);
 			WriteEndElement();
 		}
 

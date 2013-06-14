@@ -54,6 +54,8 @@ namespace TsvBits.Serialization
 					return XmlReaderImpl.Create(input);
 				case Format.Json:
 					return JsonReaderImpl.Create(_rootScope.Namespace, input);
+				case Format.JsonML:
+					return JsonMLReader.Create(input);
 				default:
 					throw new ArgumentOutOfRangeException("format");
 			}

@@ -6,6 +6,7 @@ namespace TsvBits.Serialization.Tests
 {
 	[TestFixture(Format.Xml)]
 	[TestFixture(Format.Json)]
+	[TestFixture(Format.JsonML)]
 	public class CollectionTests
 	{
 		private readonly Format _format;

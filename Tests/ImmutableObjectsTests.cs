@@ -9,6 +9,7 @@ namespace TsvBits.Serialization.Tests
 {
 	[TestFixture(Format.Xml)]
 	[TestFixture(Format.Json)]
+	[TestFixture(Format.JsonML)]
 	public class ImmutableObjectsTests
 	{
 		private readonly Format _format;
@@ -38,6 +39,9 @@ namespace TsvBits.Serialization.Tests
 					break;
 				case Format.Json:
 					Assert.AreEqual("{\"Name\":\"test\"}", serial);
+					break;
+				case Format.JsonML:
+					Assert.AreEqual("[\"Item\",{\"Name\":\"test\"}]", serial);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -71,6 +75,9 @@ namespace TsvBits.Serialization.Tests
 					break;
 				case Format.Json:
 					Assert.AreEqual("{\"Items\":[new Item({\"Name\":\"a\"}),new Item({\"Name\":\"b\"})]}", serial);
+					break;
+				case Format.JsonML:
+					Assert.AreEqual("[\"Container\",[\"Items\",[\"Item\",{\"Name\":\"a\"}],[\"Item\",{\"Name\":\"b\"}]]]", serial);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();

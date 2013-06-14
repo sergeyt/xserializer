@@ -62,6 +62,8 @@
     <Compile Include="Inflector.cs" />
     <Compile Include="IReader.cs" />
     <Compile Include="IWriter.cs" />
+    <Compile Include="Json\JsonExtensions.cs" />
+    <Compile Include="Json\JsonMLReader.cs" />
     <Compile Include="Json\JsonMLWriter.cs" />
     <Compile Include="Json\JsonReaderImpl.cs" />
     <Compile Include="Json\JsonWriterImpl.cs" />

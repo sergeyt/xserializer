@@ -26,9 +26,9 @@ namespace TsvBits.Serialization.Json
 			_dispose = dispose;
 		}
 
-		public static IReader Create(XNamespace ns, TextReader input)
+		public static JsonReader CreateJsonReader(TextReader input)
 		{
-			var reader = new JsonTextReader(input)
+			return new JsonTextReader(input)
 				{
 					CloseInput = false,
 					DateParseHandling = DateParseHandling.DateTime,
@@ -36,7 +36,11 @@ namespace TsvBits.Serialization.Json
 					Culture = CultureInfo.InvariantCulture,
 					FloatParseHandling = FloatParseHandling.Double,
 				};
-			return new JsonReaderImpl(ns, reader, true);
+		}
+
+		public static IReader Create(XNamespace ns, TextReader input)
+		{
+			return new JsonReaderImpl(ns, CreateJsonReader(input), true);
 		}
 
 		public void Dispose()
@@ -194,7 +198,7 @@ namespace TsvBits.Serialization.Json
 				_reader.MustRead();
 		}
 
-		private static bool IsPrimitive(JsonToken token)
+		public static bool IsPrimitive(JsonToken token)
 		{
 			switch (token)
 			{
@@ -210,25 +214,6 @@ namespace TsvBits.Serialization.Json
 				default:
 					return false;
 			}
-		}
-	}
-
-	internal static class JsonReaderExtensions
-	{
-		public static void MustRead(this JsonReader reader)
-		{
-			if (!reader.Read())
-				throw new InvalidOperationException();
-		}
-
-		public static bool MoveTo(this JsonReader reader, params JsonToken[] tokens)
-		{
-			do
-			{
-				if (Array.IndexOf(tokens, reader.TokenType) >= 0)
-					return true;
-			} while (reader.Read());
-			return false;
 		}
 	}
 }

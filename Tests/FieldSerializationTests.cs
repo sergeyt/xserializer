@@ -7,6 +7,7 @@ namespace TsvBits.Serialization.Tests
 {
 	[TestFixture(Format.Xml)]
 	[TestFixture(Format.Json)]
+	[TestFixture(Format.JsonML)]
 	public class FieldSerializationTests
 	{
 		private readonly Format _format;
@@ -56,8 +57,8 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(scope);
 
 			var pt = new Point<T>(x, y);
-			var xml = serializer.ToString(pt, _format);
-			var pt2 = serializer.Parse<Point<T>>(xml, _format);
+			var serial = serializer.ToString(pt, _format);
+			var pt2 = serializer.Parse<Point<T>>(serial, _format);
 
 			Assert.AreEqual(pt, pt2);
 		}
@@ -87,8 +88,8 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(scope);
 
 			var pt = new CPoint(x, y);
-			var xml = serializer.ToString(pt, _format);
-			var pt2 = serializer.Parse<CPoint>(xml, _format);
+			var serial = serializer.ToString(pt, _format);
+			var pt2 = serializer.Parse<CPoint>(serial, _format);
 
 			Assert.AreEqual(pt, pt2);
 		}
