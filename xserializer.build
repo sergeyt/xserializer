@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project xmlns="http://nant.sf.net" name="XSerializer" default="rebuild">
+<project xmlns="http://nant.sf.net" name="XSerializer" default="default">
 
 	<property name="srcdir" value="${project::get-base-directory()}" unless="${property::exists('project.dir')}"/>
 
@@ -23,6 +23,15 @@
 	<if test="${runtime == 'mono'}">
 		<property name="nant.settings.currentframework" value="mono-3.5" />
 	</if>
+
+	<target name="default">
+		<call target="nunit"/>
+		<call target="rebuild"/>
+		<call target="test"/>
+		<call target="release"/>
+		<call target="rebuild"/>
+		<call target="pack"/>
+	</target>
 
 	<target name="release">
 		<property name="config" value="release"/>
@@ -79,11 +88,18 @@
 	<target name="rebuild" depends="clean, build"/>
 
 	<target name="test">
-		<copy file="${nunit.framework.dll}" todir="${outdir}"/>
 		<nunit2>
-			<formatter type="Xml" usefile="true" extension=".xml" outputdir="${outdir}"/>
 			<formatter type="Plain"/>
-			<test assemblyname="${outdir}/${assembly}.dll"/>
+			<formatter type="Xml" usefile="true" extension=".xml" outputdir="${outdir}"/>
+			<test>
+				<assemblies>
+					<include name="${outdir}/${assembly}.dll"/>
+			 	</assemblies>	
+			 	<references>
+			 		<include name="${nunit.framework.dll}"/>
+			 		<include name="${json.dll}"/>
+			 	</references>
+			</test>
 		</nunit2>
 	</target>
 
