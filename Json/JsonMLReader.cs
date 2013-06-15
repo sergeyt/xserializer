@@ -114,6 +114,7 @@ namespace TsvBits.Serialization.Json
 		{
 			if (_reader.TokenType == JsonToken.EndArray)
 			{
+				_elementStack.Pop();
 				_reader.Read();
 				yield break;
 			}
@@ -123,6 +124,7 @@ namespace TsvBits.Serialization.Json
 			{
 				if (_reader.TokenType == JsonToken.EndArray && depth == _reader.Depth)
 				{
+					_elementStack.Pop();
 					_reader.Read();
 					break;
 				}
@@ -210,10 +212,10 @@ namespace TsvBits.Serialization.Json
 					}
 
 					var name = (string)_reader.Value;
-					_reader.Read();
+					_reader.MustRead();
 
 					var value = Convert.ToString(_reader.Value, CultureInfo.InvariantCulture);
-					_reader.Read();
+					_reader.MustRead();
 
 					yield return new KeyValuePair<string, string>(name, value);
 				}
