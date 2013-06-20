@@ -15,12 +15,12 @@ script:
   - JSON_DLL=Newtonsoft.Json.5.0.6/lib/net35/Newtonsoft.Json.dll
   - cp $JSON_DLL build/test/Newtonsoft.Json.dll
   - echo 'updating version.cs'
-  - rm Version.cs
+  - rm src/Version.cs
   - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
   - BUILD_VERSION=0.1.$BUILD_NUMBER.0
   - VERSION_CS="partial class AssemblyInfo { public const string Version = \"$BUILD_VERSION\"; }"
-  - echo $VERSION_CS >> Version.cs
-  - cat Version.cs
+  - echo $VERSION_CS >> src/Version.cs
+  - cat src/Version.cs
   - echo 'compiling xserializer assembly'
   - MCS_COMMON_OPTS='/target:library /r:System,System.Core,System.Xml,System.Xml.Linq /r:'$JSON_DLL' /optimize+ /recurse:src/*.cs'
   - gmcs $MCS_COMMON_OPTS -pkg:nunit /define:NUNIT -out:build/test/XSerializerWithTests.dll
