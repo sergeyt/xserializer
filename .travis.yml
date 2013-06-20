@@ -22,7 +22,7 @@ script:
   - echo $VERSION_CS >> src/Version.cs
   - cat src/Version.cs
   - echo 'compiling xserializer assembly'
-  - MCS_COMMON_OPTS='/target:library /r:System,System.Core,System.Xml,System.Xml.Linq /r:'$JSON_DLL' /optimize+ /recurse:src/*.cs'
+  - MCS_COMMON_OPTS='/target:library /keyfile:xserializer.snk /r:System,System.Core,System.Xml,System.Xml.Linq /r:'$JSON_DLL' /optimize+ /recurse:src/*.cs'
   - gmcs $MCS_COMMON_OPTS -pkg:nunit /define:NUNIT -out:build/test/XSerializerWithTests.dll
   - gmcs $MCS_COMMON_OPTS -out:build/release/TsvBits.XSerializer.dll
   - nunit-console ./build/test/XSerializerWithTests.dll

@@ -1,1 +1,1 @@
-.nuget\nuget.exe pack xserializer.nuspec
+src\.nuget\nuget.exe pack xserializer.nuspec

@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <project xmlns="http://nant.sf.net" name="XSerializer" default="default">
 
-	<property name="srcdir" value="${project::get-base-directory()}/src" unless="${property::exists('project.dir')}"/>
+	<property name="rootdir" value="${project::get-base-directory()}"/>
+	<property name="srcdir" value="${rootdir}/src" unless="${property::exists('project.dir')}"/>
 
 	<!-- input properties -->
-	<property name="buildroot" value="${project::get-base-directory()}/build" unless="${property::exists('buildroot')}"/>
+	<property name="buildroot" value="${rootdir}/build" unless="${property::exists('buildroot')}"/>
 	<property name="runtime" value="clr" unless="${property::exists('runtime')}"/>
 	<property name="debug" value="false" unless="${property::exists('debug')}"/>
 	<property name="config" value="release"/>
@@ -57,7 +58,7 @@
 	<target name="build">
 		<csc target="library" output="${outdir}/${assembly}.dll"
 			 debug="${debug}" unsafe="true" define="${define}"
-			 >
+			 keyfile="${rootdir}/xserializer.snk">
 			<references>
 				<include name="System.dll"/>
 				<include name="System.Core.dll"/>
@@ -104,7 +105,7 @@
 	</target>
 
 	<target name="pack">
-		<exec program="nuget.exe" basedir=".nuget" workingdir="${project::get-base-directory()}">
+		<exec program="nuget.exe" basedir=".nuget" workingdir="${rootdir}">
 			<arg value="pack"/>
 			<arg value="xserializer.nuspec"/>
 			<arg value='-OutputDirectory "${buildroot}/${config}"'/>
