@@ -8,28 +8,28 @@ namespace TsvBits.Serialization
 {
 	public sealed class Scope
 	{
-		private static readonly IDictionary<Type, TypeDef> PrimitiveTypes = new Dictionary<Type, TypeDef>();
+		private static readonly IDictionary<Type, TypeDef> CoreTypes = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, TypeDef> _types = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
 		private readonly IDictionary<XName, IElementDef> _elementDefsByName = new Dictionary<XName, IElementDef>();
 
 		static Scope()
 		{
-			PrimitiveType(x => x, x => x);
-			PrimitiveType(x => Convert.ToBoolean(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToSByte(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToByte(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToInt16(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToUInt16(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToInt32(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToUInt32(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToInt64(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToUInt64(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToSingle(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToDouble(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToDecimal(x, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
-			PrimitiveType(x => Convert.ToDateTime(x, CultureInfo.InvariantCulture),
-			     x => XmlConvert.ToString(x, XmlDateTimeSerializationMode.Utc));
+			CoreType(x => x, x => x);
+			CoreType(s => Convert.ToBoolean(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToSByte(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToByte(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToInt16(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToUInt16(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToInt32(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToUInt32(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToInt64(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToUInt64(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToSingle(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToDouble(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToDecimal(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
+			CoreType(s => Convert.ToDateTime(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x, XmlDateTimeSerializationMode.Utc));
+			CoreType(s => Convert.FromBase64String(s), x => Convert.ToBase64String(x));
 		}
 
 		private Scope(XNamespace ns)
@@ -49,9 +49,9 @@ namespace TsvBits.Serialization
 			return new Scope(string.IsNullOrEmpty(ns) ? XNamespace.None : XNamespace.Get(ns));
 		}
 
-		private static void PrimitiveType<T>(Func<string, T> read, Func<T, string> write)
+		private static void CoreType<T>(Func<string, T> read, Func<T, string> write)
 		{
-			PrimitiveTypes.Add(typeof(T), new TypeDef(s => read(s), v => write((T)v)));
+			CoreTypes.Add(typeof(T), new TypeDef(s => read(s), v => write((T)v)));
 		}
 
 		/// <summary>
@@ -191,7 +191,7 @@ namespace TsvBits.Serialization
 		private TypeDef FindType(Type type)
 		{
 			TypeDef def;
-			return _types.TryGetValue(type, out def) ? def : PrimitiveTypes.TryGetValue(type, out def) ? def : null;
+			return _types.TryGetValue(type, out def) ? def : CoreTypes.TryGetValue(type, out def) ? def : null;
 		}
 
 		private sealed class TypeDef

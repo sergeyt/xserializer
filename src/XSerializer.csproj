@@ -77,6 +77,7 @@
     <Compile Include="MethodGenerator.cs" />
     <Compile Include="Reflector.cs" />
     <Compile Include="Scope.cs" />
+    <Compile Include="Tests\BlobTests.cs" />
     <Compile Include="Tests\CollectionTests.cs" />
     <Compile Include="Tests\ExtensionsTests.cs" />
     <Compile Include="Tests\ImmutableObjectsTests.cs" />
