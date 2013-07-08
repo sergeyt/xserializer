@@ -9,10 +9,8 @@ script:
   - mkdir build/test
   - echo 'setting up nuget'
   - mozroots --import --sync
-  - wget -O nuget.exe 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=nuget&DownloadId=222685&FileTime=129528596690500000&Build=20588'
+  - wget -O nuget.exe 'http://az320820.vo.msecnd.net/downloads/nuget.exe'
   - wget -O Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
-  - echo 'bootstrapping nuget'
-  - bash nuget
   - echo 'getting dependencies'
   - bash nuget install Newtonsoft.Json
   - JSON_DLL=Newtonsoft.Json.5.0.6/lib/net35/Newtonsoft.Json.dll

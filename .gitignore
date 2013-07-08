@@ -3,6 +3,7 @@ obj
 build
 packages
 gh-pages
+.nuget
 src/.nuget
 
 *.suo
