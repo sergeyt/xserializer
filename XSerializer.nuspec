@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <package>
 	<metadata>
-		<id>XSerializer</id>
+		<id>TsvBits.XSerializer</id>
 		<version>0.1.0.0</version>
 		<authors>Sergey Todyshev (stodyshev@gmail.com)</authors>
 		<owners>TsvBits</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
 		<projectUrl>https://github.com/sergeyt/xserializer</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>XSerializer is facility capable to (de)serialize objects with IList collections into XML documents.</description>
-		<releaseNotes>Initial release of XSerializer capable to (de)serialize objects with IList collections into XML documents.</releaseNotes>
+		<description>XSerializer is fast and easy serialization engine for .NET.</description>
+		<releaseNotes>Initial release.</releaseNotes>
 		<copyright>Copyright 2013</copyright>
 		<tags>xml serialization</tags>
 		<dependencies>
