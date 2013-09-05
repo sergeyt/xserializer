@@ -2,6 +2,7 @@ xserializer
 ===========
 
 [![endorse](https://api.coderwall.com/sergeyt/endorsecount.png)](https://coderwall.com/sergeyt)
+[![Build Status](https://drone.io/github.com/sergeyt/xserializer/status.png)](https://drone.io/github.com/sergeyt/xserializer/latest)
 [![Build Status](https://travis-ci.org/sergeyt/xserializer.png)](https://travis-ci.org/sergeyt/xserializer)
 
 Fast, easy to use XML serializer.
