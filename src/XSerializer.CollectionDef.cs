@@ -107,11 +107,11 @@ namespace TsvBits.Serialization
 				{
 					_collectionDef = collectionDef;
 					Name = name;
-					ElementName = name;
+					ItemName = name;
 				}
 
 				public XName Name { get; private set; }
-				public XName ElementName { get; private set; }
+				public XName ItemName { get; private set; }
 				public string PropertyName { get { return "Item"; } }
 				public Type Type { get { return _collectionDef.GetElementType(Name); } }
 
@@ -125,6 +125,11 @@ namespace TsvBits.Serialization
 				public void SetValue(object target, object value)
 				{
 					_collectionDef.Add(target, value);
+				}
+
+				public bool IsDefaultValue(object value)
+				{
+					return false;
 				}
 
 				public override string ToString()

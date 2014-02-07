@@ -22,7 +22,7 @@ namespace TsvBits.Serialization
 			Name = name;
 		}
 
-		private static IPropertyDef MakeProperty<TValue>(Expression<Func<T, TValue>> property, XNamespace ns)
+		private static IPropertyDef CreateProperty<TValue>(Expression<Func<T, TValue>> property, XNamespace ns, Func<TValue, bool> isDefaultValue)
 		{
 			var member = property.ResolveMember();
 			var name = ns + member.Name;
@@ -46,12 +46,12 @@ namespace TsvBits.Serialization
 
 			var getter = property.Compile();
 			var setter = MethodGenerator.Set(property);
-			return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter);
+			return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter, isDefaultValue);
 		}
 
 		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, int initIndex)
 		{
-			var def = MakeProperty(property, XNamespace.None);
+			var def = CreateProperty(property, XNamespace.None, null);
 			_attributes.Add(def.Name, def);
 			if (initIndex >= 0) _propertyIndex[initIndex] = def.PropertyName;
 			return this;
@@ -65,7 +65,7 @@ namespace TsvBits.Serialization
 
 		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property, int initIndex)
 		{
-			var def = MakeProperty(property, Name.Namespace);
+			var def = CreateProperty(property, Name.Namespace, null);
 			_elements.Add(def.Name, def);
 			if (initIndex >= 0) _propertyIndex[initIndex] = def.PropertyName;
 			return this;
@@ -177,23 +177,26 @@ namespace TsvBits.Serialization
 		{
 			private readonly Func<T, TValue> _getter;
 			private readonly Action<T, TValue> _setter;
+			private readonly Func<TValue, bool> _isDefaultValue;
 
-			public PropertyDef(string propertyName, XName name, XName elementName, Func<T, TValue> getter, Action<T, TValue> setter)
+			public PropertyDef(string propertyName, XName name, XName itemName,
+				Func<T, TValue> getter, Action<T, TValue> setter, Func<TValue, bool> isDefaultValue)
 			{
 				if (name == null) throw new ArgumentNullException("name");
 				if (getter == null) throw new ArgumentNullException("getter");
 
 				_getter = getter;
 				_setter = setter;
+				_isDefaultValue = isDefaultValue;
 
 				PropertyName = propertyName;
 				Name = name;
-				ElementName = elementName;
+				ItemName = itemName;
 			}
 
 			public string PropertyName { get; private set; }
 			public XName Name { get; private set; }
-			public XName ElementName { get; private set; }
+			public XName ItemName { get; private set; }
 			public Type Type { get { return typeof(TValue); } }
 			public bool IsReadOnly { get { return _setter == null; } }
 
@@ -205,6 +208,11 @@ namespace TsvBits.Serialization
 			public void SetValue(object target, object value)
 			{
 				_setter((T)target, (TValue)value);
+			}
+
+			public bool IsDefaultValue(object value)
+			{
+				return _isDefaultValue != null && _isDefaultValue((TValue) value);
 			}
 
 			public override string ToString()

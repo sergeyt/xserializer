@@ -404,7 +404,7 @@ namespace TsvBits.Serialization
 			var collection = value as IEnumerable;
 			if (collection != null)
 			{
-				var itemDef = new CollectionItemDef(property.ElementName, Reflector.GetItemType(type));
+				var itemDef = new CollectionItemDef(property.ItemName, Reflector.GetItemType(type));
 				var empty = true;
 				foreach (var item in collection)
 				{
@@ -415,10 +415,10 @@ namespace TsvBits.Serialization
 					}
 					if (item == null)
 					{
-						writer.WriteNullItem(property.ElementName);
+						writer.WriteNullItem(property.ItemName);
 						continue;
 					}
-					WriteValue(writer, itemDef, property.ElementName, item);
+					WriteValue(writer, itemDef, property.ItemName, item);
 				}
 				if (!empty) writer.WriteEndCollection();
 				return;
@@ -467,13 +467,13 @@ namespace TsvBits.Serialization
 			{
 				Name = name;
 				Type = type;
-				ElementName = name;
+				ItemName = name;
 			}
 
 			public string PropertyName { get { return "Item"; } }
 			public Type Type { get; private set; }
 			public XName Name { get; private set; }
-			public XName ElementName { get; private set; }
+			public XName ItemName { get; private set; }
 			public bool IsReadOnly { get { return true; } }
 
 			public object GetValue(object target)
@@ -485,14 +485,11 @@ namespace TsvBits.Serialization
 			{
 				throw new NotSupportedException();
 			}
+
+			public bool IsDefaultValue(object value)
+			{
+				return false;
+			}
 		}
 	}
-
-	public enum Format
-	{
-		Xml,
-		Json,
-		JsonML,
-		Bson
-	};
 }

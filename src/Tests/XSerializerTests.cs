@@ -15,28 +15,29 @@ namespace TsvBits.Serialization.Tests
 		public void Init()
 		{
 			var scope = Scope.New("http://test.com")
-			                 .Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
-			                 .Enum(DataElementOutput.Auto);
+				.Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
+				.Type(s => ExpressionInfo.Parse(s), x => x.ToString())
+				.Enum(DataElementOutput.Auto);
 
 			scope.Elem<Report>()
-			     .Attr(x => x.Name)
-			     .Elem(x => x.Width)
-			     .Elem(x => x.Body);
+				.Attr(x => x.Name)
+				.Elem(x => x.Width)
+				.Elem(x => x.Body);
 
 			scope.Elem<Body>()
-			     .Elem(x => x.Height)
-			     .Elem(x => x.ReportItems);
+				.Elem(x => x.Height)
+				.Elem(x => x.ReportItems);
 
 			var item = scope.Elem<ReportItem>()
-			                .Attr(x => x.Name)
-			                .Elem(x => x.DataElementName)
-			                .Elem(x => x.DataElementOutput);
+				.Attr(x => x.Name)
+				.Elem(x => x.DataElementName)
+				.Elem(x => x.DataElementOutput);
 
 			item.Sub<TextBox>()
-			    .Elem(x => x.Value);
+				.Elem(x => x.Value);
 
 			item.Sub<Rectangle>()
-			    .Elem(x => x.ReportItems);
+				.Elem(x => x.ReportItems);
 
 			_serializer = XSerializer.New(scope);
 		}
@@ -50,27 +51,33 @@ namespace TsvBits.Serialization.Tests
 			return _serializer.ToString(report, format);
 		}
 
-		[TestCase(Format.Xml, "<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>")]
-		[TestCase(Format.Json, "{\"Name\":\"report\",\"Width\":\"12in\",\"Body\":{\"ReportItems\":[new TextBox({\"Name\":\"textbox1\",\"DataElementOutput\":\"NoContent\",\"Value\":\"hello\"}),new Rectangle({\"ReportItems\":[new TextBox({\"Name\":\"textbox2\",\"Value\":\"world\"})]})]}}")]
-		[TestCase(Format.JsonML, "[\"Report\",{\"xmlns\":\"http://test.com\",\"Name\":\"report\"},[\"Width\",\"12in\"],[\"Body\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox1\"},[\"DataElementOutput\",\"NoContent\"],[\"Value\",\"hello\"]],[\"Rectangle\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox2\"},[\"Value\",\"world\"]]]]]]]")]
+		[TestCase(Format.Xml,
+			"<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>"
+			)]
+		[TestCase(Format.Json,
+			"{\"Name\":\"report\",\"Width\":\"12in\",\"Body\":{\"ReportItems\":[new TextBox({\"Name\":\"textbox1\",\"DataElementOutput\":\"NoContent\",\"Value\":\"hello\"}),new Rectangle({\"ReportItems\":[new TextBox({\"Name\":\"textbox2\",\"Value\":\"world\"})]})]}}"
+			)]
+		[TestCase(Format.JsonML,
+			"[\"Report\",{\"xmlns\":\"http://test.com\",\"Name\":\"report\"},[\"Width\",\"12in\"],[\"Body\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox1\"},[\"DataElementOutput\",\"NoContent\"],[\"Value\",\"hello\"]],[\"Rectangle\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox2\"},[\"Value\",\"world\"]]]]]]]"
+			)]
 		public void WriteReadReport(Format format, string expectedString)
 		{
 			var textbox1 = new TextBox {Name = "textbox1", Value = "hello", DataElementOutput = DataElementOutput.NoContent};
 			var textbox2 = new TextBox {Name = "textbox2", Value = "world"};
 			var rect1 = new Rectangle
-				{
-					ReportItems = {textbox2}
-				};
+			{
+				ReportItems = {textbox2}
+			};
 			var report = new Report
+			{
+				Name = "report",
+				Width = "12in",
+				Body =
 				{
-					Name = "report",
-					Width = "12in",
-					Body =
-						{
-							ReportItems = {textbox1, rect1}
-						}
-				};
-			
+					ReportItems = {textbox1, rect1}
+				}
+			};
+
 			var reportString = _serializer.ToString(report, format);
 			Assert.AreEqual(expectedString, reportString);
 
@@ -122,7 +129,11 @@ namespace TsvBits.Serialization.Tests
 			public ReportItemCollection ReportItems { get; private set; }
 		}
 
-		public enum DataElementOutput { Auto, NoContent }
+		public enum DataElementOutput
+		{
+			Auto,
+			NoContent
+		}
 
 		public abstract class ReportItem
 		{
@@ -219,6 +230,26 @@ namespace TsvBits.Serialization.Tests
 			public override string ToString()
 			{
 				return IsValid ? string.Format(CultureInfo.InvariantCulture, "{0}{1}", Value, Unit) : "invalid";
+			}
+		}
+
+		public class ExpressionInfo
+		{
+			private readonly string _expression;
+
+			private ExpressionInfo(string expression)
+			{
+				_expression = expression;
+			}
+
+			public static ExpressionInfo Parse(string s)
+			{
+				return new ExpressionInfo(s);
+			}
+
+			public override string ToString()
+			{
+				return _expression;
 			}
 		}
 	}

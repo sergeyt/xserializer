@@ -25,9 +25,9 @@ namespace TsvBits.Serialization
 		XName Name { get; }
 
 		/// <summary>
-		/// Gets XML name of collection element.
+		/// Gets XML name of collection element. Applicable for collection properties.
 		/// </summary>
-		XName ElementName { get; }
+		XName ItemName { get; }
 		
 		/// <summary>
 		/// Specifies whether the property is readonly.
@@ -47,6 +47,12 @@ namespace TsvBits.Serialization
 		/// <param name="target">The target object to modify.</param>
 		/// <param name="value">The value to set.</param>
 		void SetValue(object target, object value);
+
+		/// <summary>
+		/// Specifies whether given value is default for this property.
+		/// </summary>
+		/// <param name="value">The value to check.</param>
+		bool IsDefaultValue(object value);
 	}
 
 	/// <summary>
