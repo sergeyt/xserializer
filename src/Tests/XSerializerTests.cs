@@ -14,21 +14,21 @@ namespace TsvBits.Serialization.Tests
 		[SetUp]
 		public void Init()
 		{
-			var scope = Scope.New("http://test.com")
+			var schema = Scope.New("http://test.com")
 				.Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
 				.Type(s => ExpressionInfo.Parse(s), x => x.ToString())
 				.Enum(DataElementOutput.Auto);
 
-			scope.Elem<Report>()
+			schema.Elem<Report>()
 				.Attr(x => x.Name)
 				.Elem(x => x.Width)
 				.Elem(x => x.Body);
 
-			scope.Elem<Body>()
+			schema.Elem<Body>()
 				.Elem(x => x.Height)
 				.Elem(x => x.ReportItems);
 
-			var item = scope.Elem<ReportItem>()
+			var item = schema.Elem<ReportItem>()
 				.Attr(x => x.Name)
 				.Elem(x => x.DataElementName)
 				.Elem(x => x.DataElementOutput);
@@ -39,7 +39,7 @@ namespace TsvBits.Serialization.Tests
 			item.Sub<Rectangle>()
 				.Elem(x => x.ReportItems);
 
-			_serializer = XSerializer.New(scope);
+			_serializer = XSerializer.New(schema);
 		}
 
 		[TestCase(Format.Xml, Result = "<Report xmlns=\"http://test.com\"><Body /></Report>")]
