@@ -31,14 +31,14 @@ namespace TsvBits.Serialization
 
 		public void Add(XName name, T property)
 		{
-			_store.Add(name, property);
+			_store[name] = property;
 		}
 
 		public void AddRange(DefCollection<T> collection)
 		{
 			foreach (var p in collection._store)
 			{
-				_store.Add(p.Key, p.Value);
+				Add(p.Key, p.Value);
 			}
 		}
 

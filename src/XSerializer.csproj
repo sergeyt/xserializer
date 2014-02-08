@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PropertyDef.cs" />
     <Compile Include="XSerializer.CollectionItemDef.cs" />
     <Compile Include="DefCollection.cs" />
     <Compile Include="XSerializer.Deserialization.cs" />
