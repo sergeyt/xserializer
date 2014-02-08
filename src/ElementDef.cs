@@ -88,11 +88,35 @@ namespace TsvBits.Serialization
 			return this;
 		}
 
+		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, Func<TValue,bool> isDefaultValue)
+		{
+			var def = CreateProperty(property, XNamespace.None, isDefaultValue);
+			_attributes.Add(def.Name, def);
+			return this;
+		}
+
+		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, TValue defaultValue)
+		{
+			return Attr(property, value => Equals(value, defaultValue));
+		}
+
 		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property)
 		{
 			var def = CreateProperty(property, Name.Namespace, null);
 			_elements.Add(def.Name, def);
 			return this;
+		}
+
+		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property, Func<TValue, bool> isDefaultValue)
+		{
+			var def = CreateProperty(property, Name.Namespace, isDefaultValue);
+			_elements.Add(def.Name, def);
+			return this;
+		}
+
+		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property, TValue defaultValue)
+		{
+			return Elem(property, value => Equals(value, defaultValue));
 		}
 
 		public ElementDef<TElement> Sub<TElement>(XName name)

@@ -318,8 +318,6 @@ namespace TsvBits.Serialization
 		{
 			if (name == null) name = def.Name;
 
-			writer.WriteStartElement(name);
-
 			var attributes = from attr in def.Attributes
 				let value = attr.GetValue(obj)
 				where value != null && !attr.IsDefaultValue(value)
@@ -331,7 +329,11 @@ namespace TsvBits.Serialization
 				let value = elem.GetValue(obj)
 				where value != null && !elem.IsDefaultValue(value)
 				select new {elem.Name, Value = value, Definition = elem};
-			
+
+			// TODO do not write non-root empty elements
+
+			writer.WriteStartElement(name);
+
 			foreach (var attr in attributes)
 			{
 				writer.WriteAttributeString(attr.Name, attr.Value);
@@ -341,7 +343,7 @@ namespace TsvBits.Serialization
 			{
 				WriteValue(writer, elem.Definition, elem.Name, elem.Value);
 			}
-			
+
 			writer.WriteEndElement();
 		}
 
