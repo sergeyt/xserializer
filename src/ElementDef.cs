@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Xml.Linq;
 
@@ -21,12 +22,13 @@ namespace TsvBits.Serialization
 			_scope = scope;
 			Name = name;
 		}
-
+		
 		private static IPropertyDef CreateProperty<TValue>(Expression<Func<T, TValue>> property, XNamespace ns, Func<TValue, bool> isDefaultValue)
 		{
 			var member = property.ResolveMember();
 			var name = ns + member.Name;
 
+			// TODO support multiple xml names or namespaces configured via custom attributes 
 			var nameAttr = member.ResolveAttribute<NameAttribute>(true);
 			if (nameAttr != null)
 			{
@@ -44,8 +46,18 @@ namespace TsvBits.Serialization
 					              : XNamespace.Get(itemAttr.Namespace) + itemAttr.Name;
 			}
 
+			if (isDefaultValue == null)
+			{
+				var defaultValueAttr = member.ResolveAttribute<DefaultValueAttribute>(true);
+				if (defaultValueAttr != null)
+				{
+					var defaultValue = defaultValueAttr.Value;
+					isDefaultValue = value => Equals(value, defaultValue);
+				}
+			}
+
 			var getter = property.Compile();
-			var setter = MethodGenerator.Set(property);
+			var setter = MethodGenerator.GenerateSetter(property);
 			return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter, isDefaultValue);
 		}
 
@@ -73,8 +85,7 @@ namespace TsvBits.Serialization
 
 		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property)
 		{
-			Elem(property, -1);
-			return this;
+			return Elem(property, -1);
 		}
 
 		public ElementDef<TElement> Sub<TElement>(XName name)

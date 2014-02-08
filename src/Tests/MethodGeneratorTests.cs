@@ -14,7 +14,7 @@ namespace TsvBits.Serialization.Tests
 			{
 				var c1 = new MyCollection();
 				var item1 = new Item {Name = "item1"};
-				var adder = MethodGenerator.Add(c1, item1, typeof(Item));
+				var adder = MethodGenerator.GenerateAdder(c1, item1, typeof(Item));
 				Assert.AreEqual(0, c1.Count);
 				adder(c1, item1);
 				Assert.AreEqual(1, c1.Count);
@@ -23,7 +23,7 @@ namespace TsvBits.Serialization.Tests
 			{
 				var c1 = new MyCollection();
 				var item1 = new Item {Name = "item1"};
-				var adder = MethodGenerator.Add(c1, item1, typeof(object));
+				var adder = MethodGenerator.GenerateAdder(c1, item1, typeof(object));
 				Assert.AreEqual(0, c1.Count);
 				adder(c1, item1);
 				Assert.AreEqual(1, c1.Count);
@@ -34,18 +34,18 @@ namespace TsvBits.Serialization.Tests
 		[Test]
 		public void TestSetProperty()
 		{
-			var setter = MethodGenerator.Set<Item, string>(x => x.Name);
+			var setter = MethodGenerator.GenerateSetter<Item, string>(x => x.Name);
 			var item = new Item();
 			setter(item, "test");
 			Assert.AreEqual("test", item.Name);
 			Assert.IsNull(item.Field);
-			Assert.IsNull(MethodGenerator.Set<Item, string>(x => x.FullName));
+			Assert.IsNull(MethodGenerator.GenerateSetter<Item, string>(x => x.FullName));
 		}
 
 		[Test]
 		public void TestSetField()
 		{
-			var setter = MethodGenerator.Set<Item, string>(x => x.Field);
+			var setter = MethodGenerator.GenerateSetter<Item, string>(x => x.Field);
 			var item = new Item {Field = "abc"};
 			setter(item, "test");
 			Assert.AreEqual("test", item.Field);
@@ -55,7 +55,7 @@ namespace TsvBits.Serialization.Tests
 		[Test]
 		public void TestSetReadOnlyField()
 		{
-			var setter = MethodGenerator.Set<Item2, string>(x => x.Name);
+			var setter = MethodGenerator.GenerateSetter<Item2, string>(x => x.Name);
 			Assert.IsNull(setter);
 		}
 

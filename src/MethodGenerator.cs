@@ -26,7 +26,7 @@ namespace TsvBits.Serialization
 			return func;
 		}
 
-		public static Action<object, object> Add(object target, object item, Type elementType)
+		public static Action<object, object> GenerateAdder(object target, object item, Type elementType)
 		{
 			var type = target.GetType();
 			var itemType = item != null ? item.GetType() : elementType;
@@ -39,7 +39,7 @@ namespace TsvBits.Serialization
 			return Expression.Lambda<Action<object, object>>(call, thisArg, itemArg).Compile();
 		}
 
-		public static Action<T, TValue> Set<T, TValue>(Expression<Func<T, TValue>> expression)
+		public static Action<T, TValue> GenerateSetter<T, TValue>(Expression<Func<T, TValue>> expression)
 		{
 			var me = (MemberExpression)expression.Body;
 			var pi = me.Member as PropertyInfo;
@@ -62,13 +62,13 @@ namespace TsvBits.Serialization
 			{
 				if (fi.IsInitOnly) return null;
 
-				return CreateFieldSetter<T, TValue>(fi);
+				return GenerateFieldSetter<T, TValue>(fi);
 			}
 
 			throw new NotSupportedException();
 		}
 
-		private static Action<T, TValue> CreateFieldSetter<T, TValue>(FieldInfo field)
+		private static Action<T, TValue> GenerateFieldSetter<T, TValue>(FieldInfo field)
 		{
 			var d = new DynamicMethod("<dynamic>_" + typeof(T).Name + "_set_field_" + field.Name,
 			                          typeof(void), new[] {typeof(T), typeof(TValue)}, typeof(T), true);

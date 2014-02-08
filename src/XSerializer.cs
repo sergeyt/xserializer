@@ -351,20 +351,26 @@ namespace TsvBits.Serialization
 
 			writer.WriteStartElement(name);
 
-			foreach (var attr in def.Attributes)
+			var attributes = from attr in def.Attributes
+				let value = attr.GetValue(obj)
+				where value != null && !attr.IsDefaultValue(value)
+				let stringValue = ToString(value)
+				where !string.IsNullOrEmpty(stringValue)
+				select new {attr.Name, Value = stringValue};
+
+			var elements = from elem in def.Elements
+				let value = elem.GetValue(obj)
+				where value != null && !elem.IsDefaultValue(value)
+				select new {elem.Name, Value = value, Definition = elem};
+			
+			foreach (var attr in attributes)
 			{
-				var value = attr.GetValue(obj);
-				if (value == null) continue;
-				var s = ToString(value);
-				if (string.IsNullOrEmpty(s)) continue;
-				writer.WriteAttributeString(attr.Name, s);
+				writer.WriteAttributeString(attr.Name, attr.Value);
 			}
 
-			foreach (var elem in def.Elements)
+			foreach (var elem in elements)
 			{
-				var value = elem.GetValue(obj);
-				if (value == null) continue;
-				WriteValue(writer, elem, elem.Name, value);
+				WriteValue(writer, elem.Definition, elem.Name, elem.Value);
 			}
 			
 			writer.WriteEndElement();

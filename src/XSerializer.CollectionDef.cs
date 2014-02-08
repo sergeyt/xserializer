@@ -69,7 +69,7 @@ namespace TsvBits.Serialization
 				if (_addMethods.TryGetValue(itemType, out action))
 					return action;
 
-				action = MethodGenerator.Add(target, item, _elementType);
+				action = MethodGenerator.GenerateAdder(target, item, _elementType);
 				_addMethods.Add(itemType, action);
 				return action;
 			}

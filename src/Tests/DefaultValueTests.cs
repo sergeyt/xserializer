@@ -1,4 +1,5 @@
 ﻿#if NUNIT
+using System.ComponentModel;
 using System.Xml.Linq;
 using NUnit.Framework;
 
@@ -7,23 +8,26 @@ namespace TsvBits.Serialization.Tests
 	[TestFixture]
 	public class DefaultValueTests
 	{
-		[Test]
-		public void Test()
-		{
-			Test<string>("test");
-		}
-
-		private void Test<T>(T defaultValue)
+		[TestCase(Result = "<Entity />")]
+		public string Test()
 		{
 			var schema = Scope.New(XNamespace.None);
-			var item = schema.Elem<Item<string>>();
-			// TODO property descriptor structure to define DefaultValue, etc
-			// item.Attr(x => x.Value, defaultValue);
+			schema.Elem<Entity>()
+				.Elem(x => x.StringProperty);
+
+			var serializer = XSerializer.New(schema);
+			var entity = new Entity
+			{
+				StringProperty = "test"
+			};
+
+			return serializer.ToXmlString(entity);
 		}
 
-		private class Item<T>
+		private class Entity
 		{
-			public T Value { get; set; }
+			[DefaultValue("test")]
+			public string StringProperty { get; set; }
 		}
 	}
 }
