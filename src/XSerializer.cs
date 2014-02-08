@@ -169,6 +169,7 @@ namespace TsvBits.Serialization
 		{
 			if (def.IsImmutable)
 			{
+				// TODO pass original property name rather than xml name
 				var props = ReadProperties(reader, null, def).ToDictionary(x => x.Key.Name.LocalName, x => x.Value);
 				return def.Create(props);
 			}

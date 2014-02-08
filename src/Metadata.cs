@@ -48,4 +48,18 @@ namespace TsvBits.Serialization
 		public string Name { get; private set; }
 		public string Namespace { get; private set; }
 	}
+
+	/// <summary>
+	/// Specifies index in argument constructor.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]	
+	public sealed class ArgAttribute : Attribute
+	{
+		public ArgAttribute(int index)
+		{
+			Index = index;
+		}
+
+		public int Index { get; private set; }
+	}
 }

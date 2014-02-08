@@ -42,16 +42,16 @@ namespace TsvBits.Serialization.Tests
 			var scope = Scope.New("");
 
 			var def = scope.Elem<Point<T>>()
-			               .Init<T, T>((x1, y1) => new Point<T>(x1, y1));
+			               .Init();
 			if (asAttrs)
 			{
-				def.Attr(p => p.X, 0)
-				   .Attr(p => p.Y, 1);
+				def.Attr(p => p.X)
+				   .Attr(p => p.Y);
 			}
 			else
 			{
-				def.Elem(p => p.X, 0)
-				   .Elem(p => p.Y, 1);
+				def.Elem(p => p.X)
+					.Elem(p => p.Y);
 			}
 
 			var serializer = XSerializer.New(scope);
@@ -96,7 +96,10 @@ namespace TsvBits.Serialization.Tests
 
 		private struct Point<T> : IEquatable<Point<T>>
 		{
+			[Arg(0)]
 			public readonly T X;
+
+			[Arg(1)]
 			public readonly T Y;
 
 			public Point(T x, T y)
@@ -127,7 +130,10 @@ namespace TsvBits.Serialization.Tests
 
 		private class CPoint : IEquatable<CPoint>
 		{
+			[Arg(0)]
 			public float X;
+
+			[Arg(1)]
 			public float Y;
 
 			public CPoint()

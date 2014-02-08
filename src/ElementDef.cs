@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Xml.Linq;
 
@@ -11,7 +12,8 @@ namespace TsvBits.Serialization
 		private readonly Scope _scope;
 		private readonly DefCollection<IPropertyDef> _attributes = new DefCollection<IPropertyDef>();
 		private readonly DefCollection<IPropertyDef> _elements = new DefCollection<IPropertyDef>();
-		private readonly IDictionary<int,string> _propertyIndex = new Dictionary<int, string>();
+		// property name -> index of constructor argument
+		private readonly IDictionary<string,int> _ctorIndex = new Dictionary<string, int>();
 		private Func<IDictionary<string, object>, T> _create;
 
 		internal ElementDef(Scope scope, XName name)
@@ -22,8 +24,20 @@ namespace TsvBits.Serialization
 			_scope = scope;
 			Name = name;
 		}
+
+		public XName Name { get; private set; }
+		public Type Type { get { return typeof(T); } }
+		public bool IsImmutable { get { return _create != null; } }
+		public IDefCollection<IPropertyDef> Attributes { get { return _attributes; } }
+		public IDefCollection<IPropertyDef> Elements { get { return _elements; } }
+
+		public object Create(IDictionary<string, object> properties)
+		{
+			if (_create == null) throw new NotSupportedException();
+			return _create(properties);
+		}
 		
-		private static IPropertyDef CreateProperty<TValue>(Expression<Func<T, TValue>> property, XNamespace ns, Func<TValue, bool> isDefaultValue)
+		private IPropertyDef CreateProperty<TValue>(Expression<Func<T, TValue>> property, XNamespace ns, Func<TValue, bool> isDefaultValue)
 		{
 			var member = property.ResolveMember();
 			var name = ns + member.Name;
@@ -56,36 +70,29 @@ namespace TsvBits.Serialization
 				}
 			}
 
+			var argAttr = member.ResolveAttribute<ArgAttribute>(true);
+			if (argAttr != null)
+			{
+				_ctorIndex[name.LocalName] = argAttr.Index;
+			}
+
 			var getter = property.Compile();
 			var setter = MethodGenerator.GenerateSetter(property);
 			return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter, isDefaultValue);
 		}
 
-		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, int initIndex)
+		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property)
 		{
 			var def = CreateProperty(property, XNamespace.None, null);
 			_attributes.Add(def.Name, def);
-			if (initIndex >= 0) _propertyIndex[initIndex] = def.PropertyName;
-			return this;
-		}
-
-		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property)
-		{
-			Attr(property, -1);
-			return this;
-		}
-
-		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property, int initIndex)
-		{
-			var def = CreateProperty(property, Name.Namespace, null);
-			_elements.Add(def.Name, def);
-			if (initIndex >= 0) _propertyIndex[initIndex] = def.PropertyName;
 			return this;
 		}
 
 		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property)
 		{
-			return Elem(property, -1);
+			var def = CreateProperty(property, Name.Namespace, null);
+			_elements.Add(def.Name, def);
+			return this;
 		}
 
 		public ElementDef<TElement> Sub<TElement>(XName name)
@@ -109,74 +116,30 @@ namespace TsvBits.Serialization
 			return this;
 		}
 
-		private string GetPropertyName(int initIndex)
+		/// <summary>
+		/// Auto generates create function.
+		/// </summary>
+		public ElementDef<T> Init()
 		{
-			string name;
-			if (!_propertyIndex.TryGetValue(initIndex, out name))
-				throw new InvalidOperationException("This ElementDef is not complete!");
-			return name;
-		}
-
-		public ElementDef<T> Init<T1>(Func<T1, T> create)
-		{
-			if (create == null) throw new ArgumentNullException("create");
 			_create = d =>
-				{
-					var v1 = d.Get<T1>(GetPropertyName(0));
-					return create(v1);
-				};
+			{
+				// TODO optimize using generated dynamic methods
+				var ctors = typeof(T).GetConstructors();
+				var ctor = ctors.FirstOrDefault(x => x.GetParameters().Length == d.Count);
+				if (ctor == null)
+					throw new InvalidOperationException(
+						string.Format("Type '{0}' has no appropriate constructor to create object.",
+							typeof(T))
+						);
+
+				var args = (from p in d
+					let index = _ctorIndex[p.Key]
+					orderby index
+					select p.Value).ToArray();
+
+				return (T) ctor.Invoke(args);
+			};
 			return this;
-		}
-
-		public ElementDef<T> Init<T1, T2>(Func<T1, T2, T> create)
-		{
-			if (create == null) throw new ArgumentNullException("create");
-			_create = d =>
-				{
-					var v1 = d.Get<T1>(GetPropertyName(0));
-					var v2 = d.Get<T2>(GetPropertyName(1));
-					return create(v1, v2);
-				};
-			return this;
-		}
-
-		public ElementDef<T> Init<T1, T2, T3>(Func<T1, T2, T3, T> create)
-		{
-			if (create == null) throw new ArgumentNullException("create");
-			_create = d =>
-				{
-					var v1 = d.Get<T1>(GetPropertyName(0));
-					var v2 = d.Get<T2>(GetPropertyName(1));
-					var v3 = d.Get<T3>(GetPropertyName(2));
-					return create(v1, v2, v3);
-				};
-			return this;
-		}
-
-		public ElementDef<T> Init<T1, T2, T3, T4>(Func<T1, T2, T3, T4, T> create)
-		{
-			if (create == null) throw new ArgumentNullException("create");
-			_create = d =>
-				{
-					var v1 = d.Get<T1>(GetPropertyName(0));
-					var v2 = d.Get<T2>(GetPropertyName(1));
-					var v3 = d.Get<T3>(GetPropertyName(2));
-					var v4 = d.Get<T4>(GetPropertyName(3));
-					return create(v1, v2, v3, v4);
-				};
-			return this;
-		}
-
-		public XName Name { get; private set; }
-		public Type Type { get { return typeof(T); } }
-		public bool IsImmutable { get { return _create != null; } }
-		public IDefCollection<IPropertyDef> Attributes { get { return _attributes; } }
-		public IDefCollection<IPropertyDef> Elements { get { return _elements; } }
-
-		public object Create(IDictionary<string, object> properties)
-		{
-			if (_create == null) throw new NotSupportedException();
-			return _create(properties);
 		}
 
 		public override string ToString()

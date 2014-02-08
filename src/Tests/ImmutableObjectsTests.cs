@@ -25,8 +25,8 @@ namespace TsvBits.Serialization.Tests
 			var scope = Scope.New(XNamespace.None);
 
 			scope.Elem<Item>()
-			     .Attr(x => x.Name, 0)
-			     .Init<string>(name => new Item(name));
+				.Attr(x => x.Name)
+				.Init();
 
 			var serializer = XSerializer.New(scope);
 
@@ -57,12 +57,12 @@ namespace TsvBits.Serialization.Tests
 			var scope = Scope.New(XNamespace.None);
 
 			scope.Elem<Item>()
-				 .Attr(x => x.Name, 0)
-				 .Init<string>(name => new Item(name));
+				.Attr(x => x.Name)
+				.Init();
 
 			scope.Elem<Container>()
-			     .Elem(x => x.Items, 0)
-			     .Init<IEnumerable<Item>>(items => new Container(items));
+				.Elem(x => x.Items)
+				.Init();
 
 			var serializer = XSerializer.New(scope);
 
@@ -89,23 +89,25 @@ namespace TsvBits.Serialization.Tests
 			Assert.AreEqual(container.Items[1].Name, container2.Items[1].Name);
 		}
 
-		class Item
+		private class Item
 		{
 			public Item(string name)
 			{
 				Name = name;
 			}
 
+			[Arg(0)]
 			public string Name { get; private set; }
 		}
 
-		class Container
+		private class Container
 		{
 			public Container(IEnumerable<Item> items)
 			{
 				Items = (items ?? Enumerable.Empty<Item>()).ToList().AsReadOnly();
 			}
 
+			[Arg(0)]
 			public IList<Item> Items { get; private set; }
 		}
 	}
