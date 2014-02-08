@@ -61,7 +61,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="XSerializer.CollectionItemDef.cs" />
     <Compile Include="DefCollection.cs" />
+    <Compile Include="XSerializer.Deserialization.cs" />
     <Compile Include="ElementDef.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Format.cs" />
@@ -79,6 +81,7 @@
     <Compile Include="MethodGenerator.cs" />
     <Compile Include="Reflector.cs" />
     <Compile Include="Scope.cs" />
+    <Compile Include="XSerializer.Serialization.cs" />
     <Compile Include="Tests\BlobTests.cs" />
     <Compile Include="Tests\CollectionTests.cs" />
     <Compile Include="Tests\DefaultValueTests.cs" />
