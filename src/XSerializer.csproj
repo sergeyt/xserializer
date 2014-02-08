@@ -65,6 +65,7 @@
     <Compile Include="ElementDef.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Format.cs" />
+    <Compile Include="FormatFactory.cs" />
     <Compile Include="IElementDef.cs" />
     <Compile Include="Inflector.cs" />
     <Compile Include="IReader.cs" />

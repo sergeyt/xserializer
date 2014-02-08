@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-using TsvBits.Serialization.Json;
 using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization
@@ -40,24 +39,9 @@ namespace TsvBits.Serialization
 		public T Parse<T>(string s, Format format)
 		{
 			using (var input = new StringReader(s))
-			using (var reader = CreateReader(input, format))
+			using (var reader = FormatFactory.CreateReader(input, format, _rootScope.Namespace))
 			{
 				return Read<T>(reader);
-			}
-		}
-
-		private IReader CreateReader(TextReader input, Format format)
-		{
-			switch (format)
-			{
-				case Format.Xml:
-					return XmlReaderImpl.Create(input);
-				case Format.Json:
-					return JsonReaderImpl.Create(_rootScope.Namespace, input);
-				case Format.JsonML:
-					return JsonMLReader.Create(input);
-				default:
-					throw new ArgumentOutOfRangeException("format");
 			}
 		}
 
@@ -176,25 +160,9 @@ namespace TsvBits.Serialization
 		{
 			var output = new StringBuilder();
 			using (var textWriter = new StringWriter(output))
-			using (var writer = CreateWriter(textWriter, format))
+			using (var writer = FormatFactory.CreateWriter(textWriter, format))
 				Write(writer, obj);
 			return output.ToString();
-		}
-
-		private static IWriter CreateWriter(TextWriter output, Format format)
-		{
-			switch (format)
-			{
-				case Format.Xml:
-					var xws = new XmlWriterSettings {ConformanceLevel = ConformanceLevel.Fragment};
-					return XmlWriterImpl.Create(output, xws);
-				case Format.Json:
-					return JsonWriterImpl.Create(output);
-				case Format.JsonML:
-					return JsonMLWriter.Create(output);
-				default:
-					throw new ArgumentOutOfRangeException("format");
-			}
 		}
 
 		private object ReadElement(IReader reader, IElementDef def, Func<object> create)
