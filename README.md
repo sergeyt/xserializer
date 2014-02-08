@@ -11,7 +11,7 @@ Fast and easy schema-oriented serialization engine for .NET.
 * High performance with streaming serialization
 * Declarative definition of schema
 
-## Sample Usage
+## Examples
 
 ### Example Schema Definition
 
