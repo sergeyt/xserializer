@@ -2,11 +2,12 @@
 using System.IO;
 using System.Text;
 using System.Xml;
+using TsvBits.Serialization.Json;
 using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization
 {
-	// TODO consider to make XSerialize to be internal class exposing serialization API in schema class
+	// TODO consider to make XSerializer to be internal class exposing serialization API in schema class
 
 	/// <summary>
 	/// Implements (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.
@@ -26,6 +27,8 @@ namespace TsvBits.Serialization
 		{
 			return new XSerializer(scope);
 		}
+
+		#region Parse, Read
 
 		/// <summary>
 		/// Parses specified string.
@@ -107,6 +110,10 @@ namespace TsvBits.Serialization
 				return Read<T>(impl);
 		}
 
+		#endregion
+
+		#region Write
+
 		/// <summary>
 		/// Serializes given object.
 		/// </summary>
@@ -130,7 +137,11 @@ namespace TsvBits.Serialization
 			using (var impl = XmlWriterImpl.Create(writer))
 				Write(impl, obj);
 		}
-		
+
+		#endregion
+
+		#region ToString
+
 		/// <summary>
 		/// Serializes given object as XML string.
 		/// </summary>
@@ -168,5 +179,24 @@ namespace TsvBits.Serialization
 				Write(writer, obj);
 			return output.ToString();
 		}
+
+		#endregion
+
+		#region BSON
+
+		public byte[] ToBson<T>(T obj)
+		{
+			var output = new MemoryStream();
+			Write(FormatFactory.CreateWriter(output, Format.Bson), obj);
+			output.Close();
+			return output.ToArray();
+		}
+
+		public void ReadBson<T>(Stream input, T obj)
+		{
+			Read(FormatFactory.CreateReader(input, Format.Bson, _rootScope.Namespace), obj);
+		}
+
+		#endregion
 	}
 }

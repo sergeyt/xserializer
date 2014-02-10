@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 
 namespace TsvBits.Serialization.Json
 {
@@ -18,6 +19,11 @@ namespace TsvBits.Serialization.Json
 			if (writer == null) throw new ArgumentNullException("writer");
 
 			_writer = writer;
+		}
+
+		public static IWriter CreateBsonWriter(Stream output)
+		{
+			return new JsonWriterImpl(new BsonWriter(output));
 		}
 
 		public static IWriter Create(TextWriter output)

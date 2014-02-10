@@ -23,7 +23,22 @@ namespace TsvBits.Serialization
 				case Format.JsonML:
 					return JsonMLWriter.Create(output);
 				default:
-					throw new ArgumentOutOfRangeException("format");
+					throw new NotSupportedException("format");
+			}
+		}
+
+		public static IWriter CreateWriter(Stream output, Format format)
+		{
+			switch (format)
+			{
+				case Format.Xml:
+				case Format.Json:
+				case Format.JsonML:
+					return CreateWriter(new StreamWriter(output), format);
+				case Format.Bson:
+					return JsonWriterImpl.CreateBsonWriter(output);
+				default:
+					throw new NotSupportedException("format");
 			}
 		}
 
@@ -38,7 +53,22 @@ namespace TsvBits.Serialization
 				case Format.JsonML:
 					return JsonMLReader.Create(input);
 				default:
-					throw new ArgumentOutOfRangeException("format");
+					throw new NotSupportedException("format");
+			}
+		}
+
+		public static IReader CreateReader(Stream input, Format format, XNamespace rootNamespace)
+		{
+			switch (format)
+			{
+				case Format.Xml:
+				case Format.Json:
+				case Format.JsonML:
+					return CreateReader(new StreamReader(input), format, rootNamespace);
+				case Format.Bson:
+					return JsonReaderImpl.CreateBsonReader(input, rootNamespace);
+				default:
+					throw new NotSupportedException("format");
 			}
 		}
 	}

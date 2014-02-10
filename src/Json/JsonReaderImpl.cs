@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 
 namespace TsvBits.Serialization.Json
 {
@@ -24,6 +25,11 @@ namespace TsvBits.Serialization.Json
 			_ns = ns;
 			_reader = reader;
 			_dispose = dispose;
+		}
+
+		public static IReader CreateBsonReader(Stream input, XNamespace ns)
+		{
+			return new JsonReaderImpl(ns, new BsonReader(input), true);
 		}
 
 		public static JsonReader CreateJsonReader(TextReader input)
