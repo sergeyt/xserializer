@@ -65,7 +65,7 @@ namespace TsvBits.Serialization
 				return;
 
 			var type = value.GetType();
-			var elementDef = _rootScope.ElemDef(type);
+			var elementDef = _rootScope.GetElementDef(type);
 			if (elementDef != null)
 			{
 				WriteElement(writer, value, elementDef, elementDef.Name);
@@ -124,12 +124,6 @@ namespace TsvBits.Serialization
 				return s;
 
 			return Convert.ToString(value, CultureInfo.InvariantCulture);
-		}
-
-		private Type GetElementType(XName name)
-		{
-			var def = _rootScope.ElemDef(name);
-			return def != null ? def.Type : null;
 		}
 	}
 }

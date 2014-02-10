@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ElementDef.PropertyCollection.cs" />
+    <Compile Include="IScope.cs" />
     <Compile Include="PropertyDef.cs" />
     <Compile Include="SimpleTypeCollection.cs" />
     <Compile Include="Tests\Rom\Body.cs" />

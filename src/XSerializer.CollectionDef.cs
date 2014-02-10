@@ -9,14 +9,14 @@ namespace TsvBits.Serialization
 	{
 		private sealed class CollectionDef : IElementDef
 		{
-			private readonly XSerializer _serializer;
+			private readonly IScope _scope;
 			private readonly Type _elementType;
 			private readonly ItemDefCollection _elements;
 			private readonly Dictionary<Type, Action<object, object>> _addMethods = new Dictionary<Type, Action<object, object>>();
 
-			public CollectionDef(XSerializer serializer, XName name, Type type, Type elementType)
+			public CollectionDef(IScope scope, XName name, Type type, Type elementType)
 			{
-				_serializer = serializer;
+				_scope = scope;
 				_elementType = elementType;
 				Name = name;
 				Type = type;
@@ -41,7 +41,8 @@ namespace TsvBits.Serialization
 				// TODO: determine whether there are elementDefs for subclasses
 				if (_elementType.IsAbstract)
 				{
-					return _serializer.GetElementType(name);
+					var def = _scope.GetElementDef(name);
+					return def != null ? def.Type : null;
 				}
 
 				return _elementType;

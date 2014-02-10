@@ -102,7 +102,7 @@ namespace TsvBits.Serialization
 			if (_rootScope.SimpleTypes.TryRead(() => reader.ReadString(), type, out value))
 				return true;
 
-			var elementDef = _rootScope.ElemDef(type);
+			var elementDef = _rootScope.GetElementDef(type);
 			if (elementDef != null)
 			{
 				value = ReadElement(reader, elementDef, () => CreateElement(property, obj));
@@ -116,7 +116,7 @@ namespace TsvBits.Serialization
 			if (ienum != null)
 			{
 				var elementType = ienum.GetGenericArguments()[0];
-				elementDef = new CollectionDef(this, property.Name, type, elementType);
+				elementDef = new CollectionDef(_rootScope, property.Name, type, elementType);
 				value = def.IsImmutable ? CreateList(elementType) : CreateElement(property, obj);
 				ReadElement(reader, elementDef, value);
 				return true;

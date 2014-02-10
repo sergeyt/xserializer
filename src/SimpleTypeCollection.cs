@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace TsvBits.Serialization
 {
-	internal sealed class SimpleTypeCollection
+	public sealed class SimpleTypeCollection
 	{
 		private static readonly IDictionary<Type, TypeDef> CoreTypes = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, TypeDef> _types = new Dictionary<Type, TypeDef>();

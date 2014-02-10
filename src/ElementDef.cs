@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	public sealed partial class ElementDef<T> : IElementDef
+	public sealed partial class ElementDef<T> : Scope, IElementDef
 	{
 		private readonly Scope _scope;
 		private readonly DefCollection<IPropertyDef> _attributes = new DefCollection<IPropertyDef>();

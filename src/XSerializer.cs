@@ -13,16 +13,16 @@ namespace TsvBits.Serialization
 	/// </summary>
 	public sealed partial class XSerializer
 	{
-		private readonly Scope _rootScope;
+		private readonly IScope _rootScope;
 
-		private XSerializer(Scope scope)
+		private XSerializer(IScope scope)
 		{
 			if (scope == null) throw new ArgumentNullException("scope");
 
 			_rootScope = scope;
 		}
 
-		public static XSerializer New(Scope scope)
+		public static XSerializer New(IScope scope)
 		{
 			return new XSerializer(scope);
 		}
@@ -67,7 +67,7 @@ namespace TsvBits.Serialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = _rootScope.ElemDef(obj.GetType());
+			var def = _rootScope.GetElementDef(obj.GetType());
 			ReadElement(reader, def, obj);
 		}
 
@@ -80,7 +80,7 @@ namespace TsvBits.Serialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = _rootScope.ElemDef(typeof(T));
+			var def = _rootScope.GetElementDef(typeof(T));
 			return (T)ReadElement(reader, def, null);
 		}
 
@@ -115,7 +115,7 @@ namespace TsvBits.Serialization
 		/// <param name="obj">The object to serialize.</param>
 		public void Write<T>(IWriter writer, T obj)
 		{
-			var def = _rootScope.ElemDef(obj.GetType());
+			var def = _rootScope.GetElementDef(obj.GetType());
 			WriteElement(writer, obj, def, def.Name);
 		}
 

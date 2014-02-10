@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	public class Scope
+	public class Scope : IScope
 	{
 		private readonly SimpleTypeCollection _simpleTypes = new SimpleTypeCollection();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
@@ -75,18 +75,18 @@ namespace TsvBits.Serialization
 			return Element<T>(GetName<T>(Namespace));
 		}
 
-		internal IElementDef ElemDef(Type type)
+		public IElementDef GetElementDef(Type type)
 		{
 			IElementDef def;
 			return _elementDefs.TryGetValue(type, out def) ? def : null;
 		}
 
-		internal IElementDef ElemDef(XName name)
+		public IElementDef GetElementDef(XName name)
 		{
 			return _elements[name];
 		}
 
-		internal SimpleTypeCollection SimpleTypes
+		public SimpleTypeCollection SimpleTypes
 		{
 			get { return _simpleTypes; }
 		}
