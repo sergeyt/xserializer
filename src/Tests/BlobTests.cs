@@ -15,8 +15,8 @@ namespace TsvBits.Serialization.Tests
 		public void Simple(Format format, byte[] data, string expectedSerial)
 		{
 			var scope = Scope.New("");
-			scope.Elem<Item>()
-			     .Elem(x => x.Data);
+			scope.Element<Item>()
+				.Elements().Add(x => x.Data);
 
 			var serializer = XSerializer.New(scope);
 

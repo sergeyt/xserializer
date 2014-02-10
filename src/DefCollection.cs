@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	internal sealed class DefCollection<T> : IDefCollection<T>
+	internal sealed class DefCollection<T> : IDefCollection<T> where T : IDef
 	{
 		public static readonly IDefCollection<T> Empty = new EmptyImpl();
 
@@ -29,9 +29,9 @@ namespace TsvBits.Serialization
 			}
 		}
 
-		public void Add(XName name, T property)
+		public void Add(XName name, T def)
 		{
-			_store[name] = property;
+			_store[name] = def;
 		}
 
 		public void AddRange(DefCollection<T> collection)

@@ -13,15 +13,15 @@ namespace TsvBits.Serialization.Tests
 		public string DefaultValueAttribute(bool asAttr)
 		{
 			var schema = Scope.New(XNamespace.None);
-			var def = schema.Elem<Entity>();
+			var def = schema.Element<Entity>();
 
 			if (asAttr)
 			{
-				def.Attr(x => x.StringProperty);
+				def.Attributes().Add(x => x.StringProperty);
 			}
 			else
 			{
-				def.Elem(x => x.StringProperty);
+				def.Elements().Add(x => x.StringProperty);
 			}
 				
 			var serializer = XSerializer.New(schema);
@@ -38,15 +38,15 @@ namespace TsvBits.Serialization.Tests
 		public string CustomDefaultValue(bool asAttr)
 		{
 			var schema = Scope.New(XNamespace.None);
-			var def = schema.Elem<Entity>();
+			var def = schema.Element<Entity>();
 
 			if (asAttr)
 			{
-				def.Attr(x => x.StringProperty, "custom");
+				def.Attributes().Add(x => x.StringProperty, "custom");
 			}
 			else
 			{
-				def.Elem(x => x.StringProperty, "custom");
+				def.Elements().Add(x => x.StringProperty, "custom");
 			}
 			
 			var serializer = XSerializer.New(schema);

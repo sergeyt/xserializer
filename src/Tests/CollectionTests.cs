@@ -42,8 +42,9 @@ namespace TsvBits.Serialization.Tests
 		{
 			var scope = Scope.New("");
 
-			scope.Elem<Container<T>>()
-			     .Elem(x => x.Items);
+			scope.Element<Container<T>>()
+				.Elements()
+				.Add(x => x.Items);
 
 			var serializer = XSerializer.New(scope);
 

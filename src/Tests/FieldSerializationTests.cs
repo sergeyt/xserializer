@@ -41,19 +41,12 @@ namespace TsvBits.Serialization.Tests
 		{
 			var scope = Scope.New("");
 
-			var def = scope.Elem<Point<T>>()
-			               .Init();
-			if (asAttrs)
-			{
-				def.Attr(p => p.X)
-				   .Attr(p => p.Y);
-			}
-			else
-			{
-				def.Elem(p => p.X)
-					.Elem(p => p.Y);
-			}
-
+			var def = scope.Element<Point<T>>().Init();
+			(asAttrs ? def.Attributes() : def.Elements())
+				.Add(p => p.X)
+				.Add(p => p.Y)
+				.End();
+			
 			var serializer = XSerializer.New(scope);
 
 			var pt = new Point<T>(x, y);
@@ -73,18 +66,11 @@ namespace TsvBits.Serialization.Tests
 		{
 			var scope = Scope.New("");
 
-			var def = scope.Elem<CPoint>();
-			if (asAttrs)
-			{
-				def.Attr(p => p.X)
-				   .Attr(p => p.Y);
-			}
-			else
-			{
-				def.Elem(p => p.X)
-				   .Elem(p => p.Y);
-			}
-
+			var def = scope.Element<CPoint>();
+			(asAttrs ? def.Attributes() : def.Elements())
+				.Add(p => p.X)
+				.Add(p => p.Y);
+			
 			var serializer = XSerializer.New(scope);
 
 			var pt = new CPoint(x, y);

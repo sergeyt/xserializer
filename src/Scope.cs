@@ -6,12 +6,12 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	public sealed class Scope
+	public class Scope
 	{
 		private static readonly IDictionary<Type, TypeDef> CoreTypes = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, TypeDef> _types = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
-		private readonly IDictionary<XName, IElementDef> _elementDefsByName = new Dictionary<XName, IElementDef>();
+		private readonly DefCollection<IElementDef> _elements = new DefCollection<IElementDef>();
 
 		static Scope()
 		{
@@ -30,6 +30,10 @@ namespace TsvBits.Serialization
 			CoreType(s => Convert.ToDecimal(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
 			CoreType(s => Convert.ToDateTime(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x, XmlDateTimeSerializationMode.Utc));
 			CoreType(s => Convert.FromBase64String(s), x => Convert.ToBase64String(x));
+		}
+
+		protected Scope()
+		{
 		}
 
 		private Scope(XNamespace ns)
@@ -81,18 +85,19 @@ namespace TsvBits.Serialization
 		private void Register(IElementDef def)
 		{
 			_elementDefs.Add(def.Type, def);
-			_elementDefsByName.Add(def.Name, def);
+			_elements.Add(def.Name, def);
 		}
 
-		public ElementDef<T> Elem<T>(XName name)
+		public ElementDef<T> Element<T>(XName name)
 		{
 			var def = new ElementDef<T>(this, name);
 			Register(def);
 			return def;
 		}
 
-		public ElementDef<T> Elem<T>()
+		public ElementDef<T> Element<T>()
 		{
+			// TODO support Name attribute
 			var type = typeof(T);
 			var name = type.Name;
 			if (type.IsGenericType)
@@ -100,7 +105,7 @@ namespace TsvBits.Serialization
 				var i = name.LastIndexOf('`');
 				if (i >= 0) name = name.Substring(0, i);
 			}
-			return Elem<T>(Namespace + name);
+			return Element<T>(Namespace + name);
 		}
 
 		internal IElementDef ElemDef(Type type)
@@ -111,7 +116,7 @@ namespace TsvBits.Serialization
 
 		internal IElementDef ElemDef(XName name)
 		{
-			return _elementDefsByName[name];
+			return _elements[name];
 		}
 
 		internal object Parse(Type type, string s)

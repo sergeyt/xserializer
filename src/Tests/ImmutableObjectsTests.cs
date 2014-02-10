@@ -24,8 +24,10 @@ namespace TsvBits.Serialization.Tests
 		{
 			var scope = Scope.New(XNamespace.None);
 
-			scope.Elem<Item>()
-				.Attr(x => x.Name)
+			scope.Element<Item>()
+				.Attributes()
+				.Add(x => x.Name)
+				.End()
 				.Init();
 
 			var serializer = XSerializer.New(scope);
@@ -56,12 +58,16 @@ namespace TsvBits.Serialization.Tests
 		{
 			var scope = Scope.New(XNamespace.None);
 
-			scope.Elem<Item>()
-				.Attr(x => x.Name)
+			scope.Element<Item>()
+				.Attributes()
+				.Add(x => x.Name)
+				.End()
 				.Init();
 
-			scope.Elem<Container>()
-				.Elem(x => x.Items)
+			scope.Element<Container>()
+				.Elements()
+				.Add(x => x.Items)
+				.End()
 				.Init();
 
 			var serializer = XSerializer.New(scope);

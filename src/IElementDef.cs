@@ -4,25 +4,41 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
+	public interface IDef
+	{
+		/// <summary>
+		/// Gets XML name of the definition.
+		/// </summary>
+		XName Name { get; }
+
+		/// <summary>
+		/// Gets definition type.
+		/// </summary>
+		Type Type { get; }
+	}
+
+	/// <summary>
+	/// Definition collection.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public interface IDefCollection<T> : IEnumerable<T> where T : IDef
+	{
+		/// <summary>
+		/// Finds definition by name.
+		/// </summary>
+		/// <param name="name">The name of definition to get.</param>
+		T this[XName name] { get; }
+	}
+
 	/// <summary>
 	/// Property definition.
 	/// </summary>
-	public interface IPropertyDef
+	public interface IPropertyDef : IDef
 	{
 		/// <summary>
 		/// Gets the original property name.
 		/// </summary>
 		string PropertyName { get; }
-
-		/// <summary>
-		/// Gets property type.
-		/// </summary>
-		Type Type { get; }
-
-		/// <summary>
-		/// Gets XML name of the property.
-		/// </summary>
-		XName Name { get; }
 
 		/// <summary>
 		/// Gets XML name of collection element. Applicable for collection properties.
@@ -56,33 +72,10 @@ namespace TsvBits.Serialization
 	}
 
 	/// <summary>
-	/// Definition collection.
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	public interface IDefCollection<T> : IEnumerable<T>
-	{
-		/// <summary>
-		/// Finds definition by name.
-		/// </summary>
-		/// <param name="name">The name of definition to get.</param>
-		T this[XName name] { get; }
-	}
-
-	/// <summary>
 	/// Element definition.
 	/// </summary>
-	public interface IElementDef
+	public interface IElementDef : IDef
 	{
-		/// <summary>
-		/// Gets element name.
-		/// </summary>
-		XName Name { get; }
-
-		/// <summary>
-		/// Gets element type.
-		/// </summary>
-		Type Type { get; }
-
 		/// <summary>
 		/// Specifies whether the elemnt is immutable.
 		/// </summary>

@@ -28,8 +28,8 @@ namespace TsvBits.Serialization
 		public XName Name { get; private set; }
 		public Type Type { get { return typeof(T); } }
 		public bool IsImmutable { get { return _create != null; } }
-		public IDefCollection<IPropertyDef> Attributes { get { return _attributes; } }
-		public IDefCollection<IPropertyDef> Elements { get { return _elements; } }
+		IDefCollection<IPropertyDef> IElementDef.Attributes { get { return _attributes; } }
+		IDefCollection<IPropertyDef> IElementDef.Elements { get { return _elements; } }
 
 		public object Create(IDictionary<string, object> properties)
 		{
@@ -81,47 +81,65 @@ namespace TsvBits.Serialization
 			return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter, isDefaultValue);
 		}
 
-		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property)
+		public class PropertyCollection
 		{
-			var def = CreateProperty(property, XNamespace.None, null);
-			_attributes.Add(def.Name, def);
-			return this;
+			private readonly ElementDef<T> _elementDef;
+			private readonly XNamespace[] _namespaces;
+			private readonly DefCollection<IPropertyDef> _properties;
+			
+			internal PropertyCollection(ElementDef<T> elementDef, XNamespace[] namespaces, DefCollection<IPropertyDef> properties)
+			{
+				_elementDef = elementDef;
+				_namespaces = namespaces;
+				_properties = properties;
+			}
+
+			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, Func<TValue, bool> isDefaultValue)
+			{
+				foreach (var prop in _namespaces.Select(ns => _elementDef.CreateProperty(property, ns, isDefaultValue)))
+				{
+					_properties.Add(prop.Name, prop);
+				}
+				return this;
+			}
+
+			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, TValue defaultValue)
+			{
+				return Add(property, value => Equals(value, defaultValue));
+			}
+
+			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property)
+			{
+				return Add(property, null);
+			}
+
+			public ElementDef<T> End()
+			{
+				return _elementDef;
+			}
 		}
 
-		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, Func<TValue,bool> isDefaultValue)
+		public PropertyCollection Attributes(params XNamespace[] namespaces)
 		{
-			var def = CreateProperty(property, XNamespace.None, isDefaultValue);
-			_attributes.Add(def.Name, def);
-			return this;
+			if (namespaces == null || namespaces.Length == 0)
+			{
+				namespaces = new[] {XNamespace.None};
+			}
+			return new PropertyCollection(this, namespaces, _attributes);
 		}
 
-		public ElementDef<T> Attr<TValue>(Expression<Func<T, TValue>> property, TValue defaultValue)
+		public PropertyCollection Elements(params XNamespace[] namespaces)
 		{
-			return Attr(property, value => Equals(value, defaultValue));
-		}
-
-		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property)
-		{
-			var def = CreateProperty(property, Name.Namespace, null);
-			_elements.Add(def.Name, def);
-			return this;
-		}
-
-		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property, Func<TValue, bool> isDefaultValue)
-		{
-			var def = CreateProperty(property, Name.Namespace, isDefaultValue);
-			_elements.Add(def.Name, def);
-			return this;
-		}
-
-		public ElementDef<T> Elem<TValue>(Expression<Func<T, TValue>> property, TValue defaultValue)
-		{
-			return Elem(property, value => Equals(value, defaultValue));
+			if (namespaces == null || namespaces.Length == 0)
+			{
+				namespaces = new[] {Name.Namespace};
+			}
+			return new PropertyCollection(this, namespaces, _elements);
 		}
 
 		public ElementDef<TElement> Sub<TElement>(XName name)
 		{
-			var elem = _scope.Elem<TElement>(name);
+			var elem = _scope.Element<TElement>(name);
 			// copy only attributes and elements
 			elem._attributes.AddRange(_attributes);
 			elem._elements.AddRange(_elements);

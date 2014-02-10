@@ -32,9 +32,9 @@ namespace TsvBits.Serialization.Tests
 		private void TestItem<T>(T value, bool asAttr) where T : struct
 		{
 			var scope = Scope.New("");
-			var elem = scope.Elem<Item<T>>();
-			if (asAttr) elem.Attr(x => x.Value);
-			else elem.Elem(x => x.Value);
+			var elem = scope.Element<Item<T>>();
+			if (asAttr) elem.Attributes().Add(x => x.Value);
+			else elem.Elements().Add(x => x.Value);
 
 			var serializer = XSerializer.New(scope);
 
