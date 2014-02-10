@@ -19,18 +19,17 @@ namespace TsvBits.Serialization
 			Namespace = ns ?? XNamespace.None;
 		}
 
-		public static Scope New(XNamespace ns)
+		public static Scope New(XNamespace defaultNamespace)
 		{
-			return new Scope(ns);
+			return new Scope(defaultNamespace);
 		}
-
+		public static Scope New(string defaultNamespace)
+		{
+			return new Scope(string.IsNullOrEmpty(defaultNamespace) ? XNamespace.None : XNamespace.Get(defaultNamespace));
+		}
+		
 		public XNamespace Namespace { get; private set; }
-
-		public static Scope New(string ns)
-		{
-			return new Scope(string.IsNullOrEmpty(ns) ? XNamespace.None : XNamespace.Get(ns));
-		}
-
+		
 		/// <summary>
 		/// Registers simple type serializable to string.
 		/// </summary>

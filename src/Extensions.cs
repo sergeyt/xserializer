@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace TsvBits.Serialization
 {
-	public static class Extensions
+	internal static class Extensions
 	{
 		public static TValue Get<TKey,TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
 		{
