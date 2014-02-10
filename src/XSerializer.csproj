@@ -61,8 +61,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ElementDef.PropertyCollection.cs" />
     <Compile Include="PropertyDef.cs" />
     <Compile Include="SimpleTypeCollection.cs" />
+    <Compile Include="Tests\Rom\Body.cs" />
+    <Compile Include="Tests\Rom\ExpressionInfo.cs" />
+    <Compile Include="Tests\Rom\Length.cs" />
+    <Compile Include="Tests\Rom\Rectangle.cs" />
+    <Compile Include="Tests\Rom\Report.cs" />
+    <Compile Include="Tests\Rom\ReportItem.cs" />
+    <Compile Include="Tests\Rom\TextBox.cs" />
     <Compile Include="XSerializer.CollectionItemDef.cs" />
     <Compile Include="DefCollection.cs" />
     <Compile Include="XSerializer.Deserialization.cs" />
@@ -94,7 +102,7 @@
     <Compile Include="Tests\MethodGeneratorTests.cs" />
     <Compile Include="Tests\NullableTests.cs" />
     <Compile Include="Tests\ReflectorTests.cs" />
-    <Compile Include="Tests\XSerializerTests.cs" />
+    <Compile Include="Tests\RdlTests.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Xml\XmlExtensions.cs" />
     <Compile Include="Xml\XmlReaderImpl.cs" />
