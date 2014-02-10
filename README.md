@@ -23,25 +23,39 @@ var schema =
 	.Type(s => ExpressionInfo.Parse(s), x => x.ToString())
 	.Enum(DataElementOutput.Auto);
 
-schema.Elem<Report>()
-	.Attr(x => x.Name)
-	.Elem(x => x.Width)
-	.Elem(x => x.Body);
+schema.Element<Report>()
+	.Attributes()
+	.Add(x => x.Name)
+	.End()
+	.Elements()
+	.Add(x => x.Width)
+	.Add(x => x.Body)
+	.End();
 
-schema.Elem<Body>()
-	.Elem(x => x.Height)
-	.Elem(x => x.ReportItems);
+schema.Element<Body>()
+	.Elements()
+	.Add(x => x.Height)
+	.Add(x => x.ReportItems)
+	.End();
 
 var item = schema.Elem<ReportItem>()
-	.Attr(x => x.Name)
-	.Elem(x => x.DataElementName)
-	.Elem(x => x.DataElementOutput);
+	.Attributes()
+	.Add(x => x.Name)
+	.End()
+	.Elements()
+	.Add(x => x.DataElementName)
+	.Add(x => x.DataElementOutput)
+	.End();
 
 item.Sub<TextBox>()
-	.Elem(x => x.Value);
+	.Elements()
+	.Add(x => x.Value)
+	.End();
 
 item.Sub<Rectangle>()
-	.Elem(x => x.ReportItems);
+	.Elements()
+	.Add(x => x.ReportItems)
+	.End();
 ```
 
 ### Serialization Example
