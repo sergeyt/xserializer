@@ -9,7 +9,7 @@ Fast and easy schema-oriented serialization engine for .NET.
 
 * Multiple output formats XML, JSON, JsonML. Easy to implement custom writer/reader.
 * High performance with streaming serialization
-* Declarative definition of schema
+* Fluent API to declare serialization schema
 
 ## Examples
 
