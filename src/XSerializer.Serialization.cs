@@ -101,7 +101,7 @@ namespace TsvBits.Serialization
 		private bool WriteStringElement(IWriter writer, IPropertyDef property, XName name, object value)
 		{
 			string s;
-			if (!_rootScope.TryConvertToString(value, out s))
+			if (!_rootScope.SimpleTypes.TryConvert(value, out s))
 				return false;
 
 			if (string.IsNullOrEmpty(s))
@@ -120,7 +120,7 @@ namespace TsvBits.Serialization
 			if (value == null) return string.Empty;
 
 			string s;
-			if (_rootScope.TryConvertToString(value, out s))
+			if (_rootScope.SimpleTypes.TryConvert(value, out s))
 				return s;
 
 			return Convert.ToString(value, CultureInfo.InvariantCulture);

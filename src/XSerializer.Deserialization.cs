@@ -45,7 +45,7 @@ namespace TsvBits.Serialization
 					var property = def.Attributes[attr.Key];
 					if (property != null)
 					{
-						var value = _rootScope.Parse(property.Type, attr.Value);
+						var value = _rootScope.SimpleTypes.Parse(property.Type, attr.Value);
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 					}
 				}
@@ -64,7 +64,7 @@ namespace TsvBits.Serialization
 					property = def.Attributes[XNamespace.None + name.LocalName];
 					if (property != null)
 					{
-						value = _rootScope.Parse(property.Type, reader.ReadString());
+						value = _rootScope.SimpleTypes.Parse(property.Type, reader.ReadString());
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 						continue;
 					}
@@ -99,7 +99,7 @@ namespace TsvBits.Serialization
 				return true;
 			}
 
-			if (_rootScope.TryReadString(() => reader.ReadString(), type, out value))
+			if (_rootScope.SimpleTypes.TryRead(() => reader.ReadString(), type, out value))
 				return true;
 
 			var elementDef = _rootScope.ElemDef(type);

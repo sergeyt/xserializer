@@ -84,7 +84,7 @@ namespace TsvBits.Serialization.Xml
 			if (Xsi.Name2Type.TryGetValue(xsiType, out valueType))
 			{
 				var scope = Scope.New("");
-				return scope.Parse(valueType, s);
+				return scope.SimpleTypes.Parse(valueType, s);
 			}
 
 			return null;

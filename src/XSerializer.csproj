@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PropertyDef.cs" />
+    <Compile Include="SimpleTypeCollection.cs" />
     <Compile Include="XSerializer.CollectionItemDef.cs" />
     <Compile Include="DefCollection.cs" />
     <Compile Include="XSerializer.Deserialization.cs" />
