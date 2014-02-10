@@ -64,8 +64,20 @@ namespace TsvBits.Serialization
 
 		public ElementDef<TElement> Sub<TElement>()
 		{
-			return Sub<TElement>(Name.Namespace + typeof(TElement).Name);
+			return Sub<TElement>(Scope.GetName<TElement>(_scope.Namespace));
 		}
+
+		public ElementDef<T> Fork(XNamespace ns)
+		{
+			return Sub<T>(ns + Name.LocalName);
+		}
+
+		public ElementDef<T> Fork(XName name)
+		{
+			return Sub<T>(name);
+		}
+
+		#region Init for Immutable Types
 
 		public ElementDef<T> Init(Func<IDictionary<string, object>, T> create)
 		{
@@ -99,6 +111,8 @@ namespace TsvBits.Serialization
 			};
 			return this;
 		}
+
+		#endregion
 
 		public override string ToString()
 		{

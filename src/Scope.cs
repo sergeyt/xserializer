@@ -28,6 +28,9 @@ namespace TsvBits.Serialization
 			return new Scope(string.IsNullOrEmpty(defaultNamespace) ? XNamespace.None : XNamespace.Get(defaultNamespace));
 		}
 		
+		/// <summary>
+		/// Default namespace.
+		/// </summary>
 		public XNamespace Namespace { get; private set; }
 		
 		/// <summary>
@@ -69,15 +72,7 @@ namespace TsvBits.Serialization
 
 		public ElementDef<T> Element<T>()
 		{
-			// TODO support Name attribute
-			var type = typeof(T);
-			var name = type.Name;
-			if (type.IsGenericType)
-			{
-				var i = name.LastIndexOf('`');
-				if (i >= 0) name = name.Substring(0, i);
-			}
-			return Element<T>(Namespace + name);
+			return Element<T>(GetName<T>(Namespace));
 		}
 
 		internal IElementDef ElemDef(Type type)
@@ -94,6 +89,30 @@ namespace TsvBits.Serialization
 		internal SimpleTypeCollection SimpleTypes
 		{
 			get { return _simpleTypes; }
+		}
+
+		internal static XName GetName<T>(XNamespace defaultNamespace)
+		{
+			var type = typeof(T);
+
+			var attr = type.ResolveAttribute<NameAttribute>(true);
+			if (attr != null)
+			{
+				if (!string.IsNullOrEmpty(attr.Namespace))
+				{
+					return XNamespace.Get(attr.Namespace) + attr.Name;
+				}
+				return defaultNamespace + attr.Name;
+			}
+
+			var name = type.Name;
+			if (type.IsGenericType)
+			{
+				var i = name.LastIndexOf('`');
+				if (i >= 0) name = name.Substring(0, i);
+			}
+
+			return defaultNamespace + name;
 		}
 	}
 }
