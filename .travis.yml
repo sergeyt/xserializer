@@ -13,7 +13,7 @@ script:
   - wget -O Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
   - echo 'getting dependencies'
   - bash nuget install Newtonsoft.Json
-  - JSON_DLL=Newtonsoft.Json.5.0.6/lib/net35/Newtonsoft.Json.dll
+  - JSON_DLL=Newtonsoft.Json.6.0.1/lib/net35/Newtonsoft.Json.dll
   - cp $JSON_DLL build/test/Newtonsoft.Json.dll
   - echo 'updating version.cs'
   - rm src/Version.cs
@@ -32,4 +32,3 @@ script:
   - sed $SED_ARG XSerializer.nuspec.template > XSerializer.nuspec
   - cat XSerializer.nuspec
   - bash nuget pack XSerializer.nuspec
-
