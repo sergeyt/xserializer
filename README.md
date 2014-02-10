@@ -38,7 +38,7 @@ schema.Element<Body>()
 	.Add(x => x.ReportItems)
 	.End();
 
-var item = schema.Elem<ReportItem>()
+var item = schema.Element<ReportItem>()
 	.Attributes()
 	.Add(x => x.Name)
 	.End()
