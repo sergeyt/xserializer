@@ -65,6 +65,8 @@
     <Compile Include="IScope.cs" />
     <Compile Include="PropertyDef.cs" />
     <Compile Include="SimpleTypeCollection.cs" />
+    <Compile Include="Tests\Ns.cs" />
+    <Compile Include="Tests\Rdl.cs" />
     <Compile Include="Tests\Rom\Body.cs" />
     <Compile Include="Tests\Rom\ExpressionInfo.cs" />
     <Compile Include="Tests\Rom\Length.cs" />
