@@ -5,68 +5,25 @@ namespace TsvBits.Serialization.Tests
 	using Rom;
 
 	[TestFixture]
-	public class RdlTests
+	public class RdlSimpleTests
 	{
-		private XSerializer _serializer;
-
-		[SetUp]
-		public void Init()
-		{
-			var schema = new Scope("http://test.com")
-				.Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
-				.Type(s => ExpressionInfo.Parse(s), x => x.ToString())
-				.Enum(DataElementOutput.Auto);
-
-			schema.Element<Report>()
-				.Attributes()
-				.Add(x => x.Name)
-				.End()
-				.Elements()
-				.Add(x => x.Width)
-				.Add(x => x.Body);
-
-			schema.Element<Body>()
-				.Elements()
-				.Add(x => x.Height)
-				.Add(x => x.ReportItems);
-
-			var item = schema.Element<ReportItem>()
-				.Attributes()
-				.Add(x => x.Name)
-				.End()
-				.Elements()
-				.Add(x => x.DataElementName)
-				.Add(x => x.DataElementOutput)
-				.End();
-
-			item.Sub<TextBox>()
-				.Elements()
-				.Add(x => x.Value);
-
-			item.Sub<Rectangle>()
-				.Elements()
-				.Add(x => x.ReportItems);
-
-			_serializer = XSerializer.New(schema);
-		}
-
-		[TestCase(Format.Xml, Result = "<Report xmlns=\"http://test.com\"><Body /></Report>")]
+		[TestCase(Format.Xml, Result = "<Report xmlns=\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\"><Body /></Report>")]
 		[TestCase(Format.Json, Result = "{\"Body\":{}}")]
-		[TestCase(Format.JsonML, Result = "[\"Report\",{\"xmlns\":\"http://test.com\"},[\"Body\"]]")]
+		[TestCase(Format.JsonML, Result = "[\"Report\",{\"xmlns\":\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\"},[\"Body\"]]")]
 		public string WriteDefaultReport(Format format)
 		{
 			var report = new Report();
-			return _serializer.ToString(report, format);
+			return XSerializer.New(Rdl.Schema).ToString(report, format);
 		}
 
 		[TestCase(Format.Xml,
-			"<Report Name=\"report\" xmlns=\"http://test.com\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>"
+			"<Report Name=\"report\" xmlns=\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>"
 			)]
 		[TestCase(Format.Json,
 			"{\"Name\":\"report\",\"Width\":\"12in\",\"Body\":{\"ReportItems\":[new TextBox({\"Name\":\"textbox1\",\"DataElementOutput\":\"NoContent\",\"Value\":\"hello\"}),new Rectangle({\"ReportItems\":[new TextBox({\"Name\":\"textbox2\",\"Value\":\"world\"})]})]}}"
 			)]
 		[TestCase(Format.JsonML,
-			"[\"Report\",{\"xmlns\":\"http://test.com\",\"Name\":\"report\"},[\"Width\",\"12in\"],[\"Body\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox1\"},[\"DataElementOutput\",\"NoContent\"],[\"Value\",\"hello\"]],[\"Rectangle\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox2\"},[\"Value\",\"world\"]]]]]]]"
+			"[\"Report\",{\"xmlns\":\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\",\"Name\":\"report\"},[\"Width\",\"12in\"],[\"Body\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox1\"},[\"DataElementOutput\",\"NoContent\"],[\"Value\",\"hello\"]],[\"Rectangle\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox2\"},[\"Value\",\"world\"]]]]]]]"
 			)]
 		public void WriteReadReport(Format format, string expectedString)
 		{
@@ -86,10 +43,11 @@ namespace TsvBits.Serialization.Tests
 				}
 			};
 
-			var reportString = _serializer.ToString(report, format);
+			var serializer = XSerializer.New(Rdl.Schema);
+			var reportString = serializer.ToString(report, format);
 			Assert.AreEqual(expectedString, reportString);
 
-			var report2 = _serializer.Parse<Report>(reportString, format);
+			var report2 = serializer.Parse<Report>(reportString, format);
 
 			Assert.AreEqual(report.Name, report2.Name);
 			Assert.AreEqual(report.Width, report2.Width);
