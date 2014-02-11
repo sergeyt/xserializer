@@ -3,7 +3,7 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	partial class XSerializer
+	partial class Serializer
 	{
 		private sealed class CollectionItemDef : IPropertyDef
 		{

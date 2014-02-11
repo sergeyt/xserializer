@@ -2,7 +2,6 @@
 using System.IO;
 using System.Text;
 using System.Xml;
-using TsvBits.Serialization.Json;
 using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization
@@ -12,7 +11,7 @@ namespace TsvBits.Serialization
 	/// <summary>
 	/// Implements (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.
 	/// </summary>
-	public sealed partial class XSerializer
+	public sealed class XSerializer
 	{
 		private readonly IScope _rootScope;
 
@@ -71,7 +70,7 @@ namespace TsvBits.Serialization
 			if (reader == null) throw new ArgumentNullException("reader");
 
 			var def = _rootScope.GetElementDef(obj.GetType());
-			ReadElement(reader, def, obj);
+			Deserializer.ReadElement(_rootScope, reader, def, obj);
 		}
 
 		/// <summary>
@@ -84,7 +83,7 @@ namespace TsvBits.Serialization
 			if (reader == null) throw new ArgumentNullException("reader");
 
 			var def = _rootScope.GetElementDef(typeof(T));
-			return (T)ReadElement(reader, def, null);
+			return (T)Deserializer.ReadElement(_rootScope, reader, def, null);
 		}
 
 		/// <summary>
@@ -123,7 +122,7 @@ namespace TsvBits.Serialization
 		public void Write<T>(IWriter writer, T obj)
 		{
 			var def = _rootScope.GetElementDef(obj.GetType());
-			WriteElement(writer, obj, def, def.Name);
+			Serializer.WriteElement(_rootScope, writer, obj, def, def.Name);
 		}
 
 		/// <summary>

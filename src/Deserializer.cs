@@ -6,25 +6,11 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	partial class XSerializer
+	internal static partial class Deserializer
 	{
-		private object ReadElement(IReader reader, IElementDef def, Func<object> create)
+		public static void ReadElement(IScope scope, IReader reader, IElementDef def, object obj)
 		{
-			if (def.IsImmutable)
-			{
-				// TODO pass original property name rather than xml name
-				var props = ReadProperties(reader, null, def).ToDictionary(x => x.Key.Name.LocalName, x => x.Value);
-				return def.Create(props);
-			}
-
-			var obj = create != null ? create() : Activator.CreateInstance(def.Type);
-			ReadElement(reader, def, obj);
-			return obj;
-		}
-
-		private void ReadElement(IReader reader, IElementDef def, object obj)
-		{
-			foreach (var p in ReadProperties(reader, obj, def))
+			foreach (var p in ReadProperties(scope, reader, obj, def))
 			{
 				var property = p.Key;
 				if (!property.IsReadOnly)
@@ -32,7 +18,21 @@ namespace TsvBits.Serialization
 			}
 		}
 
-		private IEnumerable<KeyValuePair<IPropertyDef, object>> ReadProperties(IReader reader, object obj, IElementDef def)
+		public static object ReadElement(IScope scope, IReader reader, IElementDef def, Func<object> create)
+		{
+			if (def.IsImmutable)
+			{
+				// TODO pass original property name rather than xml name
+				var props = ReadProperties(scope, reader, null, def).ToDictionary(x => x.Key.Name.LocalName, x => x.Value);
+				return def.Create(props);
+			}
+
+			var obj = create != null ? create() : Activator.CreateInstance(def.Type);
+			ReadElement(scope, reader, def, obj);
+			return obj;
+		}
+
+		private static IEnumerable<KeyValuePair<IPropertyDef, object>> ReadProperties(IScope scope, IReader reader, object obj, IElementDef def)
 		{
 			if (!reader.ReadStartElement(def.Name))
 				throw new XmlException(string.Format("Xml element not foud: {0}", def.Name));
@@ -45,7 +45,7 @@ namespace TsvBits.Serialization
 					var property = def.Attributes[attr.Key];
 					if (property != null)
 					{
-						var value = _rootScope.SimpleTypes.Parse(property.Type, attr.Value);
+						var value = scope.SimpleTypes.Parse(property.Type, attr.Value);
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 					}
 				}
@@ -64,7 +64,7 @@ namespace TsvBits.Serialization
 					property = def.Attributes[XNamespace.None + name.LocalName];
 					if (property != null)
 					{
-						value = _rootScope.SimpleTypes.Parse(property.Type, reader.ReadString());
+						value = scope.SimpleTypes.Parse(property.Type, reader.ReadString());
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 						continue;
 					}
@@ -77,7 +77,7 @@ namespace TsvBits.Serialization
 					continue;
 				}
 
-				if (ReadValue(reader, obj, def, property, out value))
+				if (ReadValue(scope, reader, obj, def, property, out value))
 				{
 					yield return new KeyValuePair<IPropertyDef, object>(property, value);
 				}
@@ -89,7 +89,7 @@ namespace TsvBits.Serialization
 			}
 		}
 
-		private bool ReadValue(IReader reader, object obj, IElementDef def, IPropertyDef property, out object value)
+		private static bool ReadValue(IScope scope, IReader reader, object obj, IElementDef def, IPropertyDef property, out object value)
 		{
 			var type = property.Type;
 
@@ -99,13 +99,14 @@ namespace TsvBits.Serialization
 				return true;
 			}
 
-			if (_rootScope.SimpleTypes.TryRead(() => reader.ReadString(), type, out value))
+			if (scope.SimpleTypes.TryRead(() => reader.ReadString(), type, out value))
 				return true;
 
-			var elementDef = _rootScope.GetElementDef(type);
+			var elementDef = scope.GetElementDef(type);
 			if (elementDef != null)
 			{
-				value = ReadElement(reader, elementDef, () => CreateElement(property, obj));
+				// TODO pass elementDef as scope
+				value = ReadElement(scope, reader, elementDef, () => CreateElement(property, obj));
 				return true;
 			}
 
@@ -116,9 +117,9 @@ namespace TsvBits.Serialization
 			if (ienum != null)
 			{
 				var elementType = ienum.GetGenericArguments()[0];
-				elementDef = new CollectionDef(_rootScope, property.Name, type, elementType);
+				elementDef = new CollectionDef(scope, property.Name, type, elementType);
 				value = def.IsImmutable ? CreateList(elementType) : CreateElement(property, obj);
-				ReadElement(reader, elementDef, value);
+				ReadElement(scope, reader, elementDef, value);
 				return true;
 			}
 

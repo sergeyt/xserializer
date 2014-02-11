@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	partial class XSerializer
+	partial class Deserializer
 	{
 		private sealed class CollectionDef : IElementDef
 		{

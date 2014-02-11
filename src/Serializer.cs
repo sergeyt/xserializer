@@ -6,16 +6,16 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	partial class XSerializer
+	internal static partial class Serializer
 	{
-		private void WriteElement(IWriter writer, object obj, IElementDef def, XName name)
+		public static void WriteElement(IScope scope, IWriter writer, object obj, IElementDef def, XName name)
 		{
 			if (name == null) name = def.Name;
 
 			var attributes = from attr in def.Attributes
 							 let value = attr.GetValue(obj)
 							 where value != null && !attr.IsDefaultValue(value)
-							 let stringValue = ToString(value)
+							 let stringValue = ToString(scope, value)
 							 where !string.IsNullOrEmpty(stringValue)
 							 select new { attr.Name, Value = stringValue };
 
@@ -35,17 +35,17 @@ namespace TsvBits.Serialization
 
 			foreach (var elem in elements)
 			{
-				WriteValue(writer, elem.Definition, elem.Name, elem.Value);
+				WriteValue(scope, writer, elem.Definition, elem.Name, elem.Value);
 			}
 
 			writer.WriteEndElement();
 		}
 
-		private void WriteValue(IWriter writer, IPropertyDef property, XName name, object value)
+		private static void WriteValue(IScope scope, IWriter writer, IPropertyDef property, XName name, object value)
 		{
 			if (value == null) return;
 
-			if (value is Enum && WriteStringElement(writer, property, name, value))
+			if (value is Enum && WriteStringElement(scope, writer, property, name, value))
 				return;
 
 			if (value.IsPrimitive())
@@ -61,14 +61,15 @@ namespace TsvBits.Serialization
 				return;
 			}
 
-			if (WriteStringElement(writer, property, name, value))
+			if (WriteStringElement(scope, writer, property, name, value))
 				return;
 
 			var type = value.GetType();
-			var elementDef = _rootScope.GetElementDef(type);
+			var elementDef = scope.GetElementDef(type);
 			if (elementDef != null)
 			{
-				WriteElement(writer, value, elementDef, elementDef.Name);
+				// TODO pass element as scope
+				WriteElement(scope, writer, value, elementDef, elementDef.Name);
 				return;
 			}
 
@@ -89,7 +90,7 @@ namespace TsvBits.Serialization
 						writer.WriteNullItem(property.ItemName);
 						continue;
 					}
-					WriteValue(writer, itemDef, property.ItemName, item);
+					WriteValue(scope, writer, itemDef, property.ItemName, item);
 				}
 				if (!empty) writer.WriteEndCollection();
 				return;
@@ -98,10 +99,10 @@ namespace TsvBits.Serialization
 			throw new InvalidOperationException(string.Format("Unknown element. Name: {0}. Type: {1}.", name, type));
 		}
 
-		private bool WriteStringElement(IWriter writer, IPropertyDef property, XName name, object value)
+		private static bool WriteStringElement(IScope scope, IWriter writer, IPropertyDef property, XName name, object value)
 		{
 			string s;
-			if (!_rootScope.SimpleTypes.TryConvert(value, out s))
+			if (!scope.SimpleTypes.TryConvert(value, out s))
 				return false;
 
 			if (string.IsNullOrEmpty(s))
@@ -115,12 +116,12 @@ namespace TsvBits.Serialization
 			return true;
 		}
 
-		private string ToString(object value)
+		private static string ToString(IScope scope, object value)
 		{
 			if (value == null) return string.Empty;
 
 			string s;
-			if (_rootScope.SimpleTypes.TryConvert(value, out s))
+			if (scope.SimpleTypes.TryConvert(value, out s))
 				return s;
 
 			return Convert.ToString(value, CultureInfo.InvariantCulture);
