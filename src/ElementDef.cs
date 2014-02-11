@@ -78,6 +78,15 @@ namespace TsvBits.Serialization
 			return Sub<T>(name);
 		}
 
+		public ElementDef<T> Use(params XNamespace[] namespaces)
+		{
+			foreach (var ns in namespaces.Where(x => x != Namespace))
+			{
+				Fork(ns);
+			}
+			return this;
+		}
+
 		#region Init for Immutable Types
 
 		public ElementDef<T> Init(Func<IDictionary<string, object>, T> create)

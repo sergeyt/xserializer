@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Xml.Linq;
 
@@ -23,9 +22,20 @@ namespace TsvBits.Serialization
 
 			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, Func<TValue, bool> isDefaultValue)
 			{
-				foreach (var prop in _namespaces.Select(ns => Create(property, ns, isDefaultValue)))
+				IPropertyDef prop = null;
+				foreach (var ns in _namespaces)
 				{
-					_properties.Add(prop.Name, prop);
+					if (prop == null)
+					{
+						prop = Create(property, ns, isDefaultValue);
+						var name = ns + prop.Name.LocalName;
+						_properties.Add(name, prop);
+					}
+					else
+					{
+						var name = ns + prop.Name.LocalName;
+						_properties.RegisterSynonym(name, new PropertyProxy(prop, name));
+					}
 				}
 				return this;
 			}
@@ -87,6 +97,54 @@ namespace TsvBits.Serialization
 				var getter = property.Compile();
 				var setter = MethodGenerator.GenerateSetter(property);
 				return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter, isDefaultValue);
+			}
+		}
+
+		private class PropertyProxy : IPropertyDef
+		{
+			private readonly IPropertyDef _property;
+
+			public PropertyProxy(IPropertyDef property, XName name)
+			{
+				_property = property;
+				Name = name;
+			}
+
+			public XName Name { get; private set; }
+
+			public Type Type
+			{
+				get { return _property.Type; }
+			}
+
+			public string PropertyName
+			{
+				get { return _property.PropertyName; }
+			}
+
+			public XName ItemName
+			{
+				get { return _property.ItemName; }
+			}
+
+			public bool IsReadOnly
+			{
+				get { return _property.IsReadOnly; }
+			}
+
+			public object GetValue(object target)
+			{
+				return _property.GetValue(target);
+			}
+
+			public void SetValue(object target, object value)
+			{
+				_property.SetValue(target, value);
+			}
+
+			public bool IsDefaultValue(object value)
+			{
+				return _property.IsDefaultValue(value);
 			}
 		}
 	}

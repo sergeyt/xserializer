@@ -49,6 +49,7 @@ namespace TsvBits.Serialization.Json
 		{
 			_reader = reader;
 			_dispose = dispose;
+			_peekElement = ReadElement();
 		}
 
 		public static IReader Create(TextReader input)
@@ -76,7 +77,10 @@ namespace TsvBits.Serialization.Json
 
 		public XName CurrentName
 		{
-			get { return CurrentElement.Name; }
+			get
+			{
+				return _elementStack.Count == 0 ? _peekElement.Name : CurrentElement.Name;
+			}
 		}
 
 		public IEnumerable<KeyValuePair<XName, string>> ReadAttributes()

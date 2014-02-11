@@ -105,7 +105,7 @@
     <Compile Include="Tests\MethodGeneratorTests.cs" />
     <Compile Include="Tests\NullableTests.cs" />
     <Compile Include="Tests\ReflectorTests.cs" />
-    <Compile Include="Tests\RdlSimpleTests.cs" />
+    <Compile Include="Tests\RdlTests.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Xml\XmlExtensions.cs" />
     <Compile Include="Xml\XmlReaderImpl.cs" />

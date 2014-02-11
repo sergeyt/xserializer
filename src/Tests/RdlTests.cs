@@ -5,7 +5,7 @@ namespace TsvBits.Serialization.Tests
 	using Rom;
 
 	[TestFixture]
-	public class RdlSimpleTests
+	public class RdlTests
 	{
 		[TestCase(Format.Xml, Result = "<Report xmlns=\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\"><Body /></Report>")]
 		[TestCase(Format.Json, Result = "{\"Body\":{}}")]
@@ -68,6 +68,18 @@ namespace TsvBits.Serialization.Tests
 			Assert.AreEqual(textbox2.Name, tb2.Name);
 			Assert.AreEqual(textbox2.Value, tb2.Value);
 			Assert.AreEqual(textbox2.DataElementOutput, tb2.DataElementOutput);
+		}
+
+		[TestCase(@"<Report xmlns=""http://schemas.microsoft.com/sqlserver/reporting/2003/10/reportdefinition""><Body><ReportItems><TextBox><Value>test</Value></TextBox></ReportItems></Body></Report>")]
+		[TestCase(@"<Report xmlns=""http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition""><Body><ReportItems><TextBox><Value>test</Value></TextBox></ReportItems></Body></Report>")]
+		public void ReadSimpleReport(string xml)
+		{
+			var serializer = XSerializer.New(Rdl.Schema);
+			var report = serializer.Parse<Report>(xml, Format.Xml);
+			Assert.AreEqual(1, report.Body.ReportItems.Count);
+			var textbox = report.Body.ReportItems[0] as TextBox;
+			Assert.IsNotNull(textbox);
+			Assert.AreEqual("test", textbox.Value);
 		}
 	}
 }

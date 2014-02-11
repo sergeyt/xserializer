@@ -32,10 +32,23 @@ namespace TsvBits.Serialization
 			return obj;
 		}
 
+		private static void ReadStartElement(IScope scope, IReader reader, IElementDef def)
+		{
+			if (reader.ReadStartElement(def.Name))
+				return;
+
+			var namespaces = scope.GetNamespaces(def.Type);
+			if (namespaces.Any(ns => reader.ReadStartElement(ns + def.Name.LocalName)))
+			{
+				return;
+			}
+
+			throw new XmlException(string.Format("Xml element not foud: {0}", def.Name));
+		}
+
 		private static IEnumerable<KeyValuePair<IPropertyDef, object>> ReadProperties(IScope scope, IReader reader, object obj, IElementDef def)
 		{
-			if (!reader.ReadStartElement(def.Name))
-				throw new XmlException(string.Format("Xml element not foud: {0}", def.Name));
+			ReadStartElement(scope, reader, def);
 
 			// read attributes
 			if (def.Attributes.Any())

@@ -8,11 +8,12 @@ namespace TsvBits.Serialization
 	{
 		public static readonly IDefCollection<T> Empty = new EmptyImpl();
 
-		private readonly IDictionary<XName, T> _store = new Dictionary<XName, T>();
+		private readonly IList<T> _list = new List<T>();
+		private readonly IDictionary<XName, T> _index = new Dictionary<XName, T>();
 
 		public IEnumerator<T> GetEnumerator()
 		{
-			return _store.Values.GetEnumerator();
+			return _list.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
@@ -25,20 +26,31 @@ namespace TsvBits.Serialization
 			get
 			{
 				T def;
-				return _store.TryGetValue(name, out def) ? def : default(T);
+				return _index.TryGetValue(name, out def) ? def : default(T);
 			}
+		}
+
+		public void RegisterSynonym(XName name, T def)
+		{
+			_index[name] = def;
 		}
 
 		public void Add(XName name, T def)
 		{
-			_store[name] = def;
+			// TODO override existing
+			_index[name] = def;
+			_list.Add(def);
 		}
 
 		public void AddRange(DefCollection<T> collection)
 		{
-			foreach (var p in collection._store)
+			foreach (var p in collection._index)
 			{
-				Add(p.Key, p.Value);
+				_index[p.Key] = p.Value;
+			}
+			foreach (var p in collection._list)
+			{
+				_list.Add(p);
 			}
 		}
 

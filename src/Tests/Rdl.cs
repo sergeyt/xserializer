@@ -14,35 +14,45 @@ namespace TsvBits.Serialization.Tests
 				.Type(s => ExpressionInfo.Parse(s), x => x.ToString())
 				.Enum(DataElementOutput.Auto);
 
+			var rdl = new[] {Ns.Rdl2005, Ns.Rdl2003, Ns.Rdl2008, Ns.Rdl2010};
+
 			schema.Element<Report>()
 				.Attributes()
 				.Add(x => x.Name)
 				.End()
-				.Elements()
+				.Elements(rdl)
 				.Add(x => x.Width)
-				.Add(x => x.Body);
+				.Add(x => x.Body)
+				.End()
+				.Use(rdl);
 
 			schema.Element<Body>()
-				.Elements()
+				.Elements(rdl)
 				.Add(x => x.Height)
-				.Add(x => x.ReportItems);
+				.Add(x => x.ReportItems)
+				.End()
+				.Use(rdl);
 
 			var item = schema.Element<ReportItem>()
 				.Attributes()
 				.Add(x => x.Name)
 				.End()
-				.Elements()
+				.Elements(rdl)
 				.Add(x => x.DataElementName)
 				.Add(x => x.DataElementOutput)
 				.End();
 
 			item.Sub<TextBox>()
-				.Elements()
-				.Add(x => x.Value);
+				.Elements(rdl)
+				.Add(x => x.Value)
+				.End()
+				.Use(rdl);
 
 			item.Sub<Rectangle>()
-				.Elements()
-				.Add(x => x.ReportItems);
+				.Elements(rdl)
+				.Add(x => x.ReportItems)
+				.End()
+				.Use(rdl);
 
 			Schema = schema;
 		}

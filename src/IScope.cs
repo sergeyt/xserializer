@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace TsvBits.Serialization
@@ -12,5 +13,7 @@ namespace TsvBits.Serialization
 
 		bool TryConvert(object value, out string result);
 		bool TryRead(Func<string> reader, Type type, out object value);
+
+		IList<XNamespace> GetNamespaces(Type type);
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace TsvBits.Serialization
@@ -9,6 +10,7 @@ namespace TsvBits.Serialization
 		private readonly IScope _parent;
 		private readonly SimpleTypeCollection _simpleTypes = new SimpleTypeCollection();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
+		private readonly IDictionary<Type, List<XNamespace>> _typeNamespaces = new Dictionary<Type, List<XNamespace>>();
 		private readonly DefCollection<IElementDef> _elements = new DefCollection<IElementDef>();
 
 		protected Scope(IScope parent)
@@ -61,7 +63,24 @@ namespace TsvBits.Serialization
 
 		private void Register(IElementDef def)
 		{
-			_elementDefs.Add(def.Type, def);
+			var type = def.Type;
+			if (!_elementDefs.ContainsKey(type))
+			{
+				_elementDefs.Add(type, def);
+			}
+
+			List<XNamespace> namespaces;
+			var ns = def.Name.Namespace;
+			if (_typeNamespaces.TryGetValue(type, out namespaces))
+			{
+				if (!namespaces.Contains(ns))
+					namespaces.Add(ns);
+			}
+			else
+			{
+				_typeNamespaces.Add(type, new List<XNamespace> {ns});
+			}
+			
 			_elements.Add(def.Name, def);
 		}
 
@@ -104,6 +123,14 @@ namespace TsvBits.Serialization
 			if (_simpleTypes.TryRead(reader, type, out value))
 				return true;
 			return _parent != null && _parent.TryRead(reader, type, out value);
+		}
+
+		public IList<XNamespace> GetNamespaces(Type type)
+		{
+			List<XNamespace> namespaces;
+			if (_typeNamespaces.TryGetValue(type, out namespaces))
+				return namespaces.AsReadOnly();
+			return _parent != null ? _parent.GetNamespaces(type) : new XNamespace[0];
 		}
 
 		internal static XName GetName<T>(XNamespace defaultNamespace)

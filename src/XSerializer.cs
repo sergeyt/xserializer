@@ -69,7 +69,7 @@ namespace TsvBits.Serialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = _rootScope.GetElementDef(obj.GetType());
+			var def = ResolveElementDef(reader, obj.GetType());
 			Deserializer.ReadElement(_rootScope, reader, def, obj);
 		}
 
@@ -82,8 +82,17 @@ namespace TsvBits.Serialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = _rootScope.GetElementDef(typeof(T));
+			var def = ResolveElementDef(reader, typeof(T));
 			return (T)Deserializer.ReadElement(_rootScope, reader, def, null);
+		}
+
+		private IElementDef ResolveElementDef(IReader reader, Type type)
+		{
+			if (reader.Format == Format.Json)
+			{
+				return _rootScope.GetElementDef(type);
+			}
+			return _rootScope.GetElementDef(reader.CurrentName) ?? _rootScope.GetElementDef(type);
 		}
 
 		/// <summary>
