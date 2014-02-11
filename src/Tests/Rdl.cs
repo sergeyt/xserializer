@@ -1,4 +1,5 @@
-﻿using TsvBits.Serialization.Tests.Rom;
+﻿using System.Xml.Linq;
+using TsvBits.Serialization.Tests.Rom;
 
 namespace TsvBits.Serialization.Tests
 {
@@ -8,7 +9,7 @@ namespace TsvBits.Serialization.Tests
 
 		static Rdl()
 		{
-			var schema = Scope.New(Ns.Rdl2005)
+			var schema = new Scope(Ns.Rdl2005)
 				.Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
 				.Type(s => ExpressionInfo.Parse(s), x => x.ToString())
 				.Enum(DataElementOutput.Auto);

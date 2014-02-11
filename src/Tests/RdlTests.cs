@@ -12,7 +12,7 @@ namespace TsvBits.Serialization.Tests
 		[SetUp]
 		public void Init()
 		{
-			var schema = Scope.New("http://test.com")
+			var schema = new Scope("http://test.com")
 				.Type(s => Length.Parse(s), x => x.IsValid ? x.ToString() : "")
 				.Type(s => ExpressionInfo.Parse(s), x => x.ToString())
 				.Enum(DataElementOutput.Auto);

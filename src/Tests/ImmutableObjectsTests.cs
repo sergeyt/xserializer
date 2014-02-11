@@ -22,15 +22,15 @@ namespace TsvBits.Serialization.Tests
 		[Test]
 		public void JustAttr()
 		{
-			var scope = Scope.New(XNamespace.None);
+			var schema = new Scope();
 
-			scope.Element<Item>()
+			schema.Element<Item>()
 				.Attributes()
 				.Add(x => x.Name)
 				.End()
 				.Init();
 
-			var serializer = XSerializer.New(scope);
+			var serializer = XSerializer.New(schema);
 
 			var item1 = new Item("test");
 			var serial = serializer.ToString(item1, _format);
@@ -56,21 +56,21 @@ namespace TsvBits.Serialization.Tests
 		[Test]
 		public void TestContainer()
 		{
-			var scope = Scope.New(XNamespace.None);
+			var schema = new Scope();
 
-			scope.Element<Item>()
+			schema.Element<Item>()
 				.Attributes()
 				.Add(x => x.Name)
 				.End()
 				.Init();
 
-			scope.Element<Container>()
+			schema.Element<Container>()
 				.Elements()
 				.Add(x => x.Items)
 				.End()
 				.Init();
 
-			var serializer = XSerializer.New(scope);
+			var serializer = XSerializer.New(schema);
 
 			var container = new Container(new[] {new Item("a"), new Item("b")});
 			var serial = serializer.ToString(container, _format);

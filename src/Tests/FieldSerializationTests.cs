@@ -39,15 +39,15 @@ namespace TsvBits.Serialization.Tests
 
 		private void TestPointT<T>(bool asAttrs, T x, T y)
 		{
-			var scope = Scope.New("");
+			var schema = new Scope();
 
-			var def = scope.Element<Point<T>>().Init();
+			var def = schema.Element<Point<T>>().Init();
 			(asAttrs ? def.Attributes() : def.Elements())
 				.Add(p => p.X)
 				.Add(p => p.Y)
 				.End();
 			
-			var serializer = XSerializer.New(scope);
+			var serializer = XSerializer.New(schema);
 
 			var pt = new Point<T>(x, y);
 			var serial = serializer.ToString(pt, _format);
@@ -64,14 +64,14 @@ namespace TsvBits.Serialization.Tests
 		[TestCase(false, -1, -2)]
 		public void TestClass(bool asAttrs, float x, float y)
 		{
-			var scope = Scope.New("");
+			var schema = new Scope();
 
-			var def = scope.Element<CPoint>();
+			var def = schema.Element<CPoint>();
 			(asAttrs ? def.Attributes() : def.Elements())
 				.Add(p => p.X)
 				.Add(p => p.Y);
 			
-			var serializer = XSerializer.New(scope);
+			var serializer = XSerializer.New(schema);
 
 			var pt = new CPoint(x, y);
 			var serial = serializer.ToString(pt, _format);

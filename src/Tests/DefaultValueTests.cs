@@ -12,7 +12,7 @@ namespace TsvBits.Serialization.Tests
 		[TestCase(true, Result = "<Entity />")]
 		public string DefaultValueAttribute(bool asAttr)
 		{
-			var schema = Scope.New(XNamespace.None);
+			var schema = new Scope();
 			var def = schema.Element<Entity>();
 
 			if (asAttr)
@@ -37,7 +37,7 @@ namespace TsvBits.Serialization.Tests
 		[TestCase(true, Result = "<Entity />")]
 		public string CustomDefaultValue(bool asAttr)
 		{
-			var schema = Scope.New(XNamespace.None);
+			var schema = new Scope();
 			var def = schema.Element<Entity>();
 
 			if (asAttr)

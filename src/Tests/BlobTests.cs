@@ -14,11 +14,11 @@ namespace TsvBits.Serialization.Tests
 		[TestCase(Format.JsonML, new byte[] { 1, 2, 3 }, "[\"Item\",[\"Data\",\"AQID\"]]")]
 		public void Simple(Format format, byte[] data, string expectedSerial)
 		{
-			var scope = Scope.New("");
-			scope.Element<Item>()
+			var schema = new Scope();
+			schema.Element<Item>()
 				.Elements().Add(x => x.Data);
 
-			var serializer = XSerializer.New(scope);
+			var serializer = XSerializer.New(schema);
 
 			var item = new Item {Data = data};
 			var serial = serializer.ToString(item, format);

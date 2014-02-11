@@ -16,20 +16,20 @@ namespace TsvBits.Serialization
 			_parent = parent;
 		}
 
-		private Scope(XNamespace ns)
+		public Scope(XNamespace defaultNamespace)
 		{
-			Namespace = ns ?? XNamespace.None;
+			Namespace = defaultNamespace ?? XNamespace.None;
 		}
 
-		public static Scope New(XNamespace defaultNamespace)
+		public Scope(string defaultNamespace)
+			: this(string.IsNullOrEmpty(defaultNamespace) ? XNamespace.None : XNamespace.Get(defaultNamespace))
 		{
-			return new Scope(defaultNamespace);
 		}
-		public static Scope New(string defaultNamespace)
+
+		public Scope() : this(XNamespace.None)
 		{
-			return new Scope(string.IsNullOrEmpty(defaultNamespace) ? XNamespace.None : XNamespace.Get(defaultNamespace));
 		}
-		
+
 		/// <summary>
 		/// Default namespace.
 		/// </summary>

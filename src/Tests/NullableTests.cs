@@ -31,12 +31,12 @@ namespace TsvBits.Serialization.Tests
 
 		private void TestItem<T>(T value, bool asAttr) where T : struct
 		{
-			var scope = Scope.New("");
-			var elem = scope.Element<Item<T>>();
+			var schema = new Scope();
+			var elem = schema.Element<Item<T>>();
 			if (asAttr) elem.Attributes().Add(x => x.Value);
 			else elem.Elements().Add(x => x.Value);
 
-			var serializer = XSerializer.New(scope);
+			var serializer = XSerializer.New(schema);
 
 			var item1 = new Item<T>();
 			var xml = serializer.ToString(item1, _format);

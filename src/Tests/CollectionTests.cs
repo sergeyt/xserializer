@@ -40,13 +40,13 @@ namespace TsvBits.Serialization.Tests
 
 		private void TestCore<T>(params T[] items)
 		{
-			var scope = Scope.New("");
+			var schema = new Scope();
 
-			scope.Element<Container<T>>()
+			schema.Element<Container<T>>()
 				.Elements()
 				.Add(x => x.Items);
 
-			var serializer = XSerializer.New(scope);
+			var serializer = XSerializer.New(schema);
 
 			var container = new Container<T>();
 			foreach (var item in items)
