@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if NUNIT
+using System.Collections.Generic;
 
 namespace TsvBits.Serialization.Tests.Rom
 {
@@ -19,3 +20,4 @@ namespace TsvBits.Serialization.Tests.Rom
 		NoContent
 	}
 }
+#endif

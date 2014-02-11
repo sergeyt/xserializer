@@ -1,4 +1,5 @@
-﻿namespace TsvBits.Serialization.Tests.Rom
+﻿#if NUNIT
+namespace TsvBits.Serialization.Tests.Rom
 {
 	internal class Report
 	{
@@ -13,3 +14,4 @@
 		}
 	}
 }
+#endif

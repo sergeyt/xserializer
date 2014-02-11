@@ -1,4 +1,5 @@
-﻿namespace TsvBits.Serialization.Tests.Rom
+﻿#if NUNIT
+namespace TsvBits.Serialization.Tests.Rom
 {
 	internal class Rectangle : ReportItem
 	{
@@ -10,3 +11,4 @@
 		public ReportItemCollection ReportItems { get; private set; }
 	}
 }
+#endif

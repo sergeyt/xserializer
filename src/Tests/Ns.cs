@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿#if NUNIT
+using System.Xml.Linq;
 
 namespace TsvBits.Serialization.Tests
 {
@@ -23,3 +24,4 @@ namespace TsvBits.Serialization.Tests
 			"http://schemas.datadynamics.com/reporting/2005/02/snippet";
 	}
 }
+#endif

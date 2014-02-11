@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿#if NUNIT
+using System.Xml.Linq;
 using TsvBits.Serialization.Tests.Rom;
 
 namespace TsvBits.Serialization.Tests
@@ -48,3 +49,4 @@ namespace TsvBits.Serialization.Tests
 		}
 	}
 }
+#endif

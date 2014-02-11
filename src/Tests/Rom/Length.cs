@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿#if NUNIT
+using System.Globalization;
 
 namespace TsvBits.Serialization.Tests.Rom
 {
@@ -42,3 +43,4 @@ namespace TsvBits.Serialization.Tests.Rom
 		}
 	}
 }
+#endif
