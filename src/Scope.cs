@@ -6,12 +6,14 @@ namespace TsvBits.Serialization
 {
 	public class Scope : IScope
 	{
+		private readonly IScope _parent;
 		private readonly SimpleTypeCollection _simpleTypes = new SimpleTypeCollection();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
 		private readonly DefCollection<IElementDef> _elements = new DefCollection<IElementDef>();
 
-		protected Scope()
+		protected Scope(IScope parent)
 		{
+			_parent = parent;
 		}
 
 		private Scope(XNamespace ns)
@@ -78,17 +80,30 @@ namespace TsvBits.Serialization
 		public IElementDef GetElementDef(Type type)
 		{
 			IElementDef def;
-			return _elementDefs.TryGetValue(type, out def) ? def : null;
+			if (_elementDefs.TryGetValue(type, out def))
+				return def;
+			return _parent != null ? _parent.GetElementDef(type) : null;
 		}
 
 		public IElementDef GetElementDef(XName name)
 		{
-			return _elements[name];
+			var def = _elements[name];
+			if (def != null) return def;
+			return _parent != null ? _parent.GetElementDef(name) : null;
 		}
 
-		public SimpleTypeCollection SimpleTypes
+		public bool TryConvert(object value, out string result)
 		{
-			get { return _simpleTypes; }
+			if (_simpleTypes.TryConvert(value, out result, _parent == null))
+				return true;
+			return _parent != null && _parent.TryConvert(value, out result);
+		}
+
+		public bool TryRead(Func<string> reader, Type type, out object value)
+		{
+			if (_simpleTypes.TryRead(reader, type, out value))
+				return true;
+			return _parent != null && _parent.TryRead(reader, type, out value);
 		}
 
 		internal static XName GetName<T>(XNamespace defaultNamespace)

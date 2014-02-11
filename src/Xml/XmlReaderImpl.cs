@@ -84,7 +84,7 @@ namespace TsvBits.Serialization.Xml
 			if (Xsi.Name2Type.TryGetValue(xsiType, out valueType))
 			{
 				var scope = Scope.New("");
-				return scope.SimpleTypes.Parse(valueType, s);
+				return Parse(scope, valueType, s);
 			}
 
 			return null;
@@ -98,6 +98,14 @@ namespace TsvBits.Serialization.Xml
 		public IEnumerable<XName> ReadChildElements()
 		{
 			return _reader.ReadChildElements();
+		}
+
+		private static object Parse(IScope scope, Type type, string s)
+		{
+			object result;
+			if (!scope.TryRead(() => s, type, out result))
+				throw new NotSupportedException(string.Format("Unknown type: {0}", type));
+			return result;
 		}
 	}
 }

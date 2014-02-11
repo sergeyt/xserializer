@@ -68,8 +68,8 @@ namespace TsvBits.Serialization
 			var elementDef = scope.GetElementDef(type);
 			if (elementDef != null)
 			{
-				// TODO pass element as scope
-				WriteElement(scope, writer, value, elementDef, elementDef.Name);
+				var subScope = elementDef as IScope;
+				WriteElement(subScope, writer, value, elementDef, elementDef.Name);
 				return;
 			}
 
@@ -102,7 +102,7 @@ namespace TsvBits.Serialization
 		private static bool WriteStringElement(IScope scope, IWriter writer, IPropertyDef property, XName name, object value)
 		{
 			string s;
-			if (!scope.SimpleTypes.TryConvert(value, out s))
+			if (!scope.TryConvert(value, out s))
 				return false;
 
 			if (string.IsNullOrEmpty(s))
@@ -121,7 +121,7 @@ namespace TsvBits.Serialization
 			if (value == null) return string.Empty;
 
 			string s;
-			if (scope.SimpleTypes.TryConvert(value, out s))
+			if (scope.TryConvert(value, out s))
 				return s;
 
 			return Convert.ToString(value, CultureInfo.InvariantCulture);

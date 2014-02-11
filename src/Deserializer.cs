@@ -45,7 +45,7 @@ namespace TsvBits.Serialization
 					var property = def.Attributes[attr.Key];
 					if (property != null)
 					{
-						var value = scope.SimpleTypes.Parse(property.Type, attr.Value);
+						var value = Parse(scope, property.Type, attr.Value);
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 					}
 				}
@@ -64,7 +64,7 @@ namespace TsvBits.Serialization
 					property = def.Attributes[XNamespace.None + name.LocalName];
 					if (property != null)
 					{
-						value = scope.SimpleTypes.Parse(property.Type, reader.ReadString());
+						value = Parse(scope, property.Type, reader.ReadString());
 						yield return new KeyValuePair<IPropertyDef, object>(property, value);
 						continue;
 					}
@@ -99,14 +99,14 @@ namespace TsvBits.Serialization
 				return true;
 			}
 
-			if (scope.SimpleTypes.TryRead(() => reader.ReadString(), type, out value))
+			if (scope.TryRead(() => reader.ReadString(), type, out value))
 				return true;
 
 			var elementDef = scope.GetElementDef(type);
 			if (elementDef != null)
 			{
-				// TODO pass elementDef as scope
-				value = ReadElement(scope, reader, elementDef, () => CreateElement(property, obj));
+				var subScope = elementDef as IScope;
+				value = ReadElement(subScope ?? scope, reader, elementDef, () => CreateElement(property, obj));
 				return true;
 			}
 
@@ -156,6 +156,14 @@ namespace TsvBits.Serialization
 			if (def == null) throw new NotSupportedException();
 			var element = target != null ? def.GetValue(target) : null;
 			return element ?? Activator.CreateInstance(def.Type);
+		}
+
+		private static object Parse(IScope scope, Type type, string s)
+		{
+			object result;
+			if (!scope.TryRead(() => s, type, out result))
+				throw new NotSupportedException(string.Format("Unknown type: {0}", type));
+			return result;
 		}
 	}
 }

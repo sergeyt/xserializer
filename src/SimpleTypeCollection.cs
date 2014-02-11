@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace TsvBits.Serialization
 {
-	public sealed class SimpleTypeCollection
+	internal sealed class SimpleTypeCollection
 	{
 		private static readonly IDictionary<Type, TypeDef> CoreTypes = new Dictionary<Type, TypeDef>();
 		private readonly IDictionary<Type, TypeDef> _types = new Dictionary<Type, TypeDef>();
@@ -42,7 +42,10 @@ namespace TsvBits.Serialization
 		public void Enum<T>(T defval, bool ignoreCase)
 		{
 			var type = typeof(T);
-			_types.Add(type, new TypeDef(s => System.Enum.Parse(type, s, ignoreCase), v => Equals(v, defval) ? "" : v.ToString()));
+			_types.Add(type, new TypeDef(
+				s => System.Enum.Parse(type, s, ignoreCase),
+				v => Equals(v, defval) ? "" : v.ToString()
+				));
 		}
 
 		public void Enum<T>(T defval)
@@ -50,23 +53,12 @@ namespace TsvBits.Serialization
 			Enum(defval, true);
 		}
 
-		internal object Parse(Type type, string s)
+		internal bool TryRead(Func<string> reader, Type type, out object value)
 		{
 			var parser = GetParser(type, true);
 			if (parser != null)
 			{
-				return parser(s);
-			}
-
-			throw new NotSupportedException(string.Format("Unknown type: {0}", type));
-		}
-
-		internal bool TryRead(Func<string> stringReader, Type type, out object value)
-		{
-			var parser = GetParser(type, false);
-			if (parser != null)
-			{
-				var s = stringReader();
+				var s = reader();
 				value = parser(s);
 				return true;
 			}
@@ -74,7 +66,7 @@ namespace TsvBits.Serialization
 			return false;
 		}
 
-		internal bool TryConvert(object value, out string result)
+		internal bool TryConvert(object value, out string result, bool withEnumSupport)
 		{
 			if (value == null)
 			{
@@ -96,7 +88,7 @@ namespace TsvBits.Serialization
 				return true;
 			}
 
-			if (value is Enum)
+			if (value is Enum && withEnumSupport)
 			{
 				result = value.ToString();
 				return true;

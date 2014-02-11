@@ -7,9 +7,10 @@ namespace TsvBits.Serialization
 	{
 		XNamespace Namespace { get; }
 
-		SimpleTypeCollection SimpleTypes { get; }
-
 		IElementDef GetElementDef(Type type);
 		IElementDef GetElementDef(XName name);
+
+		bool TryConvert(object value, out string result);
+		bool TryRead(Func<string> reader, Type type, out object value);
 	}
 }
