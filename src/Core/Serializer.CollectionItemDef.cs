@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Linq;
 
-namespace TsvBits.Serialization
+namespace TsvBits.Serialization.Core
 {
 	partial class Serializer
 	{

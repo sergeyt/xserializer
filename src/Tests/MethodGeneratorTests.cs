@@ -1,4 +1,5 @@
-﻿#if NUNIT
+﻿using TsvBits.Serialization.Utils;
+#if NUNIT
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;

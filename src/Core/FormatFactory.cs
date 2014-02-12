@@ -5,7 +5,7 @@ using System.Xml.Linq;
 using TsvBits.Serialization.Json;
 using TsvBits.Serialization.Xml;
 
-namespace TsvBits.Serialization
+namespace TsvBits.Serialization.Core
 {
 	// TODO load Json writer/reader from separate assembly
 

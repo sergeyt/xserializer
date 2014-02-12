@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace TsvBits.Serialization
+namespace TsvBits.Serialization.Utils
 {
 	internal static class MethodGenerator
 	{

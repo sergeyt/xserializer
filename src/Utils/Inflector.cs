@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace TsvBits.Serialization
+namespace TsvBits.Serialization.Utils
 {
 	/// <summary>
 	/// Performs inflextions.

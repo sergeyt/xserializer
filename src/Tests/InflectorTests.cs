@@ -1,4 +1,5 @@
-﻿#if NUNIT
+﻿using TsvBits.Serialization.Utils;
+#if NUNIT
 using NUnit.Framework;
 
 namespace TsvBits.Serialization.Tests

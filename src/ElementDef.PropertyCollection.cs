@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Xml.Linq;
+using TsvBits.Serialization.Utils;
 
 namespace TsvBits.Serialization
 {

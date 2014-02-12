@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using TsvBits.Serialization.Utils;
 
-namespace TsvBits.Serialization
+namespace TsvBits.Serialization.Core
 {
 	internal static partial class Deserializer
 	{

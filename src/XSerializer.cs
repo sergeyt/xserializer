@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Xml;
+using TsvBits.Serialization.Core;
 using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization
