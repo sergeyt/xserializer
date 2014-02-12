@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if FULL
+using System;
 using Newtonsoft.Json;
 
 namespace TsvBits.Serialization.Json
@@ -22,3 +23,4 @@ namespace TsvBits.Serialization.Json
 		}
 	}
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if FULL
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -255,3 +256,4 @@ namespace TsvBits.Serialization.Json
 		}
 	}
 }
+#endif

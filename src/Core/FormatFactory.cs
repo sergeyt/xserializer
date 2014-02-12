@@ -2,8 +2,12 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
-using TsvBits.Serialization.Json;
+
 using TsvBits.Serialization.Xml;
+
+#if FULL
+using TsvBits.Serialization.Json;
+#endif
 
 namespace TsvBits.Serialization.Core
 {
@@ -18,10 +22,12 @@ namespace TsvBits.Serialization.Core
 				case Format.Xml:
 					var xws = new XmlWriterSettings {ConformanceLevel = ConformanceLevel.Fragment};
 					return XmlWriterImpl.Create(output, xws);
+#if FULL
 				case Format.Json:
 					return JsonWriterImpl.Create(output);
 				case Format.JsonML:
 					return JsonMLWriter.Create(output);
+#endif
 				default:
 					throw new NotSupportedException("format");
 			}
@@ -32,11 +38,13 @@ namespace TsvBits.Serialization.Core
 			switch (format)
 			{
 				case Format.Xml:
+#if FULL
 				case Format.Json:
 				case Format.JsonML:
 					return CreateWriter(new StreamWriter(output), format);
 				case Format.Bson:
 					return JsonWriterImpl.CreateBsonWriter(output);
+#endif
 				default:
 					throw new NotSupportedException("format");
 			}
@@ -48,10 +56,12 @@ namespace TsvBits.Serialization.Core
 			{
 				case Format.Xml:
 					return XmlReaderImpl.Create(input);
+#if FULL
 				case Format.Json:
 					return JsonReaderImpl.Create(rootNamespace, input);
 				case Format.JsonML:
 					return JsonMLReader.Create(input);
+#endif
 				default:
 					throw new NotSupportedException("format");
 			}
@@ -62,11 +72,13 @@ namespace TsvBits.Serialization.Core
 			switch (format)
 			{
 				case Format.Xml:
+#if FULL
 				case Format.Json:
 				case Format.JsonML:
 					return CreateReader(new StreamReader(input), format, rootNamespace);
 				case Format.Bson:
 					return JsonReaderImpl.CreateBsonReader(input, rootNamespace);
+#endif
 				default:
 					throw new NotSupportedException("format");
 			}
