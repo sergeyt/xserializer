@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="ElementDef.PropertyCollection.cs" />
     <Compile Include="IScope.cs" />
+    <Compile Include="IXmlSurrogate.cs" />
     <Compile Include="PropertyDef.cs" />
     <Compile Include="SimpleTypeCollection.cs" />
     <Compile Include="Tests\Ns.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Format.cs" />
     <Compile Include="Core\FormatFactory.cs" />
     <Compile Include="IElementDef.cs" />
+    <Compile Include="Tests\XmlSurrogateTests.cs" />
     <Compile Include="Utils\Inflector.cs" />
     <Compile Include="IReader.cs" />
     <Compile Include="IWriter.cs" />

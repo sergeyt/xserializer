@@ -70,8 +70,7 @@ namespace TsvBits.Serialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			var def = ResolveElementDef(reader, obj.GetType());
-			Deserializer.ReadElement(_rootScope, reader, def, obj);
+			Deserializer.ReadElement(_rootScope, reader, obj);
 		}
 
 		/// <summary>
@@ -83,6 +82,7 @@ namespace TsvBits.Serialization
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
+			// TODO move to Deserializer
 			var def = ResolveElementDef(reader, typeof(T));
 			return (T)Deserializer.ReadElement(_rootScope, reader, def, null);
 		}
@@ -131,8 +131,7 @@ namespace TsvBits.Serialization
 		/// <param name="obj">The object to serialize.</param>
 		public void Write<T>(IWriter writer, T obj)
 		{
-			var def = _rootScope.GetElementDef(obj.GetType());
-			Serializer.WriteElement(_rootScope, writer, obj, def, def.Name);
+			Serializer.WriteElement(_rootScope, writer, obj);
 		}
 
 		/// <summary>

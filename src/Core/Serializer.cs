@@ -4,11 +4,37 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using TsvBits.Serialization.Utils;
+using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization.Core
 {
 	internal static partial class Serializer
 	{
+		public static void WriteElement(IScope scope, IWriter writer, object obj)
+		{
+			var type = obj.GetType();
+
+			var xmlWriter = writer as XmlWriterImpl;
+			if (xmlWriter != null)
+			{
+				var surrogate = scope.GetSurrogate(type);
+				if (surrogate != null)
+				{
+					surrogate.Write(xmlWriter.XmlWriter, obj);
+					return;
+				}
+			}
+
+			var def = scope.GetElementDef(type);
+			if (def != null)
+			{
+				WriteElement(scope, writer, obj, def, def.Name);
+				return;
+			}
+
+			throw new NotSupportedException();
+		}
+
 		public static void WriteElement(IScope scope, IWriter writer, object obj, IElementDef def, XName name)
 		{
 			if (name == null) name = def.Name;
@@ -66,6 +92,17 @@ namespace TsvBits.Serialization.Core
 				return;
 
 			var type = value.GetType();
+			var xmlWriter = writer as XmlWriterImpl;
+			if (xmlWriter != null)
+			{
+				var surrogate = scope.GetSurrogate(type);
+				if (surrogate != null)
+				{
+					surrogate.Write(xmlWriter.XmlWriter, value);
+					return;
+				}
+			}
+
 			var elementDef = scope.GetElementDef(type);
 			if (elementDef != null)
 			{

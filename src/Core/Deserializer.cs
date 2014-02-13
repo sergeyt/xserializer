@@ -4,11 +4,46 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using TsvBits.Serialization.Utils;
+using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization.Core
 {
 	internal static partial class Deserializer
 	{
+		public static void ReadElement(IScope scope, IReader reader, object obj)
+		{
+			var type = obj.GetType();
+
+			var xmlReader = reader as XmlReaderImpl;
+			if (xmlReader != null)
+			{
+				var surrogate = scope.GetSurrogate(type);
+				if (surrogate != null)
+				{
+					surrogate.Read(xmlReader.XmlReader, obj);
+					return;
+				}
+			}
+
+			var def = ResolveElementDef(scope, reader, type);
+			if (def != null)
+			{
+				ReadElement(scope, reader, def, obj);
+				return;
+			}
+
+			throw new NotSupportedException();
+		}
+
+		private static IElementDef ResolveElementDef(IScope scope, IReader reader, Type type)
+		{
+			if (reader.Format == Format.Json)
+			{
+				return scope.GetElementDef(type);
+			}
+			return scope.GetElementDef(reader.CurrentName) ?? scope.GetElementDef(type);
+		}
+
 		public static void ReadElement(IScope scope, IReader reader, IElementDef def, object obj)
 		{
 			foreach (var p in ReadProperties(scope, reader, obj, def))
@@ -115,6 +150,18 @@ namespace TsvBits.Serialization.Core
 
 			if (scope.TryRead(() => reader.ReadString(), type, out value))
 				return true;
+
+			var xmlReader = reader as XmlReaderImpl;
+			if (xmlReader != null)
+			{
+				var surrogate = scope.GetSurrogate(type);
+				if (surrogate != null)
+				{
+					value = CreateElement(property, obj);
+					surrogate.Read(xmlReader.XmlReader, value);
+					return true;
+				}
+			}
 
 			var elementDef = scope.GetElementDef(type);
 			if (elementDef != null)

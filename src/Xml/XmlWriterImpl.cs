@@ -18,6 +18,11 @@ namespace TsvBits.Serialization.Xml
 			_dispose = dispose;
 		}
 
+		public XmlWriter XmlWriter
+		{
+			get { return _writer; }
+		}
+
 		public static IWriter Create(TextWriter output, XmlWriterSettings settings)
 		{
 			return new XmlWriterImpl(XmlWriter.Create(output, settings), true);

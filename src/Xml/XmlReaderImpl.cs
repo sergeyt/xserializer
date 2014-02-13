@@ -21,6 +21,11 @@ namespace TsvBits.Serialization.Xml
 			_dispose = dispose;
 		}
 
+		public XmlReader XmlReader
+		{
+			get { return _reader; }
+		}
+
 		public static IReader Create(TextReader input)
 		{
 			return new XmlReaderImpl(XmlReader.Create(input), true);

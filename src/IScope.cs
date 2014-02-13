@@ -15,5 +15,7 @@ namespace TsvBits.Serialization
 		bool TryRead(Func<string> reader, Type type, out object value);
 
 		IList<XNamespace> GetNamespaces(Type type);
+
+		IXmlSurrogate GetSurrogate(Type type);
 	}
 }

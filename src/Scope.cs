@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Linq;
 using TsvBits.Serialization.Utils;
 
@@ -13,6 +12,7 @@ namespace TsvBits.Serialization
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
 		private readonly IDictionary<Type, List<XNamespace>> _typeNamespaces = new Dictionary<Type, List<XNamespace>>();
 		private readonly DefCollection<IElementDef> _elements = new DefCollection<IElementDef>();
+		private readonly IDictionary<Type, IXmlSurrogate> _xmlSurrogates = new Dictionary<Type, IXmlSurrogate>();
 
 		protected Scope(IScope parent)
 		{
@@ -132,6 +132,19 @@ namespace TsvBits.Serialization
 			if (_typeNamespaces.TryGetValue(type, out namespaces))
 				return namespaces.AsReadOnly();
 			return _parent != null ? _parent.GetNamespaces(type) : new XNamespace[0];
+		}
+
+		public Scope Element<T>(IXmlSurrogate surrogate)
+		{
+			if (surrogate == null) throw new ArgumentNullException("surrogate");
+			_xmlSurrogates.Add(typeof(T), surrogate);
+			return this;
+		}
+
+		public IXmlSurrogate GetSurrogate(Type type)
+		{
+			IXmlSurrogate surrogate;
+			return _xmlSurrogates.TryGetValue(type, out surrogate) ? surrogate : null;
 		}
 
 		internal static XName GetName<T>(XNamespace defaultNamespace)
