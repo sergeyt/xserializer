@@ -89,10 +89,12 @@ namespace TsvBits.Serialization
 
 		private IElementDef ResolveElementDef(IReader reader, Type type)
 		{
+#if FULL
 			if (reader.Format == Format.Json)
 			{
 				return _rootScope.GetElementDef(type);
 			}
+#endif
 			return _rootScope.GetElementDef(reader.CurrentName) ?? _rootScope.GetElementDef(type);
 		}
 
@@ -161,6 +163,7 @@ namespace TsvBits.Serialization
 			return ToString(obj, Format.Xml);
 		}
 
+#if FULL
 		/// <summary>
 		/// Serializes given object as JSON string.
 		/// </summary>
@@ -171,6 +174,7 @@ namespace TsvBits.Serialization
 		{
 			return ToString(obj, Format.Json);
 		}
+#endif
 
 		/// <summary>
 		/// Serializes given object to string of specified format.
@@ -192,6 +196,7 @@ namespace TsvBits.Serialization
 
 		#region BSON
 
+#if FULL
 		public byte[] ToBson<T>(T obj)
 		{
 			var output = new MemoryStream();
@@ -204,6 +209,7 @@ namespace TsvBits.Serialization
 		{
 			Read(FormatFactory.CreateReader(input, Format.Bson, _rootScope.Namespace), obj);
 		}
+#endif
 
 		#endregion
 	}

@@ -6,8 +6,10 @@ using NUnit.Framework;
 namespace TsvBits.Serialization.Tests
 {
 	[TestFixture(Format.Xml)]
+#if FULL
 	[TestFixture(Format.Json)]
 	[TestFixture(Format.JsonML)]
+#endif
 	public class FieldSerializationTests
 	{
 		private readonly Format _format;

@@ -1,25 +1,19 @@
 ﻿#if NUNIT
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
 namespace TsvBits.Serialization.Tests
 {
-	[TestFixture(Format.Xml)]
-	[TestFixture(Format.Json)]
-	[TestFixture(Format.JsonML)]
+	[TestFixture]
 	public class ImmutableObjectsTests
 	{
-		private readonly Format _format;
-
-		public ImmutableObjectsTests(Format format)
-		{
-			_format = format;
-		}
-
-		[Test]
-		public void JustAttr()
+		[TestCase(Format.Xml, "<Item Name=\"test\" />")]
+#if FULL
+		[TestCase(Format.Json, "{\"Name\":\"test\"}")]
+		[TestCase(Format.JsonML, "[\"Item\",{\"Name\":\"test\"}]")]
+#endif
+		public void JustAttr(Format format, string expectedOutput)
 		{
 			var schema = new Scope();
 
@@ -32,28 +26,19 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(schema);
 
 			var item1 = new Item("test");
-			var serial = serializer.ToString(item1, _format);
-			switch (_format)
-			{
-				case Format.Xml:
-					Assert.AreEqual("<Item Name=\"test\" />", serial);
-					break;
-				case Format.Json:
-					Assert.AreEqual("{\"Name\":\"test\"}", serial);
-					break;
-				case Format.JsonML:
-					Assert.AreEqual("[\"Item\",{\"Name\":\"test\"}]", serial);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-
-			var item2 = serializer.Parse<Item>(serial, _format);
+			var output = serializer.ToString(item1, format);
+			Assert.AreEqual(expectedOutput, output);
+			
+			var item2 = serializer.Parse<Item>(output, format);
 			Assert.AreEqual(item1.Name, item2.Name);
 		}
 
-		[Test]
-		public void TestContainer()
+		[TestCase(Format.Xml, "<Container><Items><Item Name=\"a\" /><Item Name=\"b\" /></Items></Container>")]
+#if FULL
+		[TestCase(Format.Json, "{\"Items\":[new Item({\"Name\":\"a\"}),new Item({\"Name\":\"b\"})]}")]
+		[TestCase(Format.JsonML, "[\"Container\",[\"Items\",[\"Item\",{\"Name\":\"a\"}],[\"Item\",{\"Name\":\"b\"}]]]")]
+#endif
+		public void TestContainer(Format format, string expectedOutput)
 		{
 			var schema = new Scope();
 
@@ -72,23 +57,10 @@ namespace TsvBits.Serialization.Tests
 			var serializer = XSerializer.New(schema);
 
 			var container = new Container(new[] {new Item("a"), new Item("b")});
-			var serial = serializer.ToString(container, _format);
-			switch (_format)
-			{
-				case Format.Xml:
-					Assert.AreEqual("<Container><Items><Item Name=\"a\" /><Item Name=\"b\" /></Items></Container>", serial);
-					break;
-				case Format.Json:
-					Assert.AreEqual("{\"Items\":[new Item({\"Name\":\"a\"}),new Item({\"Name\":\"b\"})]}", serial);
-					break;
-				case Format.JsonML:
-					Assert.AreEqual("[\"Container\",[\"Items\",[\"Item\",{\"Name\":\"a\"}],[\"Item\",{\"Name\":\"b\"}]]]", serial);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-
-			var container2 = serializer.Parse<Container>(serial, _format);
+			var output = serializer.ToString(container, format);
+			Assert.AreEqual(expectedOutput, output);
+			
+			var container2 = serializer.Parse<Container>(output, format);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			Assert.AreEqual(container.Items[0].Name, container2.Items[0].Name);
 			Assert.AreEqual(container.Items[1].Name, container2.Items[1].Name);

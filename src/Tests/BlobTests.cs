@@ -8,10 +8,12 @@ namespace TsvBits.Serialization.Tests
 	{
 		[TestCase(Format.Xml, (byte[]) null, "<Item />")]
 		[TestCase(Format.Xml, new byte[] { 1, 2, 3 }, "<Item><Data>AQID</Data></Item>")]
+#if FULL
 		[TestCase(Format.Json, (byte[])null, "{}")]
 		[TestCase(Format.Json, new byte[] { 1, 2, 3 }, "{\"Data\":\"AQID\"}")]
 		[TestCase(Format.JsonML, (byte[])null, "[\"Item\"]")]
 		[TestCase(Format.JsonML, new byte[] { 1, 2, 3 }, "[\"Item\",[\"Data\",\"AQID\"]]")]
+#endif
 		public void Simple(Format format, byte[] data, string expectedSerial)
 		{
 			var schema = new Scope();

@@ -37,10 +37,12 @@ namespace TsvBits.Serialization.Core
 
 		private static IElementDef ResolveElementDef(IScope scope, IReader reader, Type type)
 		{
+#if FULL
 			if (reader.Format == Format.Json)
 			{
 				return scope.GetElementDef(type);
 			}
+#endif
 			return scope.GetElementDef(reader.CurrentName) ?? scope.GetElementDef(type);
 		}
 
@@ -100,7 +102,9 @@ namespace TsvBits.Serialization.Core
 				}
 			}
 
+#if FULL
 			bool json = reader.Format == Format.Json;
+#endif
 
 			// read child elements
 			foreach (var name in reader.ReadChildElements())
@@ -108,6 +112,7 @@ namespace TsvBits.Serialization.Core
 				var property = def.Elements[name];
 				object value;
 
+#if FULL
 				if (json && property == null)
 				{
 					property = def.Attributes[XNamespace.None + name.LocalName];
@@ -118,6 +123,7 @@ namespace TsvBits.Serialization.Core
 						continue;
 					}
 				}
+#endif
 
 				if (property == null) // unknown type
 				{

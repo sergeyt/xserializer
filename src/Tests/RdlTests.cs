@@ -8,8 +8,10 @@ namespace TsvBits.Serialization.Tests
 	public class RdlTests
 	{
 		[TestCase(Format.Xml, Result = "<Report xmlns=\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\"><Body /></Report>")]
+#if FULL
 		[TestCase(Format.Json, Result = "{\"Body\":{}}")]
 		[TestCase(Format.JsonML, Result = "[\"Report\",{\"xmlns\":\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\"},[\"Body\"]]")]
+#endif
 		public string WriteDefaultReport(Format format)
 		{
 			var report = new Report();
@@ -19,12 +21,14 @@ namespace TsvBits.Serialization.Tests
 		[TestCase(Format.Xml,
 			"<Report Name=\"report\" xmlns=\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\"><Width>12in</Width><Body><ReportItems><TextBox Name=\"textbox1\"><DataElementOutput>NoContent</DataElementOutput><Value>hello</Value></TextBox><Rectangle><ReportItems><TextBox Name=\"textbox2\"><Value>world</Value></TextBox></ReportItems></Rectangle></ReportItems></Body></Report>"
 			)]
+#if FULL
 		[TestCase(Format.Json,
 			"{\"Name\":\"report\",\"Width\":\"12in\",\"Body\":{\"ReportItems\":[new TextBox({\"Name\":\"textbox1\",\"DataElementOutput\":\"NoContent\",\"Value\":\"hello\"}),new Rectangle({\"ReportItems\":[new TextBox({\"Name\":\"textbox2\",\"Value\":\"world\"})]})]}}"
 			)]
 		[TestCase(Format.JsonML,
 			"[\"Report\",{\"xmlns\":\"http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition\",\"Name\":\"report\"},[\"Width\",\"12in\"],[\"Body\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox1\"},[\"DataElementOutput\",\"NoContent\"],[\"Value\",\"hello\"]],[\"Rectangle\",[\"ReportItems\",[\"TextBox\",{\"Name\":\"textbox2\"},[\"Value\",\"world\"]]]]]]]"
 			)]
+#endif
 		public void WriteReadReport(Format format, string expectedString)
 		{
 			var textbox1 = new TextBox {Name = "textbox1", Value = "hello", DataElementOutput = DataElementOutput.NoContent};
