@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Xml.Linq;
 using TsvBits.Serialization.Utils;
 
@@ -21,34 +22,52 @@ namespace TsvBits.Serialization
 				_properties = properties;
 			}
 
-			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, Func<TValue, bool> isDefaultValue)
+			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, Func<TValue, bool> isDefaultValue, params XName[] names)
 			{
 				IPropertyDef prop = null;
-				foreach (var ns in _namespaces)
+				if (names != null && names.Length > 0)
 				{
-					if (prop == null)
+					foreach (var name in names)
 					{
-						prop = Create(property, ns, isDefaultValue);
-						var name = ns + prop.Name.LocalName;
-						_properties.Add(name, prop);
+						if (prop == null)
+						{
+							prop = Create(property, isDefaultValue, null, name);
+							_properties.Add(name, prop);
+						}
+						else
+						{
+							_properties.RegisterSynonym(name, new PropertyProxy(prop, name));
+						}
 					}
-					else
+				}
+				else
+				{
+					foreach (var ns in _namespaces)
 					{
-						var name = ns + prop.Name.LocalName;
-						_properties.RegisterSynonym(name, new PropertyProxy(prop, name));
+						if (prop == null)
+						{
+							prop = Create(property, isDefaultValue, ns, null);
+							var name = ns + prop.Name.LocalName;
+							_properties.Add(name, prop);
+						}
+						else
+						{
+							var name = ns + prop.Name.LocalName;
+							_properties.RegisterSynonym(name, new PropertyProxy(prop, name));
+						}
 					}
 				}
 				return this;
 			}
 
-			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, TValue defaultValue)
+			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, TValue defaultValue, params XName[] names)
 			{
-				return Add(property, value => Equals(value, defaultValue));
+				return Add(property, value => Equals(value, defaultValue), names);
 			}
 
-			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property)
+			public PropertyCollection Add<TValue>(Expression<Func<T, TValue>> property, params XName[] names)
 			{
-				return Add(property, null);
+				return Add(property, null, names);
 			}
 
 			public ElementDef<T> End()
@@ -56,21 +75,16 @@ namespace TsvBits.Serialization
 				return _elementDef;
 			}
 
-			private IPropertyDef Create<TValue>(Expression<Func<T, TValue>> property, XNamespace ns, Func<TValue, bool> isDefaultValue)
+			private IPropertyDef Create<TValue>(Expression<Func<T, TValue>> property, Func<TValue, bool> isDefaultValue, XNamespace ns, XName name)
 			{
 				var member = property.ResolveMember();
-				var name = ns + member.Name;
-
-				// TODO support multiple xml names or namespaces configured via custom attributes 
-				var nameAttr = member.ResolveAttribute<NameAttribute>(true);
-				if (nameAttr != null)
+				if (name == null)
 				{
-					name = string.IsNullOrEmpty(nameAttr.Namespace)
-							   ? ns + nameAttr.Name
-							   : XNamespace.Get(nameAttr.Namespace) + nameAttr.Name;
+					name = GetDefaultName(member, ns);
 				}
 
-				var elementName = ns + member.Name.ToSingular();
+				ns = name.Namespace;
+				var elementName = ns + name.LocalName.ToSingular();
 				var itemAttr = member.ResolveAttribute<ItemNameAttribute>(true);
 				if (itemAttr != null)
 				{
@@ -98,6 +112,19 @@ namespace TsvBits.Serialization
 				var getter = property.Compile();
 				var setter = MethodGenerator.GenerateSetter(property);
 				return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter, isDefaultValue);
+			}
+
+			private static XName GetDefaultName(MemberInfo member, XNamespace ns)
+			{
+				var name = ns + member.Name;
+				var nameAttr = member.ResolveAttribute<NameAttribute>(true);
+				if (nameAttr != null)
+				{
+					name = string.IsNullOrEmpty(nameAttr.Namespace)
+						? ns + nameAttr.Name
+						: XNamespace.Get(nameAttr.Namespace) + nameAttr.Name;
+				}
+				return name;
 			}
 		}
 

@@ -66,6 +66,7 @@
     <Compile Include="IXmlSurrogate.cs" />
     <Compile Include="PropertyDef.cs" />
     <Compile Include="SimpleTypeCollection.cs" />
+    <Compile Include="Tests\MultiplePropertyNamesTest.cs" />
     <Compile Include="Tests\Ns.cs" />
     <Compile Include="Tests\Rdl.cs" />
     <Compile Include="Tests\Rom\Body.cs" />
