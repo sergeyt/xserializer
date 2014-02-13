@@ -24,8 +24,8 @@ script:
   - cat src/Version.cs
   - echo 'compiling xserializer assembly'
   - MCS_COMMON_OPTS='/target:library /keyfile:xserializer.snk /r:System,System.Core,System.Xml,System.Xml.Linq /r:'$JSON_DLL' /optimize+ /recurse:src/*.cs'
-  - gmcs $MCS_COMMON_OPTS -pkg:nunit /define:NUNIT -out:build/test/XSerializerWithTests.dll
-  - gmcs $MCS_COMMON_OPTS -out:build/release/TsvBits.XSerializer.dll
+  - gmcs $MCS_COMMON_OPTS -pkg:nunit /define:NUNIT;FULL -out:build/test/XSerializerWithTests.dll
+  - gmcs $MCS_COMMON_OPTS /define:FULL -out:build/release/TsvBits.XSerializer.dll
   - nunit-console ./build/test/XSerializerWithTests.dll
   - echo 'building nuget package'
   - SED_ARG=s/VERSION/$BUILD_VERSION/
