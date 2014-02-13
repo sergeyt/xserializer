@@ -28,7 +28,8 @@ namespace TsvBits.Serialization.Core
 			var def = ResolveElementDef(scope, reader, type);
 			if (def != null)
 			{
-				ReadElement(scope, reader, def, obj);
+				var subScope = def as IScope ?? scope;
+				ReadElement(subScope, reader, def, obj);
 				return;
 			}
 

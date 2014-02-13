@@ -15,7 +15,7 @@ namespace TsvBits.Serialization
 		private Func<IDictionary<string, object>, T> _create;
 
 		internal ElementDef(Scope scope, XName name)
-			: base(scope)
+			: base(scope, name.Namespace)
 		{
 			if (scope == null) throw new ArgumentNullException("scope");
 			if (name == null) throw new ArgumentNullException("name");

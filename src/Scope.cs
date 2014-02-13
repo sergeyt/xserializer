@@ -14,7 +14,7 @@ namespace TsvBits.Serialization
 		private readonly DefCollection<IElementDef> _elements = new DefCollection<IElementDef>();
 		private readonly IDictionary<Type, IXmlSurrogate> _xmlSurrogates = new Dictionary<Type, IXmlSurrogate>();
 
-		protected Scope(IScope parent)
+		protected Scope(IScope parent, XNamespace ns) : this(ns)
 		{
 			_parent = parent;
 		}
@@ -144,7 +144,9 @@ namespace TsvBits.Serialization
 		public IXmlSurrogate GetSurrogate(Type type)
 		{
 			IXmlSurrogate surrogate;
-			return _xmlSurrogates.TryGetValue(type, out surrogate) ? surrogate : null;
+			if (_xmlSurrogates.TryGetValue(type, out surrogate))
+				return surrogate;
+			return _parent != null ? _parent.GetSurrogate(type) : null;
 		}
 
 		internal static XName GetName<T>(XNamespace defaultNamespace)

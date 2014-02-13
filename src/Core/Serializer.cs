@@ -28,7 +28,8 @@ namespace TsvBits.Serialization.Core
 			var def = scope.GetElementDef(type);
 			if (def != null)
 			{
-				WriteElement(scope, writer, obj, def, def.Name);
+				var subScope = def as IScope ?? scope;
+				WriteElement(subScope, writer, obj, def, def.Name);
 				return;
 			}
 

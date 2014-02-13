@@ -84,6 +84,7 @@
     <Compile Include="Format.cs" />
     <Compile Include="Core\FormatFactory.cs" />
     <Compile Include="IElementDef.cs" />
+    <Compile Include="Tests\SubScopeTest.cs" />
     <Compile Include="Tests\XmlSurrogateTests.cs" />
     <Compile Include="Utils\Inflector.cs" />
     <Compile Include="IReader.cs" />
