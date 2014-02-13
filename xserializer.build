@@ -48,8 +48,12 @@
 	
 	<target name="nunit">
 		<property name="config" value="${config}-nunit"/>
-		<property name="define" value="${debug};NUNIT"/>
+		<property name="define" value="${define};NUNIT"/>
 		<property name="outdir" value="${buildroot}/${config}"/>
+	</target>
+
+	<target name="full">
+		<property name="define" value="${define};FULL"/>
 	</target>
 	
 	<property name="nunit.framework.dll" value="${srcdir}/packages/NUnit.2.6.2/lib/nunit.framework.dll"/>
