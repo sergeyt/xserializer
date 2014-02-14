@@ -8,7 +8,6 @@ namespace TsvBits.Serialization
 {
 	public class Scope : IScope
 	{
-		private readonly XNamespace[] _namespaces;
 		private readonly IScope _parent;
 		private readonly SimpleTypeCollection _simpleTypes = new SimpleTypeCollection();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
@@ -23,13 +22,12 @@ namespace TsvBits.Serialization
 
 		public Scope(params XNamespace[] namespaces)
 		{
-			_namespaces = namespaces;
 			if (namespaces == null || namespaces.Length == 0)
 			{
 				namespaces = new[] {XNamespace.None};
 			}
 
-			_namespaces = namespaces;
+			Namespaces = namespaces;
 		}
 
 		public Scope() : this(XNamespace.None)
@@ -39,8 +37,9 @@ namespace TsvBits.Serialization
 		/// <summary>
 		/// Default namespace.
 		/// </summary>
-		public XNamespace Namespace { get { return _namespaces.First(); } }
-		
+		public XNamespace Namespace { get { return Namespaces.First(); } }
+		public XNamespace[] Namespaces { get; private set; }
+
 		/// <summary>
 		/// Registers simple type serializable to string.
 		/// </summary>
@@ -92,7 +91,7 @@ namespace TsvBits.Serialization
 		{
 			if (names == null || names.Length == 0)
 			{
-				names = new[]{GetName<T>(Namespace)};
+				names = Namespaces.Select(ns => GetName<T>(ns)).ToArray();
 			}
 
 			var def = new ElementDef<T>(this, names[0]);

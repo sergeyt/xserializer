@@ -65,6 +65,22 @@ namespace TsvBits.Serialization.Tests
 			return obj.Value;
 		}
 
+		[TestCase(@"<Entity xmlns=""A""><Value>test</Value></Entity>", Result = "test")]
+		[TestCase(@"<Entity xmlns=""B""><Value>test</Value></Entity>", Result = "test")]
+		public string MultipleNamespaces(string xml)
+		{
+			var scope = new Scope("A", "B");
+			scope.Element<Entity>()
+				.Elements()
+				.Add(x => x.Value)
+				.End();
+
+			var serializer = XSerializer.New(scope);
+			var obj = new Entity();
+			serializer.ReadXmlString(xml, obj);
+			return obj.Value;
+		}
+
 		class Entity
 		{
 			public string Value;

@@ -49,7 +49,9 @@ namespace TsvBits.Serialization
 		{
 			if (namespaces == null || namespaces.Length == 0)
 			{
-				namespaces = new[] {Name.Namespace};
+				namespaces = _scope.Namespace == Name.Namespace
+					? _scope.Namespaces
+					: new[] {Name.Namespace};
 			}
 			return new PropertyCollection(this, namespaces, _elements);
 		}
