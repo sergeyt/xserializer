@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -22,7 +23,7 @@ namespace TsvBits.Serialization.Utils
 			return attrs.Length > 0 ? attrs[0] : null;
 		}
 
-		public static Type FindIEnumerable(Type type)
+		public static Type FindIEnumerableT(Type type)
 		{
 			if (type == null || type == typeof(string))
 				return null;
@@ -44,7 +45,7 @@ namespace TsvBits.Serialization.Utils
 			var ifaces = type.GetInterfaces();
 			if (ifaces.Length > 0)
 			{
-				var ienum = ifaces.Select(x => FindIEnumerable(x)).FirstOrDefault(x => x != null);
+				var ienum = ifaces.Select(x => FindIEnumerableT(x)).FirstOrDefault(x => x != null);
 				if (ienum != null)
 				{
 					return ienum;
@@ -53,7 +54,7 @@ namespace TsvBits.Serialization.Utils
 
 			if (type.BaseType != null && type.BaseType != typeof(object))
 			{
-				return FindIEnumerable(type.BaseType);
+				return FindIEnumerableT(type.BaseType);
 			}
 
 			return null;
@@ -61,9 +62,27 @@ namespace TsvBits.Serialization.Utils
 
 		public static Type GetItemType(Type type)
 		{
+			if (type == null) return null;
+
 			if (type.IsArray) return type.GetElementType();
-			var ienum = FindIEnumerable(type);
-			return ienum.GetGenericArguments()[0];
+
+			// IEnumerable<T>
+			var i = FindIEnumerableT(type);
+			if (i != null) return i.GetGenericArguments()[0];
+
+			// support non-generic collections like old .NET 1 collections based on CollectionBase
+			if (!typeof(IEnumerable).IsAssignableFrom(type))
+				return null;
+
+			var add = type.GetMethod("Add");
+			if (add == null)
+				return null;
+
+			var parameters = add.GetParameters();
+			if (parameters.Length != 1)
+				return null;
+
+			return parameters[0].ParameterType;
 		}
 	}
 }

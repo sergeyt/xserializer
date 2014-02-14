@@ -181,10 +181,10 @@ namespace TsvBits.Serialization.Core
 			if (ReadEnumElement(reader, type, out value))
 				return true;
 
-			var ienum = Reflector.FindIEnumerable(type);
-			if (ienum != null)
+			// try read collection
+			var elementType = Reflector.GetItemType(type);
+			if (elementType != null)
 			{
-				var elementType = ienum.GetGenericArguments()[0];
 				elementDef = new CollectionDef(scope, property.Name, type, elementType);
 				value = def.IsImmutable ? CreateList(elementType) : CreateElement(property, obj);
 				ReadElement(scope, reader, elementDef, value);

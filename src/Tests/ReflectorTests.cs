@@ -1,4 +1,5 @@
-﻿using TsvBits.Serialization.Utils;
+﻿using System.Collections.Generic;
+using TsvBits.Serialization.Utils;
 #if NUNIT
 using System;
 using NUnit.Framework;
@@ -15,6 +16,14 @@ namespace TsvBits.Serialization.Tests
 			Assert.IsFalse(typeof(int).IsNullable());
 			Assert.IsTrue(typeof(StringComparison?).IsNullable());
 			Assert.IsFalse(typeof(StringComparison).IsNullable());
+		}
+
+		[TestCase(typeof(int[]), Result = true)]
+		[TestCase(typeof(IList<int>), Result = true)]
+		[TestCase(typeof(object), Result = false)]
+		public bool FindIEnumerableT(Type type)
+		{
+			return Reflector.FindIEnumerableT(type) != null;
 		}
 	}
 }
