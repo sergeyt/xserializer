@@ -61,7 +61,7 @@
 
 	<target name="build">
 		<csc target="library" output="${outdir}/${assembly}.dll"
-			 debug="${debug}" unsafe="true" define="${define}"
+			 debug="${debug}" define="${define}"
 			 keyfile="${rootdir}/xserializer.snk">
 			<references>
 				<include name="System.dll"/>
