@@ -43,6 +43,7 @@
 	<target name="debug">
 		<property name="config" value="debug"/>
 		<property name="define" value="DEBUG"/>
+		<property name="debug" value="Full"/>
 		<property name="outdir" value="${buildroot}/${config}"/>
 	</target>
 	
