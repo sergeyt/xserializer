@@ -36,7 +36,7 @@ namespace TsvBits.Serialization
 						}
 						else
 						{
-							_properties.RegisterSynonym(name, new PropertyProxy(prop, name));
+							_properties.Alias(name, new PropertyFork(prop, name));
 						}
 					}
 				}
@@ -53,7 +53,7 @@ namespace TsvBits.Serialization
 						else
 						{
 							var name = ns + prop.Name.LocalName;
-							_properties.RegisterSynonym(name, new PropertyProxy(prop, name));
+							_properties.Alias(name, new PropertyFork(prop, name));
 						}
 					}
 				}
@@ -128,37 +128,22 @@ namespace TsvBits.Serialization
 			}
 		}
 
-		private class PropertyProxy : IPropertyDef
+		private class PropertyFork : IPropertyDef
 		{
 			private readonly IPropertyDef _property;
 
-			public PropertyProxy(IPropertyDef property, XName name)
+			public PropertyFork(IPropertyDef property, XName name)
 			{
 				_property = property;
 				Name = name;
 			}
 
 			public XName Name { get; private set; }
-
-			public Type Type
-			{
-				get { return _property.Type; }
-			}
-
-			public string PropertyName
-			{
-				get { return _property.PropertyName; }
-			}
-
-			public XName ItemName
-			{
-				get { return _property.ItemName; }
-			}
-
-			public bool IsReadOnly
-			{
-				get { return _property.IsReadOnly; }
-			}
+			public Type Type { get { return _property.Type; } }
+			public string PropertyName { get { return _property.PropertyName; } }
+			// TODO fork could have different ItemName
+			public XName ItemName { get { return _property.ItemName; } }
+			public bool IsReadOnly { get { return _property.IsReadOnly; } }
 
 			public object GetValue(object target)
 			{

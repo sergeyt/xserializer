@@ -30,7 +30,7 @@ namespace TsvBits.Serialization
 			}
 		}
 
-		public void RegisterSynonym(XName name, T def)
+		public void Alias(XName name, T def)
 		{
 			_index[name] = def;
 		}

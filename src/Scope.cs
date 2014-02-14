@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 using TsvBits.Serialization.Utils;
 
@@ -7,6 +8,7 @@ namespace TsvBits.Serialization
 {
 	public class Scope : IScope
 	{
+		private readonly XNamespace[] _namespaces;
 		private readonly IScope _parent;
 		private readonly SimpleTypeCollection _simpleTypes = new SimpleTypeCollection();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
@@ -19,14 +21,15 @@ namespace TsvBits.Serialization
 			_parent = parent;
 		}
 
-		public Scope(XNamespace defaultNamespace)
+		public Scope(params XNamespace[] namespaces)
 		{
-			Namespace = defaultNamespace ?? XNamespace.None;
-		}
+			_namespaces = namespaces;
+			if (namespaces == null || namespaces.Length == 0)
+			{
+				namespaces = new[] {XNamespace.None};
+			}
 
-		public Scope(string defaultNamespace)
-			: this(string.IsNullOrEmpty(defaultNamespace) ? XNamespace.None : XNamespace.Get(defaultNamespace))
-		{
+			_namespaces = namespaces;
 		}
 
 		public Scope() : this(XNamespace.None)
@@ -36,7 +39,7 @@ namespace TsvBits.Serialization
 		/// <summary>
 		/// Default namespace.
 		/// </summary>
-		public XNamespace Namespace { get; private set; }
+		public XNamespace Namespace { get { return _namespaces.First(); } }
 		
 		/// <summary>
 		/// Registers simple type serializable to string.
@@ -85,16 +88,22 @@ namespace TsvBits.Serialization
 			_elements.Add(def.Name, def);
 		}
 
-		public ElementDef<T> Element<T>(XName name)
+		public ElementDef<T> Element<T>(params XName[] names)
 		{
-			var def = new ElementDef<T>(this, name);
-			Register(def);
-			return def;
-		}
+			if (names == null || names.Length == 0)
+			{
+				names = new[]{GetName<T>(Namespace)};
+			}
 
-		public ElementDef<T> Element<T>()
-		{
-			return Element<T>(GetName<T>(Namespace));
+			var def = new ElementDef<T>(this, names[0]);
+			Register(def);
+
+			for (var i = 1; i < names.Length; i++)
+			{
+				Register(new ElementFork(def, names[i]));
+			}
+
+			return def;
 		}
 
 		public IElementDef GetElementDef(Type type)
@@ -171,6 +180,28 @@ namespace TsvBits.Serialization
 			}
 
 			return defaultNamespace + name;
+		}
+
+		private class ElementFork : IElementDef
+		{
+			private readonly IElementDef _element;
+
+			public ElementFork(IElementDef element, XName name)
+			{
+				_element = element;
+				Name = name;
+			}
+
+			public XName Name { get; private set; }
+			public Type Type { get { return _element.Type; } }
+			public bool IsImmutable { get { return _element.IsImmutable; } }
+			public IDefCollection<IPropertyDef> Elements {  get { return _element.Elements; } }
+			public IDefCollection<IPropertyDef> Attributes { get { return _element.Attributes; } }
+
+			public object Create(IDictionary<string, object> properties)
+			{
+				return _element.Create(properties);
+			}
 		}
 	}
 }
