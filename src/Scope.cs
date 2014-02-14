@@ -8,16 +8,19 @@ namespace TsvBits.Serialization
 {
 	public class Scope : IScope
 	{
-		private readonly IScope _parent;
+		private readonly Scope _parent;
 		private readonly SimpleTypeCollection _simpleTypes = new SimpleTypeCollection();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
 		private readonly IDictionary<Type, List<XNamespace>> _typeNamespaces = new Dictionary<Type, List<XNamespace>>();
 		private readonly DefCollection<IElementDef> _elements = new DefCollection<IElementDef>();
 		private readonly IDictionary<Type, IXmlSurrogate> _xmlSurrogates = new Dictionary<Type, IXmlSurrogate>();
 
-		protected Scope(IScope parent, XNamespace ns) : this(ns)
+		protected Scope(Scope parent)
 		{
+			if (parent == null) throw new ArgumentNullException("parent");
+
 			_parent = parent;
+			Namespaces = parent.Namespaces;
 		}
 
 		public Scope(params XNamespace[] namespaces)

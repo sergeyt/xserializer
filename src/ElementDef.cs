@@ -15,7 +15,7 @@ namespace TsvBits.Serialization
 		private Func<IDictionary<string, object>, T> _create;
 
 		internal ElementDef(Scope scope, XName name)
-			: base(scope, name.Namespace)
+			: base(scope)
 		{
 			if (scope == null) throw new ArgumentNullException("scope");
 			if (name == null) throw new ArgumentNullException("name");
@@ -56,18 +56,13 @@ namespace TsvBits.Serialization
 			return new PropertyCollection(this, namespaces, _elements);
 		}
 
-		public ElementDef<TElement> Sub<TElement>(XName name)
+		public ElementDef<TElement> Sub<TElement>(params XName[] names)
 		{
-			var elem = _scope.Element<TElement>(name);
+			var elem = _scope.Element<TElement>(names);
 			// copy only attributes and elements
 			elem._attributes.AddRange(_attributes);
 			elem._elements.AddRange(_elements);
 			return elem;
-		}
-
-		public ElementDef<TElement> Sub<TElement>()
-		{
-			return Sub<TElement>(Scope.GetName<TElement>(_scope.Namespace));
 		}
 
 		public ElementDef<T> Fork(XNamespace ns)
