@@ -3,6 +3,9 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
+	/// <summary>
+	/// Common writer interface to support various output formats (XML, JSON, etc).
+	/// </summary>
 	public interface IWriter : IDisposable
 	{
 		void WriteAttributeString(XName name, string value);

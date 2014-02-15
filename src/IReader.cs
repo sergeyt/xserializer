@@ -4,6 +4,9 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
+	/// <summary>
+	/// Common reader interface to support various output formats (XML, JSON, etc).
+	/// </summary>
 	public interface IReader : IDisposable
 	{
 		Format Format { get; }
