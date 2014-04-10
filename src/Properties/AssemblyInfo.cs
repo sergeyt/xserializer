@@ -17,4 +17,5 @@ partial class AssemblyInfo
 	public const string Title = "XSerializer";
 	public const string Company = "TsvBits";
 	public const string Product = "XSerializer";
+	public const string Version = "0.2.0.0";
 }

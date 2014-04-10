@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>TsvBits.XSerializer</id>
-		<version>0.1.0.0</version>
+		<version>0.2.0.0</version>
 		<authors>Sergey Todyshev (stodyshev@gmail.com)</authors>
 		<owners>TsvBits</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -10,7 +10,7 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Simple schema-oriented serialization engine for .NET.</description>
 		<releaseNotes>Initial release.</releaseNotes>
-		<copyright>Copyright 2013</copyright>
+		<copyright>Copyright 2014</copyright>
 		<tags>xml serialization</tags>
 		<dependencies>
 			<dependency id="Newtonsoft.Json" version="5.0.6"/>
