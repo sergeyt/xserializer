@@ -14,4 +14,4 @@ compile: get-deps
 
 test: get-deps
 	gmcs -pkg:nunit /define:NUNIT @xserializer.rsp
-	nunit-console xserializer.dll
+	nunit-console TsvBits.XSerializer.dll
