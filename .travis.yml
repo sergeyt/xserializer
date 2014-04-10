@@ -4,31 +4,4 @@ install:
   - sudo apt-get install mono-devel mono-gmcs nunit nunit-console
  
 script:
-  - mkdir build
-  - mkdir build/release
-  - mkdir build/test
-  - echo 'setting up nuget'
-  - mozroots --import --sync
-  - wget -O nuget.exe 'http://az320820.vo.msecnd.net/downloads/nuget.exe'
-  - wget -O Microsoft.Build.dll https://dl.dropbox.com/u/103746479/Microsoft.Build.dll
-  - echo 'getting dependencies'
-  - bash nuget install Newtonsoft.Json
-  - JSON_DLL=Newtonsoft.Json.6.0.1/lib/net35/Newtonsoft.Json.dll
-  - cp $JSON_DLL build/test/Newtonsoft.Json.dll
-  - echo 'updating version.cs'
-  - rm src/Version.cs
-  - BUILD_NUMBER=$TRAVIS_BUILD_NUMBER
-  - BUILD_VERSION=0.1.$BUILD_NUMBER.0
-  - VERSION_CS="partial class AssemblyInfo { public const string Version = \"$BUILD_VERSION\"; }"
-  - echo $VERSION_CS >> src/Version.cs
-  - cat src/Version.cs
-  - echo 'compiling xserializer assembly'
-  - MCS_COMMON_OPTS='/target:library /define:FULL /keyfile:xserializer.snk /r:System,System.Core,System.Xml,System.Xml.Linq /r:'$JSON_DLL' /optimize+ /recurse:src/*.cs'
-  - gmcs $MCS_COMMON_OPTS -pkg:nunit /define:NUNIT -out:build/test/XSerializerWithTests.dll
-  - gmcs $MCS_COMMON_OPTS -out:build/release/TsvBits.XSerializer.dll
-  - nunit-console ./build/test/XSerializerWithTests.dll
-  - echo 'building nuget package'
-  - SED_ARG=s/VERSION/$BUILD_VERSION/
-  - sed $SED_ARG XSerializer.nuspec.template > XSerializer.nuspec
-  - cat XSerializer.nuspec
-  - bash nuget pack XSerializer.nuspec
+  - make
