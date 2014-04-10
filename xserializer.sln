@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSerializer", "XSerializer.csproj", "{5D238F55-5C9D-4862-9C96-2E3994AA54C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSerializer", "src\XSerializer.csproj", "{5D238F55-5C9D-4862-9C96-2E3994AA54C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{034BBDA3-4DA1-4334-9775-8B4BACE39004}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,8 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{034BBD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{C2E1A694-D662-49C3-A621-9CFAD272492F}"
 	ProjectSection(SolutionItems) = preProject
-		..\README.md = ..\README.md
-		..\xserializer.build = ..\xserializer.build
+		.travis.yml = .travis.yml
+		LICENSE = LICENSE
+		Makefile = Makefile
+		README.md = README.md
+		xserializer.build = xserializer.build
+		XSerializer.nuspec = XSerializer.nuspec
+		xserializer.rsp = xserializer.rsp
 	EndProjectSection
 EndProject
 Global

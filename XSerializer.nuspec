@@ -8,7 +8,7 @@
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
 		<projectUrl>https://github.com/sergeyt/xserializer</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>XSerializer is fast and easy serialization engine for .NET.</description>
+		<description>Simple schema-oriented serialization engine for .NET.</description>
 		<releaseNotes>Initial release.</releaseNotes>
 		<copyright>Copyright 2013</copyright>
 		<tags>xml serialization</tags>
@@ -21,6 +21,8 @@
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="build/release/TsvBits.XSerializer.dll" target="lib/net35-client"/>
+		<file src="build/release/TsvBits.XSerializer.dll" target="lib/net35"/>
+		<file src="build/release/TsvBits.XSerializer.dll" target="lib/net40"/>
+		<file src="build/release/TsvBits.XSerializer.dll" target="lib/net45"/>
 	</files>
 </package>

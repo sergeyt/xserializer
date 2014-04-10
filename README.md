@@ -3,7 +3,7 @@
 [![Build Status](https://drone.io/github.com/sergeyt/xserializer/status.png)](https://drone.io/github.com/sergeyt/xserializer/latest)
 [![Build Status](https://travis-ci.org/sergeyt/xserializer.png)](https://travis-ci.org/sergeyt/xserializer)
 
-Fast and easy schema-oriented serialization engine for .NET.
+Simple schema-oriented serialization engine for .NET
 
 ## Features
 
