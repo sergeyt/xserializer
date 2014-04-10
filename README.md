@@ -1,7 +1,8 @@
-# XSerializer
-
 [![Build Status](https://drone.io/github.com/sergeyt/xserializer/status.png)](https://drone.io/github.com/sergeyt/xserializer/latest)
 [![Build Status](https://travis-ci.org/sergeyt/xserializer.png)](https://travis-ci.org/sergeyt/xserializer)
+[![NuGet version](https://badge.fury.io/nu/TsvBits.XSerializer.png)](http://badge.fury.io/nu/TsvBits.XSerializer)
+
+# XSerializer
 
 Simple schema-oriented serialization engine for .NET
 
