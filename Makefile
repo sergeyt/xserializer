@@ -7,7 +7,7 @@ get-deps:
 	# bash nuget install Moq
 	# cp ./Moq.4.2.1402.2112/lib/net35/Moq.dll ./Moq.dll
 	bash nuget install Newtonsoft.Json
-	cp Newtonsoft.Json.6.0.1/lib/net35/Newtonsoft.Json.dll Newtonsoft.Json.dll
+	cp Newtonsoft.Json.6.0.2/lib/net35/Newtonsoft.Json.dll Newtonsoft.Json.dll
 
 compile: get-deps
 	gmcs @xserializer.rsp
