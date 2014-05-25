@@ -6,12 +6,12 @@ using TsvBits.Serialization.Utils;
 
 namespace TsvBits.Serialization
 {
-	internal sealed class SimpleTypeCollection
+	internal sealed class TypeConverterCollection
 	{
-		private static readonly IDictionary<Type, TypeDef> CoreTypes = new Dictionary<Type, TypeDef>();
-		private readonly IDictionary<Type, TypeDef> _types = new Dictionary<Type, TypeDef>();
+		private static readonly IDictionary<Type, Converter> CoreTypes = new Dictionary<Type, Converter>();
+		private readonly IDictionary<Type, Converter> _types = new Dictionary<Type, Converter>();
 
-		static SimpleTypeCollection()
+		static TypeConverterCollection()
 		{
 			CoreType(x => x, x => x);
 			CoreType(s => Convert.ToBoolean(s, CultureInfo.InvariantCulture), x => XmlConvert.ToString(x));
@@ -32,18 +32,18 @@ namespace TsvBits.Serialization
 
 		private static void CoreType<T>(Func<string, T> read, Func<T, string> write)
 		{
-			CoreTypes.Add(typeof(T), new TypeDef(s => read(s), v => write((T)v)));
+			CoreTypes.Add(typeof(T), new Converter(s => read(s), v => write((T)v)));
 		}
 
 		public void Add<T>(Func<string, T> read, Func<T, string> write)
 		{
-			_types.Add(typeof(T), new TypeDef(s => read(s), v => write((T)v)));
+			_types.Add(typeof(T), new Converter(s => read(s), v => write((T)v)));
 		}
 
 		public void Enum<T>(T defval, bool ignoreCase)
 		{
 			var type = typeof(T);
-			_types.Add(type, new TypeDef(
+			_types.Add(type, new Converter(
 				s => System.Enum.Parse(type, s, ignoreCase),
 				v => Equals(v, defval) ? "" : v.ToString()
 				));
@@ -117,18 +117,18 @@ namespace TsvBits.Serialization
 			return null;
 		}
 
-		private TypeDef FindType(Type type)
+		private Converter FindType(Type type)
 		{
-			TypeDef def;
+			Converter def;
 			return _types.TryGetValue(type, out def) ? def : CoreTypes.TryGetValue(type, out def) ? def : null;
 		}
 
-		private sealed class TypeDef
+		private sealed class Converter
 		{
 			private readonly Func<string, object> _read;
 			private readonly Func<object, string> _write;
 
-			public TypeDef(Func<string, object> read, Func<object, string> write)
+			public Converter(Func<string, object> read, Func<object, string> write)
 			{
 				_read = read;
 				_write = write;

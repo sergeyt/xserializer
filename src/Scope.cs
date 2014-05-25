@@ -9,7 +9,7 @@ namespace TsvBits.Serialization
 	public class Scope : IScope
 	{
 		private readonly Scope _parent;
-		private readonly SimpleTypeCollection _simpleTypes = new SimpleTypeCollection();
+		private readonly TypeConverterCollection _converters = new TypeConverterCollection();
 		private readonly IDictionary<Type, IElementDef> _elementDefs = new Dictionary<Type, IElementDef>();
 		private readonly IDictionary<Type, List<XNamespace>> _typeNamespaces = new Dictionary<Type, List<XNamespace>>();
 		private readonly DefCollection<IElementDef> _elements = new DefCollection<IElementDef>();
@@ -51,19 +51,19 @@ namespace TsvBits.Serialization
 		/// <param name="write">The writer.</param>
 		public Scope Type<T>(Func<string, T> read, Func<T, string> write)
 		{
-			_simpleTypes.Add(read, write);
+			_converters.Add(read, write);
 			return this;
 		}
 
 		public Scope Enum<T>(T defval, bool ignoreCase)
 		{
-			_simpleTypes.Enum(defval, ignoreCase);
+			_converters.Enum(defval, ignoreCase);
 			return this;
 		}
 
 		public Scope Enum<T>(T defval)
 		{
-			_simpleTypes.Enum(defval);
+			_converters.Enum(defval);
 			return this;
 		}
 
@@ -125,14 +125,14 @@ namespace TsvBits.Serialization
 
 		public bool TryConvert(object value, out string result)
 		{
-			if (_simpleTypes.TryConvert(value, out result, _parent == null))
+			if (_converters.TryConvert(value, out result, _parent == null))
 				return true;
 			return _parent != null && _parent.TryConvert(value, out result);
 		}
 
 		public bool TryRead(Func<string> reader, Type type, out object value)
 		{
-			if (_simpleTypes.TryRead(reader, type, out value))
+			if (_converters.TryRead(reader, type, out value))
 				return true;
 			return _parent != null && _parent.TryRead(reader, type, out value);
 		}
