@@ -2,7 +2,7 @@
 /keyfile:xserializer.snk
 /r:System.Xml.dll
 /r:System.Xml.Linq.dll
-/r:Newtonsoft.Json.6.0.2/lib/net35/Newtonsoft.Json.dll
+/r:Newtonsoft.Json.6.0.3/lib/net35/Newtonsoft.Json.dll
 /o+
 /define:FULL
 /recurse:./src/*.cs
