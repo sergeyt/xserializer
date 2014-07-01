@@ -77,7 +77,7 @@ namespace TsvBits.Serialization
 				case TypeCode.String:
 					return value;
 				default:
-					return MethodGenerator.UnboxNullable(type)(value);
+					return DynamicMethods.UnboxNullable(type)(value);
 			}
 		}
 

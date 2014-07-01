@@ -110,7 +110,7 @@ namespace TsvBits.Serialization
 				}
 
 				var getter = property.Compile();
-				var setter = MethodGenerator.GenerateSetter(property);
+				var setter = DynamicMethods.Setter(property);
 				return new PropertyDef<TValue>(member.Name, name, elementName, getter, setter, isDefaultValue);
 			}
 

@@ -51,9 +51,8 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>packages\NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -95,7 +94,7 @@
     <Compile Include="Json\JsonReaderImpl.cs" />
     <Compile Include="Json\JsonWriterImpl.cs" />
     <Compile Include="Metadata.cs" />
-    <Compile Include="Utils\MethodGenerator.cs" />
+    <Compile Include="Utils\DynamicMethods.cs" />
     <Compile Include="Utils\Reflector.cs" />
     <Compile Include="Scope.cs" />
     <Compile Include="Core\Serializer.cs" />
@@ -106,7 +105,7 @@
     <Compile Include="Tests\ImmutableObjectsTests.cs" />
     <Compile Include="Tests\FieldSerializationTests.cs" />
     <Compile Include="Tests\InflectorTests.cs" />
-    <Compile Include="Tests\MethodGeneratorTests.cs" />
+    <Compile Include="Tests\DynamicMethodsTests.cs" />
     <Compile Include="Tests\NullableTests.cs" />
     <Compile Include="Tests\ReflectorTests.cs" />
     <Compile Include="Tests\RdlTests.cs" />

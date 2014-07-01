@@ -71,7 +71,7 @@ namespace TsvBits.Serialization.Core
 				if (_addMethods.TryGetValue(itemType, out action))
 					return action;
 
-				action = MethodGenerator.GenerateAdder(target, item, _elementType);
+				action = DynamicMethods.Adder(target, item, _elementType);
 				_addMethods.Add(itemType, action);
 				return action;
 			}
