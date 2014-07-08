@@ -1,5 +1,6 @@
 [![Build Status](https://drone.io/github.com/sergeyt/xserializer/status.png)](https://drone.io/github.com/sergeyt/xserializer/latest)
 [![Build Status](https://travis-ci.org/sergeyt/xserializer.png)](https://travis-ci.org/sergeyt/xserializer)
+[![Build status](https://ci.appveyor.com/api/projects/status/07totjnew0ubcxq0)](https://ci.appveyor.com/project/sergeyt/xserializer)
 [![NuGet version](https://badge.fury.io/nu/TsvBits.XSerializer.png)](http://badge.fury.io/nu/TsvBits.XSerializer)
 
 # XSerializer
