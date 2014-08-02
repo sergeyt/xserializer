@@ -1,7 +1,8 @@
 [![Build Status](https://drone.io/github.com/sergeyt/xserializer/status.png)](https://drone.io/github.com/sergeyt/xserializer/latest)
 [![Build Status](https://travis-ci.org/sergeyt/xserializer.png)](https://travis-ci.org/sergeyt/xserializer)
 [![Build status](https://ci.appveyor.com/api/projects/status/07totjnew0ubcxq0)](https://ci.appveyor.com/project/sergeyt/xserializer)
-[![NuGet version](https://badge.fury.io/nu/TsvBits.XSerializer.png)](http://badge.fury.io/nu/TsvBits.XSerializer)
+[![NuGet Version](http://img.shields.io/nuget/v/TsvBits.XSerializer.svg?style=flat)](https://www.nuget.org/packages/TsvBits.XSerializer/)
+[![NuGet Downloads](http://img.shields.io/nuget/dt/TsvBits.XSerializer.svg?style=flat)](https://www.nuget.org/packages/TsvBits.XSerializer/)
 
 # XSerializer
 
