@@ -66,6 +66,7 @@
     <Compile Include="IScope.cs" />
     <Compile Include="IXmlSurrogate.cs" />
     <Compile Include="PropertyDef.cs" />
+    <Compile Include="Scope.Load.cs" />
     <Compile Include="TypeConverterCollection.cs" />
     <Compile Include="Tests\MiscTests.cs" />
     <Compile Include="Tests\Ns.cs" />

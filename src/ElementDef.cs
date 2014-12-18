@@ -5,32 +5,52 @@ using System.Xml.Linq;
 
 namespace TsvBits.Serialization
 {
-	public sealed partial class ElementDef<T> : Scope, IElementDef
+	public class ElementDef : Scope, IElementDef
 	{
-		private readonly Scope _scope;
-		private readonly DefCollection<IPropertyDef> _attributes = new DefCollection<IPropertyDef>();
-		private readonly DefCollection<IPropertyDef> _elements = new DefCollection<IPropertyDef>();
-		// property name -> index of constructor argument
-		private readonly IDictionary<string,int> _ctorIndex = new Dictionary<string, int>();
-		private Func<IDictionary<string, object>, T> _create;
+		internal readonly DefCollection<IPropertyDef> _attributes = new DefCollection<IPropertyDef>();
+		internal readonly DefCollection<IPropertyDef> _elements = new DefCollection<IPropertyDef>();
 
-		internal ElementDef(Scope scope, XName name)
+		internal ElementDef(Scope scope, Type type, XName name)
 			: base(scope)
 		{
 			if (scope == null) throw new ArgumentNullException("scope");
 			if (name == null) throw new ArgumentNullException("name");
 
-			_scope = scope;
+			Scope = scope;
 			Name = name;
+			Type = type;
 		}
 
+		internal Scope Scope { get; private set; }
 		public XName Name { get; private set; }
-		public Type Type { get { return typeof(T); } }
-		public bool IsImmutable { get { return _create != null; } }
+		public Type Type { get; private set; }
+		public virtual bool IsImmutable { get { return false; } }
 		IDefCollection<IPropertyDef> IElementDef.Attributes { get { return _attributes; } }
 		IDefCollection<IPropertyDef> IElementDef.Elements { get { return _elements; } }
 
-		public object Create(IDictionary<string, object> properties)
+		public virtual object Create(IDictionary<string, object> properties)
+		{
+			throw new NotSupportedException();
+		}
+	}
+
+	public sealed partial class ElementDef<T> : ElementDef
+	{
+		// property name -> index of constructor argument
+		private readonly IDictionary<string,int> _ctorIndex = new Dictionary<string, int>();
+		private Func<IDictionary<string, object>, T> _create;
+
+		internal ElementDef(Scope scope, XName name)
+			: base(scope, typeof(T), name)
+		{
+		}
+
+		public override bool IsImmutable
+		{
+			get { return _create != null; }
+		}
+
+		public override object Create(IDictionary<string, object> properties)
 		{
 			if (_create == null) throw new NotSupportedException();
 			return _create(properties);
@@ -49,8 +69,8 @@ namespace TsvBits.Serialization
 		{
 			if (namespaces == null || namespaces.Length == 0)
 			{
-				namespaces = _scope.Namespace == Name.Namespace
-					? _scope.Namespaces
+				namespaces = Scope.Namespace == Name.Namespace
+					? Scope.Namespaces
 					: new[] {Name.Namespace};
 			}
 			return new PropertyCollection(this, namespaces, _elements);
@@ -58,7 +78,7 @@ namespace TsvBits.Serialization
 
 		public ElementDef<TElement> Sub<TElement>(params XName[] names)
 		{
-			var elem = _scope.Element<TElement>(names);
+			var elem = Scope.Element<TElement>(names);
 			// copy only attributes and elements
 			elem._attributes.AddRange(_attributes);
 			elem._elements.AddRange(_elements);

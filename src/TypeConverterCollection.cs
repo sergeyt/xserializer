@@ -117,13 +117,13 @@ namespace TsvBits.Serialization
 			return null;
 		}
 
-		private Converter FindType(Type type)
+		internal Converter FindType(Type type)
 		{
 			Converter def;
 			return _types.TryGetValue(type, out def) ? def : CoreTypes.TryGetValue(type, out def) ? def : null;
 		}
 
-		private sealed class Converter
+		internal sealed class Converter
 		{
 			private readonly Func<string, object> _read;
 			private readonly Func<object, string> _write;

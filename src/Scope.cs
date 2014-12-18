@@ -6,7 +6,7 @@ using TsvBits.Serialization.Utils;
 
 namespace TsvBits.Serialization
 {
-	public class Scope : IScope
+	public partial class Scope : IScope
 	{
 		private readonly Scope _parent;
 		private readonly TypeConverterCollection _converters = new TypeConverterCollection();
@@ -88,6 +88,11 @@ namespace TsvBits.Serialization
 			}
 			
 			_elements.Add(def.Name, def);
+		}
+
+		public ElementDef Element(Type type, params XName[] names)
+		{
+			throw new NotImplementedException();
 		}
 
 		public ElementDef<T> Element<T>(params XName[] names)
