@@ -115,7 +115,7 @@
     <Compile Include="Xml\XmlReaderImpl.cs" />
     <Compile Include="Xml\XmlWriterImpl.cs" />
     <Compile Include="Core\Deserializer.CollectionDef.cs" />
-    <Compile Include="XSerializer.cs" />
+    <Compile Include="ScopeExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Xml\Xsi.cs" />
   </ItemGroup>

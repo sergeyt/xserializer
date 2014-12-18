@@ -48,12 +48,10 @@ namespace TsvBits.Serialization.Tests
 				.Add(p => p.X)
 				.Add(p => p.Y)
 				.End();
-			
-			var serializer = XSerializer.New(schema);
 
 			var pt = new Point<T>(x, y);
-			var serial = serializer.ToString(pt, _format);
-			var pt2 = serializer.Parse<Point<T>>(serial, _format);
+			var serial = schema.ToString(pt, _format);
+			var pt2 = schema.Parse<Point<T>>(serial, _format);
 
 			Assert.AreEqual(pt, pt2);
 		}
@@ -72,12 +70,10 @@ namespace TsvBits.Serialization.Tests
 			(asAttrs ? def.Attributes() : def.Elements())
 				.Add(p => p.X)
 				.Add(p => p.Y);
-			
-			var serializer = XSerializer.New(schema);
 
 			var pt = new CPoint(x, y);
-			var serial = serializer.ToString(pt, _format);
-			var pt2 = serializer.Parse<CPoint>(serial, _format);
+			var serial = schema.ToString(pt, _format);
+			var pt2 = schema.Parse<CPoint>(serial, _format);
 
 			Assert.AreEqual(pt, pt2);
 		}

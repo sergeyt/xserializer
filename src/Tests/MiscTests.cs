@@ -17,9 +17,8 @@ namespace TsvBits.Serialization.Tests
 				.Add(x => x.Value)
 				.End();
 
-			var serializer = XSerializer.New(scope);
 			var obj = new Entity();
-			serializer.ReadXmlString(xml, obj);
+			scope.ReadXmlString(xml, obj);
 			return obj.Value;
 		}
 
@@ -42,9 +41,8 @@ namespace TsvBits.Serialization.Tests
 				.Add(x => x.Value, ns1 + "Value", ns2 + "Value", ns1 + "Text", ns2 + "Text")
 				.End();
 
-			var serializer = XSerializer.New(scope);
 			var obj = new Entity();
-			serializer.ReadXmlString(xml, obj);
+			scope.ReadXmlString(xml, obj);
 			return obj.Value;
 		}
 
@@ -59,9 +57,8 @@ namespace TsvBits.Serialization.Tests
 				.Add(x => x.Value)
 				.End();
 
-			var serializer = XSerializer.New(scope);
 			var obj = new Entity();
-			serializer.ReadXmlString(xml, obj);
+			scope.ReadXmlString(xml, obj);
 			return obj.Value;
 		}
 
@@ -75,9 +72,8 @@ namespace TsvBits.Serialization.Tests
 				.Add(x => x.Value)
 				.End();
 
-			var serializer = XSerializer.New(scope);
 			var obj = new Entity();
-			serializer.ReadXmlString(xml, obj);
+			scope.ReadXmlString(xml, obj);
 			return obj.Value;
 		}
 

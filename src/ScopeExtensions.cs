@@ -7,41 +7,26 @@ using TsvBits.Serialization.Xml;
 
 namespace TsvBits.Serialization
 {
-	// TODO consider to make XSerializer to be internal class exposing serialization API in schema class
-
 	/// <summary>
-	/// Implements (de)serialization based on schema specified by <see cref="IElementDef"/> definitions.
+	/// Exposes (de)serialization API based on schema of <see cref="IElementDef"/> definitions.
 	/// </summary>
-	public sealed class XSerializer
+	public static class ScopeExtensions
 	{
-		private readonly IScope _rootScope;
-
-		private XSerializer(IScope scope)
-		{
-			if (scope == null) throw new ArgumentNullException("scope");
-
-			_rootScope = scope;
-		}
-
-		public static XSerializer New(IScope scope)
-		{
-			return new XSerializer(scope);
-		}
-
 		#region Parse, Read
 
 		/// <summary>
 		/// Parses specified string.
 		/// </summary>
 		/// <typeparam name="T">The object type to create.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="s">The string to parse.</param>
 		/// <param name="format">Specifies string format.</param>
-		public T Parse<T>(string s, Format format)
+		public static T Parse<T>(this IScope schema, string s, Format format)
 		{
 			using (var input = new StringReader(s))
-			using (var reader = FormatFactory.CreateReader(input, format, _rootScope.Namespace))
+			using (var reader = FormatFactory.CreateReader(input, format, schema.Namespace))
 			{
-				return Read<T>(reader);
+				return Read<T>(schema, reader);
 			}
 		}
 
@@ -49,76 +34,81 @@ namespace TsvBits.Serialization
 		/// Reads specified object from given xml string.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="xml">The xml string to parse.</param>
 		/// <param name="obj">The object to deserialize.</param>
-		public void ReadXmlString<T>(string xml, T obj)
+		public static void ReadXmlString<T>(this IScope schema, string xml, T obj)
 		{
 			using (var input = new StringReader(xml))
 			using (var reader = XmlReaderImpl.Create(input))
 			{
-				Read(reader, obj);
+				Read(schema, reader, obj);
 			}
-		}
+		}		
 
 		/// <summary>
 		/// Reads specified object with given reader.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="reader">The reader.</param>
 		/// <param name="obj">The object to deserialize.</param>
-		public void Read<T>(IReader reader, T obj)
+		public static void Read<T>(this IScope schema, IReader reader, T obj)
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			Deserializer.ReadElement(_rootScope, reader, obj);
+			Deserializer.ReadElement(schema, reader, obj);
 		}
 
 		/// <summary>
 		/// Reads object with given reader.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">The serialization schema.</param>
 		/// <param name="reader">The reader.</param>
-		public T Read<T>(IReader reader)
+		public static T Read<T>(this IScope schema, IReader reader)
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
 			// TODO move to Deserializer
-			var def = ResolveElementDef(reader, typeof(T));
-			return (T)Deserializer.ReadElement(_rootScope, reader, def, null);
+			var def = ResolveElementDef(schema, reader, typeof(T));
+			return (T)Deserializer.ReadElement(schema, reader, def, null);
 		}
 
-		private IElementDef ResolveElementDef(IReader reader, Type type)
+		private static IElementDef ResolveElementDef(IScope schema, IReader reader, Type type)
 		{
 #if FULL
 			if (reader.Format == Format.Json)
 			{
-				return _rootScope.GetElementDef(type);
+				return schema.GetElementDef(type);
 			}
 #endif
-			return _rootScope.GetElementDef(reader.CurrentName) ?? _rootScope.GetElementDef(type);
+			return schema.GetElementDef(reader.CurrentName) ?? schema.GetElementDef(type);
 		}
 
 		/// <summary>
 		/// Reads specified object with given reader.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="reader">The xml reader.</param>
 		/// <param name="obj">The object to deserialize.</param>
-		public void Read<T>(XmlReader reader, T obj)
+		public static void Read<T>(this IScope schema, XmlReader reader, T obj)
 		{
 			using (var impl = XmlReaderImpl.Create(reader))
-				Read(impl, obj);
+				Read(schema, impl, obj);
 		}
 
 		/// <summary>
 		/// Reads object with given reader.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="reader">The xml reader.</param>
-		public T Read<T>(XmlReader reader)
+		public static T Read<T>(this IScope schema, XmlReader reader)
 		{
 			using (var impl = XmlReaderImpl.Create(reader))
-				return Read<T>(impl);
+				return Read<T>(schema, impl);
 		}
 
 		#endregion
@@ -129,23 +119,25 @@ namespace TsvBits.Serialization
 		/// Serializes given object.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="writer">The writer.</param>
 		/// <param name="obj">The object to serialize.</param>
-		public void Write<T>(IWriter writer, T obj)
+		public static void Write<T>(this IScope schema, IWriter writer, T obj)
 		{
-			Serializer.WriteElement(_rootScope, writer, obj);
+			Serializer.WriteElement(schema, writer, obj);
 		}
 
 		/// <summary>
 		/// Serializes given object.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="writer">The xml writer.</param>
 		/// <param name="obj">The object to serialize.</param>
-		public void Write<T>(XmlWriter writer, T obj)
+		public static void Write<T>(this IScope schema, XmlWriter writer, T obj)
 		{
 			using (var impl = XmlWriterImpl.Create(writer))
-				Write(impl, obj);
+				Write(schema, impl, obj);
 		}
 
 		#endregion
@@ -156,11 +148,12 @@ namespace TsvBits.Serialization
 		/// Serializes given object as XML string.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="obj">The object to serialize.</param>
 		/// <returns>XML string representing the object.</returns>
-		public string ToXmlString<T>(T obj)
+		public static string ToXmlString<T>(this IScope schema, T obj)
 		{
-			return ToString(obj, Format.Xml);
+			return ToString(schema, obj, Format.Xml);
 		}
 
 #if FULL
@@ -168,11 +161,12 @@ namespace TsvBits.Serialization
 		/// Serializes given object as JSON string.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="obj">The object to serialize.</param>
 		/// <returns>JSON string representing the object.</returns>
-		public string ToJsonString<T>(T obj)
+		public static string ToJsonString<T>(this IScope schema, T obj)
 		{
-			return ToString(obj, Format.Json);
+			return ToString(schema, obj, Format.Json);
 		}
 #endif
 
@@ -180,15 +174,16 @@ namespace TsvBits.Serialization
 		/// Serializes given object to string of specified format.
 		/// </summary>
 		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="schema">Serialization schema.</param>
 		/// <param name="obj">The object to serialize.</param>
 		/// <param name="format">The output format.</param>
 		/// <returns>Output string.</returns>
-		public string ToString<T>(T obj, Format format)
+		public static string ToString<T>(this IScope schema, T obj, Format format)
 		{
 			var output = new StringBuilder();
 			using (var textWriter = new StringWriter(output))
 			using (var writer = FormatFactory.CreateWriter(textWriter, format))
-				Write(writer, obj);
+				Write(schema, writer, obj);
 			return output.ToString();
 		}
 
@@ -197,17 +192,17 @@ namespace TsvBits.Serialization
 		#region BSON
 
 #if FULL
-		public byte[] ToBson<T>(T obj)
+		public static byte[] ToBson<T>(this IScope schema, T obj)
 		{
 			var output = new MemoryStream();
-			Write(FormatFactory.CreateWriter(output, Format.Bson), obj);
+			Write(schema, FormatFactory.CreateWriter(output, Format.Bson), obj);
 			output.Close();
 			return output.ToArray();
 		}
 
-		public void ReadBson<T>(Stream input, T obj)
+		public static void ReadBson<T>(this IScope schema, Stream input, T obj)
 		{
-			Read(FormatFactory.CreateReader(input, Format.Bson, _rootScope.Namespace), obj);
+			Read(schema, FormatFactory.CreateReader(input, Format.Bson, schema.Namespace), obj);
 		}
 #endif
 

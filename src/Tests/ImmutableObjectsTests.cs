@@ -23,13 +23,11 @@ namespace TsvBits.Serialization.Tests
 				.End()
 				.Init();
 
-			var serializer = XSerializer.New(schema);
-
 			var item1 = new Item("test");
-			var output = serializer.ToString(item1, format);
+			var output = schema.ToString(item1, format);
 			Assert.AreEqual(expectedOutput, output);
 			
-			var item2 = serializer.Parse<Item>(output, format);
+			var item2 = schema.Parse<Item>(output, format);
 			Assert.AreEqual(item1.Name, item2.Name);
 		}
 
@@ -54,13 +52,11 @@ namespace TsvBits.Serialization.Tests
 				.End()
 				.Init();
 
-			var serializer = XSerializer.New(schema);
-
 			var container = new Container(new[] {new Item("a"), new Item("b")});
-			var output = serializer.ToString(container, format);
+			var output = schema.ToString(container, format);
 			Assert.AreEqual(expectedOutput, output);
 			
-			var container2 = serializer.Parse<Container>(output, format);
+			var container2 = schema.Parse<Container>(output, format);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			Assert.AreEqual(container.Items[0].Name, container2.Items[0].Name);
 			Assert.AreEqual(container.Items[1].Name, container2.Items[1].Name);

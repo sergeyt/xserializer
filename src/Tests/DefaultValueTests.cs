@@ -23,14 +23,13 @@ namespace TsvBits.Serialization.Tests
 			{
 				def.Elements().Add(x => x.StringProperty);
 			}
-				
-			var serializer = XSerializer.New(schema);
+
 			var entity = new Entity
 			{
 				StringProperty = "test"
 			};
 
-			return serializer.ToXmlString(entity);
+			return schema.ToXmlString(entity);
 		}
 
 		[TestCase(false, Result = "<Entity />")]
@@ -48,14 +47,13 @@ namespace TsvBits.Serialization.Tests
 			{
 				def.Elements().Add(x => x.StringProperty, "custom");
 			}
-			
-			var serializer = XSerializer.New(schema);
+
 			var entity = new Entity
 			{
 				StringProperty = "custom"
 			};
 
-			return serializer.ToXmlString(entity);
+			return schema.ToXmlString(entity);
 		}
 
 		private class Entity

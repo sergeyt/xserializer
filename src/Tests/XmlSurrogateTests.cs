@@ -30,11 +30,10 @@ namespace TsvBits.Serialization.Tests
 				}
 			};
 
-			var serializer = XSerializer.New(scope);
-			var xml = serializer.ToXmlString(obj);
+			var xml = scope.ToXmlString(obj);
 
 			var obj2 = new Item();
-			serializer.ReadXmlString(xml, obj2);
+			scope.ReadXmlString(xml, obj2);
 
 			Assert.AreEqual(obj.Name, obj2.Name);
 			Assert.AreEqual(obj.Value, obj2.Value);

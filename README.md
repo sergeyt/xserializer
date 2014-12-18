@@ -64,10 +64,14 @@ item.Sub<Rectangle>()
 ### Serialization Example
 
 ```c#
-// schema is defined earlier
-var serializer = XSerializer.New(schema);
-var report = new Report();
 // init report instance
-var xml = serializer.ToXmlString(report);
-var json = serializer.ToString(report, Format.Json);
+var report = new Report();
+// ...
+
+// get xml/json string using schema defined earlier
+var xml = schema.ToXmlString(report);
+var json = schema.ToString(report, Format.Json);
+
+// load state from xml string
+schema.ReadXmlString(xml, report);
 ```

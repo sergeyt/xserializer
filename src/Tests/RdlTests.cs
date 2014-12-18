@@ -15,7 +15,7 @@ namespace TsvBits.Serialization.Tests
 		public string WriteDefaultReport(Format format)
 		{
 			var report = new Report();
-			return XSerializer.New(Rdl.Schema).ToString(report, format);
+			return Rdl.Schema.ToString(report, format);
 		}
 
 		[TestCase(Format.Xml,
@@ -47,11 +47,10 @@ namespace TsvBits.Serialization.Tests
 				}
 			};
 
-			var serializer = XSerializer.New(Rdl.Schema);
-			var reportString = serializer.ToString(report, format);
+			var reportString = Rdl.Schema.ToString(report, format);
 			Assert.AreEqual(expectedString, reportString);
 
-			var report2 = serializer.Parse<Report>(reportString, format);
+			var report2 = Rdl.Schema.Parse<Report>(reportString, format);
 
 			Assert.AreEqual(report.Name, report2.Name);
 			Assert.AreEqual(report.Width, report2.Width);
@@ -78,8 +77,7 @@ namespace TsvBits.Serialization.Tests
 		[TestCase(@"<Report xmlns=""http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition""><Body><ReportItems><TextBox><Value>test</Value></TextBox></ReportItems></Body></Report>")]
 		public void ReadSimpleReport(string xml)
 		{
-			var serializer = XSerializer.New(Rdl.Schema);
-			var report = serializer.Parse<Report>(xml, Format.Xml);
+			var report = Rdl.Schema.Parse<Report>(xml, Format.Xml);
 			Assert.AreEqual(1, report.Body.ReportItems.Count);
 			var textbox = report.Body.ReportItems[0] as TextBox;
 			Assert.IsNotNull(textbox);

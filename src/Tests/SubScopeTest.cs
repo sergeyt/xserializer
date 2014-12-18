@@ -28,11 +28,10 @@ namespace TsvBits.Serialization.Tests
 				Element = new Element {Text = "hi"}
 			};
 
-			var serializer = XSerializer.New(schema);
-			var xml = serializer.ToXmlString(obj1);
+			var xml = schema.ToXmlString(obj1);
 
 			var obj2 = new Entity();
-			serializer.ReadXmlString(xml, obj2);
+			schema.ReadXmlString(xml, obj2);
 
 			Assert.AreEqual(obj1.Name, obj2.Name);
 			Assert.AreEqual(obj1.Element.Text, obj2.Element.Text);

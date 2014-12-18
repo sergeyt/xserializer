@@ -38,16 +38,14 @@ namespace TsvBits.Serialization.Tests
 			if (asAttr) elem.Attributes().Add(x => x.Value);
 			else elem.Elements().Add(x => x.Value);
 
-			var serializer = XSerializer.New(schema);
-
 			var item1 = new Item<T>();
-			var xml = serializer.ToString(item1, _format);
-			var item2 = serializer.Parse<Item<T>>(xml, _format);
+			var xml = schema.ToString(item1, _format);
+			var item2 = schema.Parse<Item<T>>(xml, _format);
 			Assert.AreEqual(item1.Value, item2.Value);
 
 			item1 = new Item<T> {Value = value};
-			xml = serializer.ToString(item1, _format);
-			item2 = serializer.Parse<Item<T>>(xml, _format);
+			xml = schema.ToString(item1, _format);
+			item2 = schema.Parse<Item<T>>(xml, _format);
 			Assert.AreEqual(item1.Value, item2.Value);
 		}
 

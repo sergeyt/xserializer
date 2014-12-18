@@ -55,17 +55,15 @@ namespace TsvBits.Serialization.Tests
 				.Elements()
 				.Add(x => x.Items);
 
-			var serializer = XSerializer.New(schema);
-
 			var container = new Container<T>();
 			foreach (var item in items)
 			{
 				container.Items.Add(item);
 			}
 			
-			var serial = serializer.ToString(container, _format);
+			var serial = schema.ToString(container, _format);
 
-			var container2 = serializer.Parse<Container<T>>(serial, _format);
+			var container2 = schema.Parse<Container<T>>(serial, _format);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			for (int i = 0; i < container.Items.Count; i++)
 			{
@@ -81,17 +79,15 @@ namespace TsvBits.Serialization.Tests
 				.Elements()
 				.Add(x => x.Items);
 
-			var serializer = XSerializer.New(schema);
-
 			var container = new Container2<T>();
 			foreach (var item in items)
 			{
 				container.Items.Add(item);
 			}
 
-			var serial = serializer.ToString(container, _format);
+			var serial = schema.ToString(container, _format);
 
-			var container2 = serializer.Parse<Container2<T>>(serial, _format);
+			var container2 = schema.Parse<Container2<T>>(serial, _format);
 			Assert.AreEqual(container.Items.Count, container2.Items.Count);
 			for (int i = 0; i < container.Items.Count; i++)
 			{

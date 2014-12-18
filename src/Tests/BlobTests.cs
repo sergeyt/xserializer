@@ -20,13 +20,11 @@ namespace TsvBits.Serialization.Tests
 			schema.Element<Item>()
 				.Elements().Add(x => x.Data);
 
-			var serializer = XSerializer.New(schema);
-
 			var item = new Item {Data = data};
-			var serial = serializer.ToString(item, format);
+			var serial = schema.ToString(item, format);
 			Assert.AreEqual(expectedSerial, serial);
 
-			var item2 = serializer.Parse<Item>(serial, format);
+			var item2 = schema.Parse<Item>(serial, format);
 			Assert.NotNull(item2);
 			Assert.AreEqual(item.Data, item2.Data);
 		}
